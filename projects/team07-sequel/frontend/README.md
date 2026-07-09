@@ -21,22 +21,18 @@ Frontend/
 ## 백엔드와 통신하는 방식
 
 브라우저 기본 `EventSource`는 GET 요청만 지원해서 POST 바디(질문 내용)를 보낼 수 없다.
-그래서 `api/queryStream.js`에서 `fetch` + `ReadableStream`으로 SSE 프레이밍을 직접 파싱한다.
-
-**포맷은 teammate(권도윤) agent의 방식(`docs/api.md`)을 그대로 따른다**: 표준 SSE의
-`event:` 줄은 없고, 매 청크가 `data: <JSON>\n\n` 한 줄뿐이며 JSON 안의 `"event"` 키로
-종류를 구분한다.
+그래서 `api/queryStream.js`에서 `fetch` + `ReadableStream`으로 SSE 프레이밍
+(`event: ...\ndata: ...\n\n`)을 직접 파싱한다.
 
 `App.jsx`는 이벤트 타입별로 화면을 갱신한다.
 
-| 이벤트 | payload | 화면 반응 |
-|---|---|---|
-| `node` | `{ node, data }` | 말풍선에 노드별 상태 문구 표시 (`generate`→"쿼리를 생성하는 중…" 등) |
-| `done` | `{ data }` (JSON 문자열: `summary/table/sql/disclaimer`) | 표(`ResultTable`) + 자연어 요약 + "SQL 보기" 토글용 SQL 저장 |
-| `error` | `{ data }` (사유 문자열) | 에러 전용 스타일로 메시지 표시 |
-
-`table.columns`/`table.rows`(분리된 배열)로 오기 때문에, `App.jsx`의 `toRowObjects()`가
-`ResultTable`이 기대하는 `[{컬럼: 값}, ...]` 형태로 다시 합쳐준다.
+| 이벤트 | 화면 반응 |
+|---|---|
+| `status` | 말풍선에 "쿼리를 생성하는 중…" 같은 상태 문구 표시 |
+| `result` | 표(`ResultTable`) + 자연어 요약 표시 |
+| `sql` | "SQL 보기" 토글 버튼 활성화 (기본은 숨김) |
+| `error` | 에러 전용 스타일로 메시지 표시 |
+| `done` | 스트림 종료 |
 
 세션 식별자(`session_id`)는 브라우저 탭을 새로고침하기 전까지 하나로 유지되며,
 후속 질문("그 중에 1위만 알려줘" 등) 시 백엔드가 이전 대화 맥락을 이어갈 수 있도록
