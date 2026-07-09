@@ -24,7 +24,7 @@ app.add_middleware(
 app.include_router(query_router)
 
 
-@app.get("/healthz")
-async def healthz():
+@app.get("/health")
+async def health():
     """Cloud Run 헬스체크 및 배포 확인용 엔드포인트. 항상 200 OK만 반환."""
     return {"status": "ok"}
