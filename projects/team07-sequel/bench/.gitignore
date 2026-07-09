@@ -1,0 +1,5 @@
+# 벤치 산출물 / 파생 데이터 (AI Hub 라이선스·용량상 커밋 금지)
+eval_set*.json
+dbs/
+results*.jsonl
+report.md
