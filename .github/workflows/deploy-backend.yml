@@ -1,0 +1,42 @@
+name: Deploy Backend to Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/team07-sequel/backend/**'
+      - '.github/workflows/deploy-backend.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Docker 인증
+        run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev
+
+      - name: 이미지 빌드 & push
+        run: |
+          docker build -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/backend:${{ github.sha }} \
+            projects/team07-sequel/backend
+          docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/backend:${{ github.sha }}
+
+      - name: Cloud Run 배포
+        run: |
+          gcloud run deploy text2sql-backend \
+            --image=asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/backend:${{ github.sha }} \
+            --region=asia-northeast3 \
+            --allow-unauthenticated
