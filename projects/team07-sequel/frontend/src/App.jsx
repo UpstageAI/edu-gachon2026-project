@@ -8,6 +8,20 @@ function createId() {
     : `${Date.now()}-${Math.random()}`;
 }
 
+// 백엔드가 agent 포맷(columns/rows 분리)으로 표를 보내주므로,
+// ResultTable이 기대하는 [{컬럼: 값}, ...] 형태로 다시 합쳐준다.
+function toRowObjects(columns, rows) {
+  if (!columns || !rows) return [];
+  return rows.map((row) => Object.fromEntries(columns.map((col, i) => [col, row[i]])));
+}
+
+// node 이름별로 사용자에게 보여줄 진행 상태 문구.
+const NODE_STATUS_MESSAGES = {
+  generate: "쿼리를 생성하는 중…",
+  validate: "안전성을 확인하는 중…",
+  execute: "쿼리를 실행하는 중…",
+};
+
 export default function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -49,21 +63,22 @@ export default function App() {
       await streamQuery({
         question,
         sessionId: sessionIdRef.current,
-        onEvent: ({ type, data }) => {
-          if (type === "status") {
-            updateAssistant(assistantId, { status: data.message });
-          } else if (type === "result") {
+        onEvent: ({ type, payload }) => {
+          if (type === "node") {
+            updateAssistant(assistantId, {
+              status: NODE_STATUS_MESSAGES[payload.node] || `${payload.node} 처리 중…`,
+            });
+          } else if (type === "done") {
+            const answer = JSON.parse(payload.data);
             updateAssistant(assistantId, {
               status: null,
-              table: data.table,
-              summary: data.summary,
+              done: true,
+              table: toRowObjects(answer.table?.columns, answer.table?.rows),
+              summary: answer.summary,
+              sql: answer.sql,
             });
-          } else if (type === "sql") {
-            updateAssistant(assistantId, { sql: data.sql });
           } else if (type === "error") {
-            updateAssistant(assistantId, { status: null, error: data.message });
-          } else if (type === "done") {
-            updateAssistant(assistantId, { done: true });
+            updateAssistant(assistantId, { status: null, error: payload.data });
           }
         },
       });
