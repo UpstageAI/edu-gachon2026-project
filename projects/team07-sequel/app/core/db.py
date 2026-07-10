@@ -51,7 +51,8 @@ def _make(url: str, sqlite: bool) -> Engine:
 def get_engine() -> Engine:
     """현재 타깃(스레드별)에 맞는 엔진을 반환(경로별 싱글턴)."""
     path = getattr(_ctx, "path", None)
-    url = f"sqlite:///{path}" if path else settings.sqlalchemy_url
+    # sqlite 평가 DB 는 읽기전용(mode=ro)으로 — 생성 SQL 이 SELECT 여도 엔진 레벨에서 쓰기 차단
+    url = f"sqlite:///file:{path}?mode=ro&uri=true" if path else settings.sqlalchemy_url
     with _lock:
         if url not in _engines:
             _engines[url] = _make(url, bool(path))
