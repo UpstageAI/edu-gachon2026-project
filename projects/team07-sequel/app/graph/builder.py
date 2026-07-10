@@ -26,8 +26,8 @@ NODE_NAMES = ("normalize", "schema_link", "route", "generate", "validate", "exec
 
 
 def _after_route(state: AgentState) -> str:
-    """안전성 판정: 통과 → generate, 실패 → format(거절)."""
-    return "generate" if state.get("safety", {}).get("ok", True) else "format"
+    """안전성 판정: ok 가 명시적 True 일 때만 generate, 그 외(누락 포함) → format(거절, fail-closed)."""
+    return "generate" if state.get("safety", {}).get("ok") is True else "format"
 
 
 def _after_validate(state: AgentState) -> str:
