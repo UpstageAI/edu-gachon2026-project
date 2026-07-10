@@ -35,16 +35,23 @@ def _classify(question: str, schema: str) -> str:
 
 
 def _guard(question: str) -> dict:
-    """injection/위험 판정. 파싱 실패 시 통과(ok)로 폴백."""
+    """injection/위험 판정. ok 가 엄격히 boolean True 일 때만 통과(fail-closed).
+
+    bool("false")==True 같은 강제변환·ok 누락·파싱 실패는 전부 차단으로 본다.
+    (하드 게이트는 sqlglot validator 지만, 가드도 검증 불가 시 통과시키지 않는다.)
+    """
     res = complete(_CLASSIFY_MODEL, [
         {"role": "system", "content": prompts.INJECTION_GUARD},
         {"role": "user", "content": question},
     ], temperature=0.0)
     try:
         obj = json.loads(res.text)
-        return {"ok": bool(obj.get("ok", True)), "reason": obj.get("reason", "")}
-    except (json.JSONDecodeError, AttributeError):
+    except (json.JSONDecodeError, TypeError):
+        obj = None
+    if isinstance(obj, dict) and obj.get("ok") is True:
         return {"ok": True, "reason": ""}
+    reason = obj.get("reason") if isinstance(obj, dict) else ""
+    return {"ok": False, "reason": reason or "안전성을 확인할 수 없어 요청을 차단했어요. 질문을 바꿔 다시 시도해 주세요."}
 
 
 def route(state: AgentState) -> dict:
