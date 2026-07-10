@@ -37,8 +37,14 @@ def _embed(model: str, inputs: list[str]) -> list[list[float]]:
         except httpx.HTTPStatusError as e:
             last = e
             if e.response.status_code == 429:
+                delay = 2.0 * (attempt + 1)
                 ra = e.response.headers.get("retry-after")
-                time.sleep(float(ra) if ra else 2.0 * (attempt + 1))
+                if ra:
+                    try:
+                        delay = float(ra)  # 초 단위. HTTP-date 형식이면 파싱 실패 → 백오프 사용
+                    except ValueError:
+                        pass
+                time.sleep(delay)
             else:
                 raise
         except httpx.HTTPError as e:
