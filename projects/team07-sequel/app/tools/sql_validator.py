@@ -36,8 +36,12 @@ def validate_sql(sql: str, schema: str = "") -> ValidationResult:
                 errors.append(f"금지된 구문: {banned.__name__}")
         if st.find(exp.Select) is None:
             errors.append("SELECT 문만 허용됩니다.")
+        # WITH(CTE) 별칭은 테이블이 아니라 이 쿼리 안의 임시 이름 → 화이트리스트 예외
+        # (없으면 최상 난이도의 CTE 분해 SQL 이 항상 오탈락됨)
+        cte_names = {c.alias_or_name.lower() for c in st.find_all(exp.CTE)}
         for tbl in st.find_all(exp.Table):
-            if tbl.name and tbl.name.lower() not in allowed:
+            name = (tbl.name or "").lower()
+            if name and name not in allowed and name not in cte_names:
                 errors.append(f"허용되지 않은 테이블: {tbl.name}")
 
     return ValidationResult(ok=not errors, errors=sorted(set(errors)))
