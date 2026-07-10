@@ -8,14 +8,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.query import router as query_router
+from app.core.config import settings
 
 app = FastAPI(title="Text2SQL Backend")
 
-# CORS: 지금은 로컬 개발 중이라 모든 origin을 허용해둔다.
-# 배포 시에는 실제 프론트엔드 Cloud Run URL로 반드시 좁혀야 한다.
+# CORS: 실제 배포된 프론트엔드 URL + 로컬 개발용 주소만 허용한다.
+# 목록은 app/core/config.py의 CORS_ALLOWED_ORIGINS에서 관리 (환경변수로 덮어쓰기 가능).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: 배포 시 프론트엔드 실제 URL로 제한
+    allow_origins=settings.CORS_ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -26,5 +27,11 @@ app.include_router(query_router)
 
 @app.get("/health")
 async def health():
-    """Cloud Run 헬스체크 및 배포 확인용 엔드포인트. 항상 200 OK만 반환."""
+    """배포 확인용 엔드포인트. 항상 200 OK만 반환.
+
+    주의: 경로 이름을 "/healthz"가 아니라 "/health"로 쓴다.
+    Cloud Run(Knative 기반)은 "/healthz" 경로를 queue-proxy 사이드카가
+    자체적으로 가로채서, 우리 컨테이너까지 요청이 전달되지 않고 404가
+    나는 문제가 있었다 (2026-07-09 실배포 중 확인). 그래서 이름을 바꿨다.
+    """
     return {"status": "ok"}
