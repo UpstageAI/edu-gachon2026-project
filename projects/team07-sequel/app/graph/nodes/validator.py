@@ -11,5 +11,5 @@ from app.tools.sql_validator import validate_sql
 
 
 def validate(state: AgentState) -> dict:
-    result = validate_sql(state.get("sql", ""), state.get("schema", ""))
+    result = validate_sql(state.get("sql", ""), state.get("schema", ""), state.get("tables"))
     return {"validation": result.model_dump()}
