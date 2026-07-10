@@ -46,4 +46,4 @@ jobs:
             --region=asia-northeast3 \
             --port=8001 \
             --allow-unauthenticated \
-            --set-env-vars="SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL }},UPSTAGE_API_KEY=${{ secrets.UPSTAGE_API_KEY }},LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }},LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }},LANGFUSE_HOST=${{ secrets.LANGFUSE_BASE_URL }}"
+            --set-env-vars="SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL }},UPSTAGE_API_KEY=${{ secrets.UPSTAGE_API_KEY }},LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }},LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }},LANGFUSE_HOST=${{ secrets.LANGFUSE_BASE_URL }},CORS_ORIGINS=[\"https://text2sql-frontend-bfkt3wk5mq-du.a.run.app\"]"
