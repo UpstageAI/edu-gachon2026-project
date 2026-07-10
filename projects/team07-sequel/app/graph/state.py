@@ -27,11 +27,22 @@ class Difficulty(str, Enum):
 
 class AgentState(TypedDict, total=False):
     # ── 입력 ──
-    question: str                 # 사용자 자연어 질의
+    question: str                 # 사용자 자연어 질의 (원문)
+    history: list                 # 이전 턴 [{"q","result_summary"}] (후속질문 병합용)
+
+    # ── query_normalizer 산출 ──
+    normalized_question: str      # 대명사·생략 채운 독립 질문
+    keywords: list[str]           # 값 매칭용 리터럴 후보 (조사 제거)
+    time_range: dict              # {"start","end"} 상대시간 → 실제 범위
+    ambiguous: bool               # 기준 불명확 → 되묻기 트리거
 
     # ── schema_linker 산출 ──
-    schema: str                   # 링크된 관련 스키마 (DDL + 컬럼 샘플 값)
+    schema: str                   # 링크된 관련 스키마 (축소 DDL + 값 힌트)
     tables: list[str]             # 관련 테이블 이름 목록
+    joins: list[str]              # FK/조인 경로
+    value_hints: list[dict]       # 키워드 → 실제 DB 값 매칭 (ValueHint)
+    unresolved: list[str]         # 매칭 실패 키워드 (되묻기 대상)
+    fewshot: list                 # few-shot 예시 [{"question","sql"}] (example_repository)
 
     # ── router 산출 ──
     difficulty: str               # Difficulty 값
