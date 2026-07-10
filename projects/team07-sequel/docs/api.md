@@ -115,12 +115,14 @@ curl -N -X POST http://localhost:8000/api/v1/query/stream \
 | `done` | 최종 완료 | `data`(최종 answer JSON 문자열) |
 | `error` | 오류 | `data`(사유) |
 
-노드 순서: `schema_link → route → generate → validate → execute → format`
+노드 순서: `normalize → schema_link → route → generate → validate → execute → format`
 
 ```text
+data: {"event":"node","node":"normalize","data":"{\"normalized_question\":\"지난달 가장 많이 팔린 상품은?\",\"keywords\":[],\"time_range\":{\"start\":\"2026-06-01\",\"end\":\"2026-06-30\"},\"ambiguous\":false}"}
+
 data: {"event":"node","node":"schema_link","data":"{\"tables\":[\"olist_order_items\",\"olist_products\", ...],\"schema\":\"CREATE TABLE ...\"}"}
 
-data: {"event":"node","node":"route","data":"{\"difficulty\":\"medium\",\"model\":\"solar-mini\",\"safety\":{\"ok\":true,\"reason\":\"\"}}"}
+data: {"event":"node","node":"route","data":"{\"difficulty\":\"medium\",\"model\":\"solar-pro2\",\"safety\":{\"ok\":true,\"reason\":\"\"}}"}
 
 data: {"event":"node","node":"generate","data":"{\"sql\":\"SELECT p.product_category_name, COUNT(*) ...\",\"iteration\":1}"}
 
@@ -137,6 +139,7 @@ data: {"event":"done","data":"{\"summary\":\"요청하신 조회 결과입니다
 
 | 노드 | 하는 일 | 상태에 쓰는 키 |
 |---|---|---|
+| `normalize` | 시간표현 정규화 + 키워드 추출 + 후속질문 병합 | `normalized_question`, `keywords`, `time_range`, `ambiguous` |
 | `schema_link` | 관련 테이블/컬럼 추림 + 값 예시 | `schema`, `tables` |
 | `route` | 난이도 분류 + 모델 선택 + injection 가드 | `difficulty`, `model`, `safety` |
 | `generate` | 난이도별 SQL 생성 (실패 시 재생성 루프) | `sql`, `iteration` |
