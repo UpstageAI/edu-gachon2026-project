@@ -206,8 +206,10 @@ def main() -> None:
     best_cell = present[best][1]
     routing_tbl, rule = _routing(best_cell)
     # pro2 vs pro3 지배 여부
+    def _ex_ratio(cell) -> float:  # n 이 모델별로 다를 수 있어 비율로 비교
+        return cell["ex"] / max(cell.get("n", 0), 1)
     pro3_dominated = all(
-        best_cell[("solar-pro2", lv)]["ex"] >= best_cell[("solar-pro3", lv)]["ex"]
+        _ex_ratio(best_cell[("solar-pro2", lv)]) >= _ex_ratio(best_cell[("solar-pro3", lv)])
         for lv in LEVELS if ("solar-pro2", lv) in best_cell and ("solar-pro3", lv) in best_cell)
     rule_txt = ", ".join(f"{KO[lv]}→{rule.get(lv, '-')}" for lv in LEVELS)
 
