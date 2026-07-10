@@ -8,11 +8,15 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import AsyncIterator
 
 from app.graph.builder import NODE_NAMES, build_graph
 from app.graph.state import initial_state
 from app.schemas.query import QueryResponse, StreamEvent
+
+logger = logging.getLogger(__name__)
+_ERR_MSG = "요청 처리 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요."
 
 
 class QueryService:
@@ -27,8 +31,9 @@ class QueryService:
         """
         try:
             state = await self._graph.ainvoke(initial_state(question))
-        except Exception as exc:  # noqa: BLE001 — 외부(LLM/DB) 실패를 API 계약(error 필드)으로 변환
-            return QueryResponse(error=str(exc))
+        except Exception:  # noqa: BLE001 — 외부(LLM/DB) 실패를 API 계약(error)으로 변환. 상세는 로그로만.
+            logger.exception("query 실패")
+            return QueryResponse(error=_ERR_MSG)
         answer = state.get("answer", {})
         table = answer.get("table", {})
         return QueryResponse(
@@ -61,8 +66,9 @@ class QueryService:
                     )
                     if "answer" in output:  # format 노드가 쓴 최종 answer
                         answer = output["answer"]
-        except Exception as exc:  # noqa: BLE001
-            yield StreamEvent(event="error", data=str(exc))
+        except Exception:  # noqa: BLE001 — 상세는 로그로만, 클라이언트엔 일반 메시지
+            logger.exception("stream 실패")
+            yield StreamEvent(event="error", data=_ERR_MSG)
             return
         yield StreamEvent(
             event="done",
