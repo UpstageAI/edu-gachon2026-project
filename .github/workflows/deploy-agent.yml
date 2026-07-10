@@ -8,6 +8,7 @@ on:
       - 'projects/team07-sequel/pyproject.toml'
       - 'projects/team07-sequel/uv.lock'
       - 'projects/team07-sequel/Dockerfile.api'
+      - 'projects/team07-sequel/.env.example'
       - 'projects/team07-sequel/data/**'
       - '.github/workflows/deploy-agent.yml'
 
