@@ -29,6 +29,8 @@ from app.core import db, llm
 from app.repositories import schema_repository as sr
 from bench import config
 
+_EX_SAMPLE_LEN = 60  # column_notes.json 예시값 절단 길이 (16자는 이메일 등 형식이 깨짐)
+
 BIRD_ROOT = config.BENCH_DIR / "bird/minidev/MINIDEV"
 OUT_DIR = config.BENCH_DIR / "bird/metadata"
 LOG_DIR = OUT_DIR / "logs"
@@ -217,13 +219,16 @@ def build_supabase() -> None:
                     fout.write(json.dumps(rec, ensure_ascii=False) + "\n"); fout.flush()
             list(pool.map(work, jobs))
 
-    # 슬림 산출물 (런타임 소비용): {table: {col: description}}
-    notes: dict[str, dict[str, str]] = {}
+    # 슬림 산출물 (런타임 소비용) — metadata_repository 가 읽는 신포맷과 통일:
+    # {table: {col: {"d": 설명, "ex": [샘플<=2]}}}
+    notes: dict[str, dict] = {}
     for line in log_path.read_text(encoding="utf-8").splitlines():
         if line.strip():
             o = json.loads(line)
             if not o.get("error") and o.get("description"):
-                notes.setdefault(o["table"], {})[o["column"]] = o["description"]
+                samples = (o.get("profile") or {}).get("samples") or []
+                ex = [str(s)[:_EX_SAMPLE_LEN] for s in samples[:2] if s]
+                notes.setdefault(o["table"], {})[o["column"]] = {"d": o["description"], "ex": ex}
     out = config.BENCH_DIR.parent / "app/static/column_notes.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(notes, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -257,7 +262,7 @@ def rebuild_supabase_notes() -> None:
             desc = res.text.strip()
         except Exception as e:  # noqa: BLE001
             print(f"  실패 {t}.{c}: {str(e)[:80]}"); return
-        ex = [s[:16] for s in prof.get("samples", [])[:2] if s]
+        ex = [s[:_EX_SAMPLE_LEN] for s in prof.get("samples", [])[:2] if s]
         with lock:
             notes.setdefault(t, {})[c] = {"d": desc, "ex": ex}
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
