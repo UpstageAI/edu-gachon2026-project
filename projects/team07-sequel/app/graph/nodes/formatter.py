@@ -27,17 +27,24 @@ def format_answer(state: AgentState) -> dict:
             sql=state.get("sql", ""),
         )}
 
+    # 3) 실행 오류 (수리 재시도 소진) — 빈 결과와 구분해 안내
+    if state.get("exec_error"):
+        return {"answer": empty_answer(
+            summary="쿼리 실행에 실패했어요. 질문을 조금 다르게 표현해 주시겠어요?",
+            sql=state.get("sql", ""),
+        )}
+
     result = state.get("result", {})
     rows = result.get("rows", [])
 
-    # 3) 결과 없음
+    # 4) 결과 없음 (정당한 답)
     if not rows:
         return {"answer": empty_answer(
             summary="조건에 맞는 데이터가 없습니다. 기간을 넓혀볼까요?",
             sql=state.get("sql", ""),
         )}
 
-    # 4) 정상 — 결과 기반 자연어 요약 (LLM)
+    # 5) 정상 — 결과 기반 자연어 요약 (LLM)
     ctx = (
         f"질문: {state['question']}\n"
         f"결과 컬럼: {result.get('columns', [])}\n"
