@@ -56,8 +56,20 @@ jobs:
 
       - name: 헬스체크 대기 및 확인 (내부망이라 백엔드 VM 경유)
         run: |
-          sleep 15
-          gcloud compute ssh text2sql-backend-vm \
-            --zone=asia-northeast3-a --tunnel-through-iap \
-            --project=${{ secrets.GCP_PROJECT_ID }} \
-            --command="curl -sf http://10.10.0.2:8001/health"
+          # agent는 시작 시 스키마 임베딩 인덱스를 새로 만들어서 기동에 시간이
+          # 걸릴 수 있다. 한 번만 확인하지 않고 최대 6회(10초 간격, 총 1분)
+          # 재시도해서, 컨테이너가 아직 뜨는 중일 때 false negative로 실패
+          # 처리되지 않게 한다.
+          for i in $(seq 1 6); do
+            if gcloud compute ssh text2sql-backend-vm \
+                --zone=asia-northeast3-a --tunnel-through-iap \
+                --project=${{ secrets.GCP_PROJECT_ID }} \
+                --command="curl -sf http://10.10.0.2:8001/health"; then
+              echo "헬스체크 통과"
+              exit 0
+            fi
+            echo "아직 준비 안 됨, 10초 후 재시도 ($i/6)"
+            sleep 10
+          done
+          echo "헬스체크 6회 모두 실패"
+          exit 1
