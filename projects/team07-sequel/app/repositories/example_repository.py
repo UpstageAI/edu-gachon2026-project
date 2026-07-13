@@ -28,10 +28,11 @@ def _load() -> None:
     global _pool, _vecs
     if _pool is not None:
         return
-    _pool = json.loads(_PATH.read_text(encoding="utf-8")) if _PATH.exists() else []
-    if _pool:
-        m = np.asarray(embeddings.embed_passages([e["question"] for e in _pool]), dtype=float)
+    pool = json.loads(_PATH.read_text(encoding="utf-8")) if _PATH.exists() else []
+    if pool:
+        m = np.asarray(embeddings.embed_passages([e["question"] for e in pool]), dtype=float)
         _vecs = m / (np.linalg.norm(m, axis=1, keepdims=True) + 1e-9)
+    _pool = pool  # 임베딩 성공 후 마지막에 세팅 — 중간에 예외 나면 다음 호출이 재시도하게
 
 
 def retrieve_examples(question: str, k: int = 3) -> list[dict]:
