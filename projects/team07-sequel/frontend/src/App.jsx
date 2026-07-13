@@ -23,8 +23,9 @@ export default function App() {
     );
   }
 
-  async function handleSend() {
-    const question = input.trim();
+  // overrideQuestion이 오면(추천 질문 클릭) 입력창 내용 대신 그 문구를 보낸다.
+  async function handleSend(overrideQuestion) {
+    const question = (overrideQuestion ?? input).trim();
     if (!question || isStreaming) return;
 
     setInput("");
@@ -39,6 +40,7 @@ export default function App() {
       table: null,
       summary: null,
       sql: null,
+      suggestions: [],
       error: null,
       done: false,
     };
@@ -57,6 +59,7 @@ export default function App() {
               status: null,
               table: data.table,
               summary: data.summary,
+              suggestions: data.suggestions ?? [],
             });
           } else if (type === "sql") {
             updateAssistant(assistantId, { sql: data.sql });
@@ -86,6 +89,12 @@ export default function App() {
 
   function toggleSql(id) {
     setExpandedSql((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
+
+  // 추천 질문(칩) 클릭 시, 그 문구를 그대로 사용자 질문으로 보낸다.
+  function handleSuggestionClick(suggestion) {
+    if (isStreaming) return;
+    handleSend(suggestion);
   }
 
   return (
@@ -121,6 +130,21 @@ export default function App() {
 
               {m.table && <ResultTable rows={m.table} />}
 
+              {m.suggestions?.length > 0 && (
+                <div className="suggestions">
+                  {m.suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      className="suggestion-chip"
+                      onClick={() => handleSuggestionClick(s)}
+                      disabled={isStreaming}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {m.sql && (
                 <div>
                   <button className="sql-toggle" onClick={() => toggleSql(m.id)}>
@@ -142,7 +166,7 @@ export default function App() {
           placeholder="예: 이번 달 카테고리별 매출 알려줘"
           disabled={isStreaming}
         />
-        <button onClick={handleSend} disabled={isStreaming || !input.trim()}>
+        <button onClick={() => handleSend()} disabled={isStreaming || !input.trim()}>
           전송
         </button>
       </div>

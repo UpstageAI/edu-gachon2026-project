@@ -118,6 +118,33 @@ table.result-table th {
   background: #20242c;
 }
 
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.suggestion-chip {
+  background: #20242c;
+  border: 1px solid #3a3f4b;
+  color: #cfe0ff;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.suggestion-chip:hover:not(:disabled) {
+  background: #2a3040;
+  border-color: #2f6fed;
+}
+
+.suggestion-chip:disabled {
+  color: #6a6f78;
+  cursor: not-allowed;
+}
+
 .sql-toggle {
   background: none;
   border: 1px solid #3a3f4b;
