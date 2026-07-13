@@ -1,4 +1,10 @@
-name: Deploy Backend to Cloud Run
+name: Deploy Backend to GCE VM
+
+# 2026-07-12: Cloud Run -> GCE VM(text2sql-backend-vm) 이전에 맞춰 배포 방식 변경.
+# 이미지 빌드/push는 그대로 두고, 마지막 배포 단계만
+# `gcloud run deploy` -> `gcloud compute instances update-container`로 교체했다.
+# update-container는 VM 생성 시 설정해둔 --container-env 값은 그대로 두고
+# 이미지만 교체하므로, 여기서 환경변수를 다시 넘길 필요가 없다.
 
 on:
   push:
@@ -34,9 +40,16 @@ jobs:
             projects/team07-sequel/backend
           docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/backend:${{ github.sha }}
 
-      - name: Cloud Run 배포
+      - name: 백엔드 VM 컨테이너 이미지 교체
         run: |
-          gcloud run deploy text2sql-backend \
-            --image=asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/backend:${{ github.sha }} \
-            --region=asia-northeast3 \
-            --allow-unauthenticated
+          gcloud compute instances update-container text2sql-backend-vm \
+            --zone=asia-northeast3-a \
+            --container-image=asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/backend:${{ github.sha }} \
+            --project=${{ secrets.GCP_PROJECT_ID }}
+
+      - name: 헬스체크 대기 및 확인
+        run: |
+          # 컨테이너 재시작 직후 몇 초 정도는 응답이 없을 수 있어 잠깐 대기 후 확인.
+          sleep 15
+          gcloud compute backend-services get-health text2sql-backend-service \
+            --global --project=${{ secrets.GCP_PROJECT_ID }}
