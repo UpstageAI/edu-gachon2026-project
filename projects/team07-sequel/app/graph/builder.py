@@ -4,6 +4,7 @@
 - route 에서 안전성 실패(injection/위험) → 곧바로 format(거절)
 - validate 실패 & 재시도 여력 → generate 로 되돌림(재생성 루프, 최대 settings.agent_max_retries)
 - validate 실패 & 여력 소진 → format(오류 안내)
+- execute 런타임 오류 & 여력 → generate(실행 피드백 수리, MapleRepair 식) / 소진 → format
 
 출력: 컴파일된 그래프 (invoke / ainvoke / astream_events 지원)
 """
@@ -39,6 +40,13 @@ def _after_validate(state: AgentState) -> str:
     return "format"
 
 
+def _after_execute(state: AgentState) -> str:
+    """실행 런타임 오류 & 여력 → generate(수리 재생성). 정상(빈 결과 포함) → format."""
+    if state.get("exec_error") and state.get("iteration", 0) < settings.agent_max_retries:
+        return "generate"
+    return "format"
+
+
 def build_graph():
     """상태 그래프를 구성·컴파일해 반환한다."""
     g = StateGraph(AgentState)
@@ -59,6 +67,6 @@ def build_graph():
         "validate", _after_validate,
         {"execute": "execute", "generate": "generate", "format": "format"},
     )
-    g.add_edge("execute", "format")
+    g.add_conditional_edges("execute", _after_execute, {"generate": "generate", "format": "format"})
     g.add_edge("format", END)
     return g.compile()

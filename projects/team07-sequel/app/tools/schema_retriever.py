@@ -91,6 +91,16 @@ def _infer_joins(tables: list[str], cols: dict[str, list[str]]) -> list[str]:
 
 
 def retrieve_schema(question: str) -> SchemaRetrievalResult:
+    # 소형 스키마는 전체가 컨텍스트에 들어감 → 임베딩 축소가 recall 손실만 냄(BIRD ablation -2.9pp).
+    all_tables = schema_repository.list_tables()
+    if len(all_tables) <= settings.link_full_schema_max:
+        cols = {t: [c for c, _ in schema_repository.get_columns(t)] for t in all_tables}
+        return SchemaRetrievalResult(
+            tables=all_tables,
+            ddl=schema_repository.get_ddl(all_tables),
+            joins=_infer_joins(all_tables, cols),
+        )
+
     idx = _get_index()
     q = np.asarray(embeddings.embed_query(question), dtype=float)
     q /= np.linalg.norm(q) + 1e-9

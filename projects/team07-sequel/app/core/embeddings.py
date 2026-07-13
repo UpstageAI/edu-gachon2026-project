@@ -19,9 +19,18 @@ QUERY_MODEL = "solar-embedding-2-query"
 PASSAGE_MODEL = "solar-embedding-2-passage"
 
 
-def _embed(model: str, inputs: list[str]) -> list[list[float]]:
-    if not inputs:
-        return []
+_MAX_BATCH = 100      # Upstage embeddings 는 요청당 입력 100개 초과 시 400
+_MAX_CHARS = 2000     # 과도하게 긴 입력(블롭 등)은 400 → 안전 절단
+
+
+def _clean(t: str) -> str:
+    """빈/공백 입력은 400 을 유발 → 플레이스홀더, 초장문은 절단(정상 입력엔 영향 없음)."""
+    t = (t or "").strip()
+    return t[:_MAX_CHARS] if t else "N/A"
+
+
+def _post_batch(model: str, inputs: list[str]) -> list[list[float]]:
+    """입력 <=100 배치 1회 호출 (429 백오프 재시도)."""
     last: Exception | None = None
     for attempt in range(5):  # 레이트리밋(429) 백오프 재시도
         try:
@@ -51,6 +60,20 @@ def _embed(model: str, inputs: list[str]) -> list[list[float]]:
             last = e
             time.sleep(1.5 * (attempt + 1))
     raise last  # type: ignore[misc]
+
+
+def _embed(model: str, inputs: list[str]) -> list[list[float]]:
+    """입력 정제(빈/초장문) + 100개 배치 청킹 → 임베딩. 순서 보존.
+
+    wide 스키마(컬럼 100+)·dirty 값에서도 400 안 나게. 정상 소량 입력엔 동작 동일.
+    """
+    if not inputs:
+        return []
+    cleaned = [_clean(t) for t in inputs]
+    out: list[list[float]] = []
+    for i in range(0, len(cleaned), _MAX_BATCH):
+        out.extend(_post_batch(model, cleaned[i:i + _MAX_BATCH]))
+    return out
 
 
 def embed_query(text: str) -> list[float]:

@@ -2,4 +2,8 @@
 eval_set*.json
 dbs/
 results*.jsonl
+results*.jsonl.bak
 report.md
+metadata_supabase_log.jsonl
+# BIRD MiniDev (CC BY-SA, 용량↑) — 앵커 벤치, 레포 밖
+bird/

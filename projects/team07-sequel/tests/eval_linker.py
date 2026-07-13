@@ -26,6 +26,13 @@ VALUE_LABELS = [
     ("신용카드", "olist_order_payments", "credit_card"),  # embedding (사전에 없음)
 ]
 
+# 컬럼 개념 키워드 — 셀 값에 매칭되면 안 됨(unresolved 기대). 실링커 노이즈 회귀 방지.
+CONCEPT_LABELS = [
+    ("결제 수단", "olist_order_payments"),
+    ("주문 상태", "olist_orders"),
+    ("계약 유형", "telco_customer_churn"),
+]
+
 
 def eval_schema() -> bool:
     print("== schema recall@k ==")
@@ -55,8 +62,22 @@ def eval_value() -> bool:
     return hit == len(VALUE_LABELS)
 
 
+def eval_concept() -> bool:
+    print("\n== column-concept rejection ==")
+    hit = 0
+    for kw, table in CONCEPT_LABELS:
+        res = retrieve_values([kw], [table])
+        ok = not res.hints  # 힌트가 없어야 정상 (억지 값 매칭 금지)
+        hit += ok
+        got = res.hints[0] if res.hints else None
+        print(f"  [{'O' if ok else 'X'}] {kw} → {'unresolved (정상)' if ok else f'오매칭: {got.column}={got.value}'}")
+    print(f"  rejection: {hit}/{len(CONCEPT_LABELS)}")
+    return hit == len(CONCEPT_LABELS)
+
+
 if __name__ == "__main__":
     ok_schema = eval_schema()
     ok_value = eval_value()
-    if not (ok_schema and ok_value):  # 회귀 감지: CI/자동화에서 실패로 종료
+    ok_concept = eval_concept()
+    if not (ok_schema and ok_value and ok_concept):  # 회귀 감지: CI/자동화에서 실패로 종료
         raise SystemExit(1)

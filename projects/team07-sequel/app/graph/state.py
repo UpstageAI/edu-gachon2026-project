@@ -28,7 +28,7 @@ class Difficulty(str, Enum):
 class AgentState(TypedDict, total=False):
     # ── 입력 ──
     question: str                 # 사용자 자연어 질의 (원문)
-    history: list                 # 이전 턴 [{"q","result_summary"}] (후속질문 병합용)
+    history: list                 # 이전 턴 [{"q","sql","result_summary"}] (session_store, 후속질문 병합용)
 
     # ── query_normalizer 산출 ──
     normalized_question: str      # 대명사·생략 채운 독립 질문
@@ -57,6 +57,7 @@ class AgentState(TypedDict, total=False):
 
     # ── executor 산출 ──
     result: dict                  # {"columns": [...], "rows": [...], "format": str, "truncated": bool}
+    exec_error: str               # 실행 런타임 오류 (있으면 수리 루프: execute → generate)
 
     # ── formatter 산출 ──
     answer: dict                  # {"summary": str, "table": {...}, "sql": str, "disclaimer": str}
@@ -66,13 +67,16 @@ class AgentState(TypedDict, total=False):
     error: str                    # 파이프라인 오류 메시지 (있으면 formatter 가 안내)
 
 
-def initial_state(question: str) -> AgentState:
+def initial_state(question: str, history: list | None = None) -> AgentState:
     """사용자 질의로부터 그래프 초기 상태를 만든다.
 
-    입력: question(str)
-    출력: AgentState (question, iteration=0 만 채운 초기값)
+    입력: question(str), history(옵션, session_store.get_history() 결과)
+    출력: AgentState (question, iteration=0, history(있으면) 만 채운 초기값)
     """
-    return {"question": question, "iteration": 0}
+    state: AgentState = {"question": question, "iteration": 0}
+    if history:
+        state["history"] = history
+    return state
 
 
 def empty_answer(**over: Any) -> dict:

@@ -35,7 +35,10 @@ def generate(state: AgentState) -> dict:
     guide = guide_map.get(difficulty, "")
 
     parts = [f"# 스키마\n{state.get('schema', '')}"]
-    fewshot = state.get("fewshot") or []  # [{"question","sql"}] — example_repository 가 채움
+    # example_repository 가 최댓값(fewshot_k_max)만큼 채워둔 걸 난이도별 k 로 슬라이싱
+    # (schema_link 시점엔 난이도 미정이라 최대로 확보해 둔 상태 — schema_linker.py 참고).
+    k = settings.fewshot_k_by_difficulty.get(difficulty, 3)
+    fewshot = (state.get("fewshot") or [])[:k]
     if fewshot:
         parts.append("# 예시 (같은 DB)\n" + "\n".join(
             f"Q: {s['question']}\nSQL: {s['sql']}" for s in fewshot))
@@ -43,6 +46,8 @@ def generate(state: AgentState) -> dict:
     errors = state.get("validation", {}).get("errors", [])
     if errors:  # 재시도: 직전 검증 오류를 붙여 재생성
         parts.append("# 직전 SQL 의 오류 (수정할 것)\n" + "\n".join(errors))
+    if exec_err := state.get("exec_error"):  # 실행 피드백 수리: 통째 재생성 아닌 타겟 교정
+        parts.append(f"# 직전 SQL\n{state.get('sql', '')}\n\n# 실행 오류 (원인만 고쳐 다시 작성)\n{exec_err}")
     user = "\n\n".join(parts)
 
     res = complete(
@@ -53,4 +58,5 @@ def generate(state: AgentState) -> dict:
         ],
         temperature=0.0,
     )
-    return {"sql": _extract_sql(res.text), "iteration": iteration}
+    # exec_error 는 이번 생성으로 소비(클리어) — 다음 execute 가 다시 판정
+    return {"sql": _extract_sql(res.text), "iteration": iteration, "exec_error": ""}

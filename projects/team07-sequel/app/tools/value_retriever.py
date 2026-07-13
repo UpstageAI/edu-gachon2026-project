@@ -34,6 +34,7 @@ SYNONYMS = {
 _TEXT_TYPES = {"text", "character varying", "varchar", "character", "char"}
 _cat_cache: dict[str, list[str]] = {}       # key -> categorical values ([] = 고카디널리티)
 _emb_cache: dict[str, np.ndarray] = {}      # key -> 정규화된 값 임베딩 행렬
+_name_cache: dict[str, np.ndarray] = {}     # key -> 컬럼명("t.c") 임베딩 (컬럼개념 필터용)
 
 # normalizer 가 (프롬프트 위반으로) 구(clause)를 뽑아도 셀 값과 억지 매칭하지 않기 위한 방어적 가드.
 # 너무 길거나(구/문장) 너무 짧은(1자, 조사 잔재 등) 키워드는 fuzzy/embedding 매칭을 스킵 → unresolved.
@@ -75,6 +76,18 @@ def _emb(colkey: str, values: list[str]) -> np.ndarray:
     return _emb_cache[ck]
 
 
+def _colname_vecs(colkeys: list[str]) -> np.ndarray:
+    """catmap 컬럼명("t.c") 임베딩 행렬 (DB별 캐시). 컬럼개념 키워드 판별용."""
+    dbk = current_db_key()
+    missing = [k for k in colkeys if f"{dbk}::{k}" not in _name_cache]
+    if missing:
+        m = np.asarray(embeddings.embed_passages(missing), dtype=float)
+        m = m / (np.linalg.norm(m, axis=1, keepdims=True) + 1e-9)
+        for k, v in zip(missing, m):
+            _name_cache[f"{dbk}::{k}"] = v
+    return np.stack([_name_cache[f"{dbk}::{k}"] for k in colkeys])
+
+
 def _embed_match(keyword: str, catmap: dict[str, list[str]]) -> ValueHint | None:
     qv = np.asarray(embeddings.embed_query(keyword), dtype=float)
     qv /= np.linalg.norm(qv) + 1e-9
@@ -96,6 +109,11 @@ def _embed_match(keyword: str, catmap: dict[str, list[str]]) -> ValueHint | None
     if best is None:
         return None
     s1, key, val, cands, how = best
+    # 컬럼개념 필터: 키워드가 최고 셀 값보다 어떤 컬럼명에 더 가까우면(+margin)
+    # 값 리터럴이 아니라 스키마 개념("발행 연도" 등) → 억지 매칭하지 않고 통과.
+    col_sim = float(np.max(_colname_vecs(list(catmap)) @ qv))
+    if col_sim >= s1 + settings.value_colname_margin:
+        return None
     return ValueHint(keyword=keyword, column=key, value=val, how=how, score=round(s1, 3), candidates=cands)
 
 
