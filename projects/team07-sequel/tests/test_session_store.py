@@ -45,6 +45,26 @@ def test_ttl_expiry() -> None:
     assert store.get_history("s1") == []
 
 
+def test_max_sessions_evicts_oldest() -> None:
+    store = SessionStore(max_sessions=2)
+    store.append_turn("s1", "q", "", "")
+    store.append_turn("s2", "q", "", "")
+    store.append_turn("s3", "q", "", "")  # 상한 초과 → 가장 오래된(s1) 축출
+    assert store.get_history("s1") == []
+    assert store.get_history("s2") != []
+    assert store.get_history("s3") != []
+    assert len(store._sessions) == 2
+
+
+def test_max_sessions_updating_existing_does_not_evict() -> None:
+    store = SessionStore(max_sessions=2)
+    store.append_turn("s1", "q0", "", "")
+    store.append_turn("s2", "q0", "", "")
+    store.append_turn("s1", "q1", "", "")  # 기존 세션 갱신은 상한에 안 걸림
+    assert len(store._sessions) == 2
+    assert [h["q"] for h in store.get_history("s1")] == ["q0", "q1"]
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):
