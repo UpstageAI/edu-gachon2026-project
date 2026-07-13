@@ -17,6 +17,9 @@ class AgentResult(BaseModel):
 
     sql: str
     summary: str
+    # 2026-07-13: 추천 후속 질문은 이 응답(/api/v1/query)에 포함되지 않는다.
+    # 별도의 /api/v1/suggestions 호출로 받아오므로(agent_client.fetch_suggestions
+    # 참고) 여기엔 필드를 두지 않는다.
 
 
 class SSEEvent:
