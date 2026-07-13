@@ -12,10 +12,14 @@ from pydantic import BaseModel, Field
 class QueryRequest(BaseModel):
     """자연어 질의 요청.
 
-    입력: question(1~2000자)
+    입력: question(1~2000자), session_id(옵션, 1~200자)
     """
 
     question: str = Field(..., min_length=1, max_length=2000)
+    session_id: str | None = Field(
+        default=None, min_length=1, max_length=200,
+        description="프론트에서 생성한 접속 단위 UUID. 없으면 히스토리 없이(무상태) 처리.",
+    )
 
 
 class QueryResponse(BaseModel):
@@ -31,6 +35,24 @@ class QueryResponse(BaseModel):
     difficulty: str = ""
     model: str = ""
     error: str = ""
+
+
+class SuggestionsRequest(BaseModel):
+    """후속질문 제안 요청.
+
+    입력: session_id(필수, 1~200자) — 직전 /query 또는 /query/stream 에 실어 보낸 것과 동일해야 함.
+    """
+
+    session_id: str = Field(..., min_length=1, max_length=200)
+
+
+class SuggestionsResponse(BaseModel):
+    """후속질문 제안 응답.
+
+    출력: suggestions(0~2개). 히스토리가 없거나 만료됐으면 빈 배열(정상 케이스, 에러 아님).
+    """
+
+    suggestions: list[str] = Field(default_factory=list)
 
 
 class StreamEvent(BaseModel):
