@@ -32,17 +32,16 @@ class Settings(BaseSettings):
     db_schema: str = "public"  # 화이트리스트 대상 스키마
 
     # ── 난이도별 solar 모델 라우팅 ──
-    # 확정 파이프라인 라우팅 그리드(n=400, mini/pro2/pro3 × k0/k3/k8, 공식 EX)로 재검증 후 확정.
-    # 하·상: mini|k3 가 pro2|k3 대비 -2pp 로 정답당 비용도 더 싸고 총비용 -12~19%(k0→k3 는
-    # 실패율↓ 몫이 커서 정답당 비용도 낮아짐 — "토큰 아끼려 few-shot 줄이면 실패율로 더 손해").
-    # 중: mini 는 k3=-12pp(정확도 붕괴)·k8=+20%(비용 역전)라 대안이 없어 pro2 유지.
-    # 최상: pro2|k8 이 KPI(70%) 74% 달성(마진 확보) — mini|k8(73%,-11%비용)은 마진이 얇아 보류.
+    # 정확도 최우선 정책: 라우팅 그리드(n=400, mini/pro2/pro3 × k0/k3/k8, 공식 EX)에서
+    # 전 난이도 pro2 가 mini 대비 우위(하 90-93 vs 88-91, 중 79 vs 67-80, 상 77-80 vs 75-78,
+    # 최상 68-74 vs 68-73) → 모델은 pro2 로 통일. few-shot k 는 아래 fewshot_k_* 참고
+    # (하·중=k3, 상·최상=k8). pro3 는 전 구간 pro2 이하(동일 단가)라 제외.
     # 근거: docs/실험_총정리.md §7-4.
-    model_easy: str = "solar-mini"
+    model_easy: str = "solar-pro2"
     model_medium: str = "solar-pro2"
-    model_hard: str = "solar-mini"
+    model_hard: str = "solar-pro2"
     model_extra_hard: str = "solar-pro2"
-    # 난이도별 라우팅 확정 → 강제 오버라이드 해제("" = model_by_difficulty 사용).
+    # 난이도별 라우팅 확정(전부 pro2) → 강제 오버라이드 해제("" = model_by_difficulty 사용).
     route_force_model: str = ""
 
     # ── 실행 가드레일 ──
@@ -75,12 +74,12 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 800
     # BIRD leave-one-out: CTE 분해 가이드 제거 시 +0.6pp(무효~미세 해악) → 기본 off
     gen_decompose: bool = False  # hard/extra_hard 에 단계분해·CTE 가이드
-    # 라우팅 그리드(n=400)로 난이도별 확정: 최상만 k8(+6pp, KPI 70% 달성의 핵심), 나머지는 k3
-    # (k8 은 프롬프트가 커져 중·하·상에선 이득 대비 비용이 안 맞음 — §7-4). few-shot 자체는
-    # 전 난이도 필수(하에서도 k0→k3 +25~31pp).
+    # 하·중=k3 / 상·최상=k8 확정. 하는 pro2|k3=90%로 이미 충분(k8=93%, +3pp에 토큰만 커짐),
+    # 중은 pro2|k3=pro2|k8=79% 완전 동률이라 k3. 상·최상은 k8 이 실제로 더 높음(+3/+6pp,
+    # 최상은 KPI 70% 달성의 핵심). few-shot 자체는 전 난이도 필수(하에서도 k0→k3 +25~31pp). §7-4.
     fewshot_k_easy: int = 3
     fewshot_k_medium: int = 3
-    fewshot_k_hard: int = 3
+    fewshot_k_hard: int = 8
     fewshot_k_extra_hard: int = 8
 
     # ── Langfuse (트레이싱·비용/품질 로깅) ──
