@@ -14,12 +14,15 @@ import time
 
 _TTL_S = 1800  # 세션 유휴 30분이면 만료
 _MAX_TURNS = 5  # 턴당 히스토리는 최근 5개만 유지
+_MAX_SESSIONS = 10_000  # 동시 보유 세션 상한 (인증 없는 구조라 무한 생성 방어)
 
 
 class SessionStore:
-    def __init__(self, ttl_s: float = _TTL_S, max_turns: int = _MAX_TURNS) -> None:
+    def __init__(self, ttl_s: float = _TTL_S, max_turns: int = _MAX_TURNS,
+                 max_sessions: int = _MAX_SESSIONS) -> None:
         self._ttl_s = ttl_s
         self._max_turns = max_turns
+        self._max_sessions = max_sessions
         self._sessions: dict[str, tuple[float, list[dict]]] = {}  # id -> (expires_at, turns)
         self._lock = threading.Lock()
 
@@ -38,6 +41,9 @@ class SessionStore:
             return
         with self._lock:
             self._evict_expired()
+            if session_id not in self._sessions and len(self._sessions) >= self._max_sessions:
+                oldest = min(self._sessions, key=lambda k: self._sessions[k][0])
+                del self._sessions[oldest]  # 상한 도달 시 만료가 가장 임박한 세션부터 축출
             _, turns = self._sessions.get(session_id, (0.0, []))
             turns = [*turns, {"q": question, "sql": sql, "result_summary": summary}][-self._max_turns:]
             self._sessions[session_id] = (time.time() + self._ttl_s, turns)
