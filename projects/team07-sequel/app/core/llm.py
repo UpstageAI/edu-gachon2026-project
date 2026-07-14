@@ -19,6 +19,7 @@ from dataclasses import dataclass
 
 import litellm
 
+from app.core.observability import mask_pii
 from app.core.settings import settings
 
 litellm.suppress_debug_info = True
@@ -79,6 +80,9 @@ def complete(
         max_tokens=settings.llm_max_tokens if max_tokens is None else max_tokens,
         num_retries=3,   # 레이트리밋/일시오류 지수 백오프 재시도 (Retry-After 준수)
         timeout=60,
+        # 프롬프트/응답이 langfuse 로 나가기 전 PII 마스킹 (litellm 이 input·output 에 적용).
+        # mask_pii 는 fail-closed(절대 raise 안 함) — litellm 이 예외 시 원문을 로깅하기 때문.
+        metadata={"langfuse_masking_function": mask_pii},
     )
     usage = resp.usage
     ptok = getattr(usage, "prompt_tokens", 0)
