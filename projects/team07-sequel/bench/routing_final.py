@@ -3,8 +3,8 @@
 확정 파이프라인 = normalize on + 확정(exact/synonym) 힌트만 주입 + 소형 bypass
 + 실행수리(2회) + gen_decompose off. korean_final n1최종과 동일 조건.
 
-셀: mini|k0 · mini|k3 · pro2|k0 · pro2|k8 · pro3|k3 · pro3|k8
-(pro2|k3 은 results_korean_final 의 n1 재사용). 답할 질문:
+셀: 3×3 그리드 (mini/pro2/pro3 × k0/k3/k8) — CELLS 는 8셀 실측 + pro2|k3 은
+results_korean_final 의 n1 재사용으로 합류. 답할 질문:
   ① 난이도별 최적 모델 (mini/pro2/pro3 — 신파이프라인에서 재검증)
   ② few-shot 을 하(easy)에도 줘야 하나 — 난이도별 k0→k3(→k8) 효과
   ③ 최상 KPI 70%: pro2|k8 / pro3|k8 로 달성?
@@ -37,9 +37,9 @@ RESULTS = config.BENCH_DIR / "results_routing_final.jsonl"
 WORKERS = int(os.getenv("RF_WORKERS", "6"))
 REPAIRS = 2
 CELLS = [("solar-mini", 0), ("solar-mini", 3), ("solar-mini", 8), ("solar-pro2", 0),
-         ("solar-pro2", 8), ("solar-pro3", 3), ("solar-pro3", 8)]
+         ("solar-pro2", 8), ("solar-pro3", 0), ("solar-pro3", 3), ("solar-pro3", 8)]
 # pro2|k3 셀은 results_korean_final.jsonl 의 cond=n1 을 report 에서 합류
-# pro3|k0 은 제외: k0 열(few-shot 필요성)은 mini/pro2 로 충분, pro3 는 상급 경쟁자로만
+# pro3|k0 추가(3×3 그리드 완성): pro3 가 few-shot 없이도 pro2 를 넘는지 확인용
 
 _K3 = {r["id"]: r for r in json.loads((config.BENCH_DIR / "eval_set_fewshot_k3.json").read_text(encoding="utf-8"))}
 _K8 = {r["id"]: r for r in json.loads((config.BENCH_DIR / "eval_set_fewshot_k8.json").read_text(encoding="utf-8"))}
@@ -154,7 +154,7 @@ def _load_cells() -> dict:
 def cmd_report() -> None:
     sample_ids = {r["id"] for r in _sample()}
     latest = {k: o for k, o in _load_cells().items() if o["id"] in sample_ids}
-    cells = ["mini|k0", "mini|k3", "mini|k8", "pro2|k0", "pro2|k3", "pro2|k8", "pro3|k3", "pro3|k8"]
+    cells = ["mini|k0", "mini|k3", "mini|k8", "pro2|k0", "pro2|k3", "pro2|k8", "pro3|k0", "pro3|k3", "pro3|k8"]
     agg = defaultdict(lambda: {"n": 0, "ex": 0, "off": 0, "cost": 0.0})
     for o in latest.values():
         a = agg[(o["cell"], o["hardness"])]

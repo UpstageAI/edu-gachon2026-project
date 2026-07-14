@@ -16,6 +16,7 @@ from app.schemas.query import (
     SuggestionsRequest,
     SuggestionsResponse,
 )
+from app.repositories import schema_repository
 from app.services import metrics_service
 from app.services.query_service import query_service
 
@@ -49,3 +50,12 @@ async def suggestions(req: SuggestionsRequest) -> SuggestionsResponse:
 async def metrics() -> MetricsResponse:
     """Home 대시보드 KPI (Langfuse Metrics API 집계 프록시). 미연결 시 available=False."""
     return await metrics_service.dashboard_kpis()
+
+
+@router.get("/schema")
+def schema() -> dict:
+    """스키마 브라우저용 테이블·컬럼 카탈로그 (읽기 전용 메타, 행 데이터 없음).
+
+    sync 라 FastAPI 가 스레드풀에서 실행(schema_repository 는 동기 SQLAlchemy).
+    """
+    return {"tables": schema_repository.catalog()}

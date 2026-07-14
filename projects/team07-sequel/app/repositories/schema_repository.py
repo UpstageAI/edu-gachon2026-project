@@ -46,3 +46,14 @@ def get_ddl(tables: list[str]) -> str:
         body = ",\n  ".join(f'"{n}" {d}' for n, d in get_columns(t))
         parts.append(f'CREATE TABLE "{t}" (\n  {body}\n)')
     return "\n\n".join(parts)
+
+
+def catalog() -> list[dict]:
+    """전체 테이블·컬럼 카탈로그 (스키마 브라우저용, 읽기 전용 메타데이터).
+
+    행 데이터는 안 나감 — 테이블·컬럼명·타입뿐. list_tables + get_columns 재사용.
+    """
+    return [
+        {"name": t, "columns": [{"name": n, "type": d} for n, d in get_columns(t)]}
+        for t in list_tables()
+    ]
