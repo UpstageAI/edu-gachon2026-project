@@ -37,3 +37,20 @@ def run_readonly_query(sql: str) -> list[dict]:
         result = conn.execute(text(sql))
         columns = list(result.keys())
         return [dict(zip(columns, row)) for row in result.fetchall()]
+
+
+def run_readonly_query_table(sql: str) -> tuple[list[str], list[list]]:
+    """SQL을 실행하고 (컬럼명 리스트, 행(리스트) 리스트) 형태로 돌려준다.
+
+    run_readonly_query()와 실행 로직은 같지만, 반환 형태가 다르다
+    (agent/frontend가 쓰는 {columns:[...], rows:[[...]]} 표 형식에 맞춤).
+    proxy.py의 defense-in-depth 재검증(agent 결과를 백엔드가 재실행)에서 사용한다.
+    행이 0건이어도 columns는 쿼리 자체에서 그대로 얻어진다.
+    """
+
+    engine = get_engine()
+    with engine.connect() as conn:
+        result = conn.execute(text(sql))
+        columns = list(result.keys())
+        rows = [list(row) for row in result.fetchall()]
+        return columns, rows

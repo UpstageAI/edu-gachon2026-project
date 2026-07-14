@@ -22,8 +22,9 @@
 * (로컬 구현 완료, 커밋 보류) 재생성 피드백 루프 — guardrail/실행/결과검증 중 하나라도 실패하면 실패 이유를 agent에게 다시 전달해 최대 2회 재시도. agent와 정식 실패 피드백 파라미터를 상의하기 전까지 커밋을 보류하고 `_wip_query_with_retry_loop.py.txt`에 코드만 보관 중.
 * **(완료·배포·프로덕션 검증 완료, 2026-07-13)** 세션 히스토리 전달 + 추천 후속 질문 — agent가 `session_id` 기준으로 자기 히스토리(성공한 턴만 최근 5개)를 직접 관리하고, 백엔드는 답변 성공 직후 별도로 `/api/v1/suggestions`를 호출해 추천 질문 2개를 받아온다. 프론트엔드는 이걸 클릭 가능한 칩으로 보여주고, 클릭하면 그 문구가 그대로 다음 질문이 되어 재요청된다. 자세한 내용은 6·7·9·10번 섹션 참고.
 * **2026-07-12: 백엔드·AI agent를 Cloud Run에서 GCE VM(+VPC+External HTTPS LB) 기반으로 이전.** 프론트엔드는 그대로 Cloud Run에 남아있음. 자세한 내용은 4번·8번 섹션 참고.
-* **2026-07-14 (권도윤): 프론트엔드 전면 재구성 + 스트리밍 계약 변경.** 단일 다크 채팅 화면을 홈/질문하기(Ask)/히스토리/저장 4화면 + 사이드바 구조로 재구성(새 npm 의존성 추가 없음). 동시에 백엔드에 `proxy.py`(agent의 `/api/v1/query/stream`·`/suggestions`·`/metrics`를 그대로 relay하는 패스스루 라우터)가 추가되면서, **프론트는 이제 이 경로로 agent와 직접 통신하고 기존 `/api/query`(백엔드 자체 guardrail 재검증+DB 재실행, defense-in-depth) 경로는 더 이상 호출하지 않는다.** `/api/query`는 코드에는 남아있지만 "레거시 게이트웨이"로만 존재한다 — 즉 지금 실제로 배포된 화면은 agent가 만든 결과를 백엔드가 다시 검증·재실행하지 않고 그대로 보여준다(agent 자체의 `validate`/`execute` 내부 안전장치는 그대로 동작). 자세한 내용은 3-2·3-3·6·7번 섹션 참고.
+* **2026-07-14 (권도윤): 프론트엔드 전면 재구성 + 스트리밍 계약 변경.** 단일 다크 채팅 화면을 홈/질문하기(Ask)/히스토리/저장 4화면 + 사이드바 구조로 재구성(새 npm 의존성 추가 없음). 동시에 백엔드에 `proxy.py`(agent의 `/api/v1/query/stream`·`/suggestions`·`/metrics`를 relay하는 라우터)가 추가되면서, 프론트는 이제 이 경로로 agent와 통신하고 기존 `/api/query`(백엔드 자체 guardrail 재검증+DB 재실행, defense-in-depth) 경로는 더 이상 직접 호출하지 않는다. `/api/query`는 코드에는 남아있지만 "레거시 게이트웨이"로만 존재한다. (아래 defense-in-depth 우회 항목 참고 — 같은 날 재검증 로직을 `proxy.py`에 다시 끼워넣어 해결) 자세한 내용은 3-2·3-3·6·7번 섹션 참고.
 * **2026-07-14 (이후윤): 답변 텍스트 마크다운 렌더링 수정.** agent가 만드는 요약이 `**볼드**`, 번호 목록(`1. 2. 3.`) 같은 마크다운 문법을 쓰는데, 위 프론트엔드 재구성 직후에는 이걸 그대로 `<p>`에 찍고 있어 화면에 `**` 기호가 그대로 보이는 문제가 있었다. `react-markdown` 같은 새 라이브러리를 추가하지 않고, 필요한 패턴(볼드·코드·번호/불릿 목록)만 처리하는 경량 컴포넌트(`components/Markdown.jsx`)를 새로 만들어 해결. 자세한 내용은 7번 섹션 참고.
+* **2026-07-14 (이후윤): `proxy.py`에 defense-in-depth 재검증 복구.** 위 프론트엔드 재구성으로 `/api/v1/query/stream` 경로가 백엔드의 guardrail 재검증·DB 재실행을 거치지 않게 된 것을 발견하고, `proxy.py`가 agent의 SSE 스트림을 이벤트 단위로 파싱하도록 고쳐서 `done` 이벤트만 가로채 `guardrail.py` 재검증 → 백엔드 자체 DB 재실행(`run_readonly_query_table`, 신규) → `result_validator.py` 재검증까지 다시 통과시킨 뒤 프론트로 전달하도록 수정했다. 재검증 실패 시 agent에게 재시도를 요청하지 않고(재생성 피드백 루프는 별도, 아직 로컬 전용) 레거시와 동일하게 즉시 error 이벤트로 종료한다. `node`/`error` 이벤트는 가공 없이 그대로 relay한다. 자세한 내용은 6·7·9·10번 섹션 참고.
 
 ---
 
@@ -74,14 +75,14 @@ backend/
 │   ├── main.py                  # FastAPI 앱 생성, CORS, 라우터 등록, /health
 │   ├── api/routes/
 │   │   ├── query.py             # POST /api/query — 레거시 게이트웨이(자체 guardrail 재검증+DB 재실행, defense-in-depth). 2026-07-14부터 프론트가 더 이상 호출하지 않음
-│   │   ├── proxy.py             # (신규, 2026-07-14) agent의 /api/v1/query/stream·/suggestions·/metrics를 그대로 relay하는 패스스루. 지금 프론트가 실제로 쓰는 경로 — guardrail 재검증·DB 재실행을 거치지 않음
+│   │   ├── proxy.py             # (신규, 2026-07-14) agent의 /api/v1/query/stream·/suggestions·/metrics를 relay. 지금 프론트가 실제로 쓰는 경로. query/stream은 이벤트 단위로 파싱해서 done만 가로채 guardrail.py+DB 재실행(run_readonly_query_table)+result_validator.py로 재검증(defense-in-depth 복구, 2026-07-14) — node/error는 그대로 relay
 │   │   └── _wip_query_with_retry_loop.py.txt  # 재생성 피드백 루프 WIP 보관 (커밋 대상 아님)
 │   ├── schemas/query.py         # 요청/응답 Pydantic 모델, SSE 이벤트·에러코드 상수
 │   ├── services/
 │   │   ├── agent_client.py      # AI agent 호출 어댑터 — session_id 기반 /api/v1/query 호출 + /api/v1/suggestions 별도 호출 (2026-07-13 실제 계약 반영)
 │   │   ├── guardrail.py         # SQL 안전성 2차 검증 (SELECT/WITH 허용, 위험 키워드 차단, LIMIT 강제) — 실행 "전" 검사
 │   │   └── result_validator.py  # 실행 결과 검증 (행 수/스키마/타입 일관성) — 실행 "후" 검사
-│   ├── db/database.py           # Supabase(Postgres) 연결 및 조회 실행
+│   ├── db/database.py           # Supabase(Postgres) 연결 및 조회 실행 — run_readonly_query(레거시, list[dict]), run_readonly_query_table(신규 2026-07-14, {columns,rows} 형태 — proxy.py 재검증용)
 │   └── core/config.py           # 환경변수 로드 (AI_AGENT_BASE_URL, CORS_ALLOWED_ORIGINS 등)
 ├── tests/                       # pytest 자동화 테스트 (34개 전부 통과)
 │   ├── test_guardrail.py        # SELECT/WITH 허용·위험 키워드 차단·LIMIT 강제 검증
@@ -339,13 +340,15 @@ curl http://localhost:8080/health   # {"status":"ok"}
 
 브라우저 기본 `EventSource`는 GET 요청만 지원해서 POST 바디(질문 내용)를 보낼 수 없습니다. 그래서 `src/api.js`의 `streamQuery`가 `fetch` + `ReadableStream`으로 SSE 프레이밍(`event: ...\ndata: ...\n\n`)을 직접 파싱합니다.
 
-**중요한 변화**: 이전에는 프론트가 백엔드 자체 게이트웨이(`POST /api/query`, `status`/`result`/`sql`/`done`/`error` 계약)를 호출했지만, 지금은 `POST /api/v1/query/stream`을 호출합니다. 이 경로는 백엔드의 새 `proxy.py`가 agent의 스트림을 그대로 relay하는 것이라, **백엔드 자체의 guardrail 재검증·DB 재실행(defense-in-depth)을 거치지 않고 agent 결과를 그대로 받습니다.** 이벤트 계약도 agent 원본 그대로인 `node`/`done`/`error` 3종입니다(`api.js`가 다시 `status`/`route`/`tables`/`done`/`error`로 가공해서 `Ask.jsx`에 넘김).
+**중요한 변화**: 이전에는 프론트가 백엔드 자체 게이트웨이(`POST /api/query`, `status`/`result`/`sql`/`done`/`error` 계약)를 호출했지만, 지금은 `POST /api/v1/query/stream`을 호출합니다. 이벤트 계약은 agent 원본 그대로인 `node`/`done`/`error` 3종입니다(`api.js`가 다시 `status`/`route`/`tables`/`done`/`error`로 가공해서 `Ask.jsx`에 넘김).
+
+이 경로는 백엔드의 `proxy.py`가 처리하는데, 4화면 재구성 직후에는 agent의 스트림을 청크 단위로 그대로 흘려보내기만 해서 **백엔드 자체의 guardrail 재검증·DB 재실행(defense-in-depth)을 거치지 않는** 문제가 있었습니다. **2026-07-14에 이를 복구**해서, 지금은 `proxy.py`가 SSE를 이벤트 단위로 파싱해 `node`/`error`는 그대로 relay하되 `done`만 가로채 (1) `guardrail.py` 재검증 → (2) 백엔드 자체 DB 재실행(`run_readonly_query_table`, 읽기 전용 계정) → (3) `result_validator.py` 재검증까지 다시 통과시킨 뒤, 그 결과(재실행된 표로 교체됨)를 `done`으로 내보냅니다. 재검증에 실패하면 agent에게 재시도를 요청하지 않고(재생성 피드백 루프는 별도 기능, 아직 로컬 전용) 레거시 `/api/query`와 동일하게 즉시 `error` 이벤트로 종료합니다.
 
 | agent 이벤트 | 화면 반응 |
 |---|---|
 | `node` (normalize/schema_link/route/generate/validate/execute/format 등) | `Ask.jsx` 상태 표시줄에 "SQL을 생성하는 중…" 같은 노드별 진행 문구 표시. `route` 노드에서는 난이도·모델도 함께 표시 |
-| `done` | 최종 `{summary, table, sql, meta}` — 답변 요약(`Markdown.jsx`로 렌더링)·결과 표·SQL 카드·지연/토큰/비용 메타 표시 |
-| `error` | 에러 전용 스타일로 메시지 표시 |
+| `done` | 백엔드가 재검증·재실행까지 마친 최종 `{summary, table, sql, meta}` — 답변 요약(`Markdown.jsx`로 렌더링)·결과 표·SQL 카드·지연/토큰/비용 메타 표시 |
+| `error` | agent 자체 오류 또는 백엔드 재검증 실패 메시지를 에러 전용 스타일로 표시 |
 
 옛 `/api/query`(`status`/`result`/`sql`/`done`/`error` 계약)는 백엔드 코드에 "레거시 게이트웨이"로 남아있지만, 지금 배포된 프론트엔드는 더 이상 호출하지 않습니다.
 
@@ -459,7 +462,7 @@ WIF로 GCP 인증 → Docker 이미지 빌드 → Artifact Registry push
 | agent VM 환경변수 파일(`agent.env`) 작성 중 반복 실수 (`LANGFUSE_HOST`를 `LANGFUSE_BASE_URL`로 잘못 씀, 값에 불필요한 따옴표, `CORS_ORIGINS` 누락) | `--container-env-file`은 파일 내용으로 전체를 교체하는 방식이라 기존 값을 하나라도 빠뜨리거나 이름을 틀리면 그 값이 사라짐 | 매번 `gcloud compute instances describe`로 기존 값을 먼저 확인하고, 기존 값 전부 + 새 값을 합친 파일을 만들어서 반영 |
 | 배포 직후 추천 질문 칩이 안 뜨다가 몇 분 뒤 정상적으로 뜸 | agent 컨테이너가 막 재시작된 직후라 `/api/v1/suggestions` 호출이 실패했을 가능성이 높음(임베딩 재빌드 등, 예전 헬스체크 지연과 같은 종류의 타이밍 문제) — 이 실패는 백엔드가 조용히 빈 배열로 처리하도록 설계돼 있어서 에러 없이 그냥 칩만 안 보임 | 몇 분 뒤 재시도해서 정상 동작 확인. 앞으로 배포 직후 바로 테스트하기보다 잠시 기다렸다 확인하는 습관 필요 |
 | (2026-07-14) 답변 화면에 `**결론:**`, `1. 2. 3.` 같은 마크다운 기호가 그대로 노출 | 권도윤 님의 프론트엔드 재구성(`Ask.jsx`)이 `turn.summary`를 그대로 `<p>`에 출력 — agent 응답 자체는 마크다운 문법을 쓰는데 이를 해석해주는 코드가 없었음 | 새 의존성 추가 없이 정규식 기반 경량 렌더러 `components/Markdown.jsx` 작성, `Ask.jsx`/`Saved.jsx`에 적용 (3-3·7번 섹션 참고) |
-| (2026-07-14) 프론트엔드 재구성 이후 백엔드의 defense-in-depth(`guardrail.py`+`result_validator.py`+자체 DB 재실행)가 실제로는 더 이상 타지 않게 됨 | 새 프론트(`api.js`)가 `/api/query`(레거시)가 아니라 `/api/v1/query/stream`(신규 `proxy.py`, agent 결과를 그대로 relay)을 호출하도록 바뀜 — 코드가 삭제된 건 아니라 조용히 우회된 것이라 알아채기 쉽지 않음 | 지금은 agent 자체의 `validate`(sqlglot)/`execute`(read-only) 내부 안전장치에 의존하는 상태. 백엔드 재검증을 다시 살리려면 `proxy.py`에서 agent 응답을 가로채 `guardrail.py`/`result_validator.py`를 통과시키는 식으로 수정 필요 — 아직 미반영, 팀 논의 필요 |
+| (2026-07-14 발견, 같은 날 해결) 프론트엔드 재구성 이후 백엔드의 defense-in-depth(`guardrail.py`+`result_validator.py`+자체 DB 재실행)가 실제로는 더 이상 타지 않게 됨 | 새 프론트(`api.js`)가 `/api/query`(레거시)가 아니라 `/api/v1/query/stream`(신규 `proxy.py`)을 호출하도록 바뀌었는데, 당시 `proxy.py`는 agent 응답을 청크 단위로 그대로 relay하기만 해서 재검증 코드를 타지 않았음 — 코드가 삭제된 건 아니라 조용히 우회된 것이라 알아채기 쉽지 않았음 | `proxy.py`를 SSE 이벤트 단위 파싱으로 바꿔서 `done` 이벤트만 가로채 `guardrail.py` 재검증 → 백엔드 자체 DB 재실행(`database.py`에 `run_readonly_query_table` 신규 추가) → `result_validator.py` 재검증까지 다시 통과시킨 뒤 relay하도록 수정. 재검증 실패 시 agent에게 재시도 요청 없이(재생성 피드백 루프는 별도, 로컬 전용 유지) 레거시와 동일하게 즉시 error로 종료. `node`/`error` 이벤트는 그대로 relay |
 
 ---
 
@@ -487,12 +490,13 @@ WIF로 GCP 인증 → Docker 이미지 빌드 → Artifact Registry push
 - [x] 재생성 피드백 루프 코드는 잃어버리지 않도록 `_wip_query_with_retry_loop.py.txt`로 분리 보관 (커밋 대상 아님, 2026-07-13)
 - [x] **프론트엔드 4화면 재구성 완료 (2026-07-14, 권도윤)** — 홈/질문하기/히스토리/저장 4화면 + 사이드바, `api.js`(신규 `node`/`done`/`error` 계약)·`store.js`(localStorage)로 전면 재작성, 새 npm 의존성 0개. 백엔드에 패스스루 `proxy.py` 추가되어 프론트가 agent와 직접(백엔드 relay를 통해) 통신
 - [x] **답변 텍스트 마크다운 렌더링 수정 완료 (2026-07-14, 이후윤)** — `components/Markdown.jsx` 신규 작성(볼드·코드·번호/불릿 목록, 새 의존성 없음), `Ask.jsx`/`Saved.jsx` 적용, 로컬(`?mock=1`)·실제 화면 확인 완료, `main` 커밋·푸시·CI 배포 완료
+- [x] **`proxy.py`에 defense-in-depth 재검증 복구 완료 (2026-07-14, 이후윤)** — `/api/v1/query/stream`을 SSE 이벤트 단위로 파싱하도록 수정, `done` 이벤트만 가로채 `guardrail.py`→백엔드 자체 DB 재실행(`run_readonly_query_table` 신규)→`result_validator.py` 순으로 재검증 후 전달. 재검증 실패 시 레거시와 동일하게 즉시 error(agent 재시도 없음). mock으로 정상/guardrail 실패/무결과/결과검증 실패 4개 시나리오 로컬 검증 완료, 실제 배포는 아직
 
 **남은 것**
 
 - [ ] CI/CD 안정화 — 코드 수정할 때마다 워크플로우가 계속 잘 도는지 반복 확인 (특히 VM 배포 방식으로 바뀐 지 얼마 안 됐으니 몇 번 더 지켜볼 것)
 - [ ] (선택) LB에 실제 도메인 연결 — 지금은 `nip.io` 기반으로 HTTPS를 구성했는데, 실제 도메인이 생기면 그 도메인으로 인증서와 `VITE_API_BASE_URL`만 교체하면 됨
-- [ ] **(2026-07-14 발견, 논의 필요) 프론트엔드가 `/api/v1/query/stream`(신규 패스스루)으로 옮겨가면서 백엔드 자체의 guardrail 재검증·DB 재실행(defense-in-depth)을 더 이상 거치지 않는 상태.** agent 자체 안전장치(validate/execute)는 살아있지만, 원래 설계했던 "이중 방어"는 지금 프로덕션 경로에서는 빠져있음 — 팀원과 이대로 둘지, `proxy.py`에 재검증을 다시 끼워 넣을지 상의 필요
+- [ ] `proxy.py` defense-in-depth 재검증 코드를 `main`에 커밋·배포하고 실제 배포 환경(GCE VM)에서 브라우저로 최종 확인
 
 **최종 제출 전에만 처리** (지금 진행 중인 TODO가 아님)
 
