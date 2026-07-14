@@ -72,6 +72,11 @@ class Settings(BaseSettings):
     upstage_base_url: str = "https://api.upstage.ai/v1"
     llm_temperature: float = 0.0
     llm_max_tokens: int = 800
+    # Upstage Solar 단가 (USD / 1M tokens; 2026-07 공식가, VAT 별도).
+    # litellm·Langfuse 는 solar 단가표가 없어 cost 를 0 으로 남긴다(Metrics API totalCost=0 확인).
+    # 그래서 토큰×이 단가로 직접 환산한다(app.core.pricing). 단가 변동 시 여기만 수정.
+    usd_per_1m_input: float = 0.15   # solar-pro2/mini 입력
+    usd_per_1m_output: float = 0.60  # solar-pro2 출력
     # BIRD leave-one-out: CTE 분해 가이드 제거 시 +0.6pp(무효~미세 해악) → 기본 off
     gen_decompose: bool = False  # hard/extra_hard 에 단계분해·CTE 가이드
     # 하·중=k3 / 상·최상=k8 확정. 하는 pro2|k3=90%로 이미 충분(k8=93%, +3pp에 토큰만 커짐),

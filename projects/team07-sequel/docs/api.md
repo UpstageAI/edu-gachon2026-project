@@ -6,9 +6,10 @@
 - **공통 prefix**: `/api/v1`
 - **Content-Type**: `application/json` (요청), `application/json` 또는 `text/event-stream`(스트리밍)
 
-> 상태: 노드·도구 구현됨 — 스키마 검색/값샘플/검증(sqlglot)/실행은 **실제 Supabase(읽기전용)** 로 동작하며
-> 표의 결과는 라이브 데이터다. 다만 **SQL 생성·난이도 분류·요약은 아직 fake LLM**(LiteLLM 미연결)이라
-> 생성 SQL·요약 문구는 고정 mock 이다. LiteLLM 연결 단계에서 실제 생성으로 바뀐다.
+> 상태: 파이프라인 전 구간 라이브 — 스키마 검색/값샘플/검증(sqlglot)/실행은 **실제 Supabase(읽기전용)**,
+> SQL 생성·난이도 분류·요약은 **실제 Upstage Solar**(LiteLLM 연결됨)로 동작한다. 표·SQL·요약 모두 라이브.
+> 비용은 litellm·Langfuse 가 solar 단가를 몰라 0 으로 남기므로, 응답의 `cost_usd` 와 `/metrics` 의
+> 비용 KPI 는 **토큰 × Upstage 공식 단가로 서버가 직접 계산**한다(단가는 `settings.usd_per_1m_*`).
 > (아래 예시는 실제 Olist 데이터 기준 형태.)
 
 ---
@@ -18,9 +19,10 @@
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/health` | 헬스체크 |
-| POST | `/api/v1/query` | 질의 → 결과(요약·표·SQL) 동기 반환 |
+| POST | `/api/v1/query` | 질의 → 결과(요약·표·SQL·비용메타) 동기 반환 |
 | POST | `/api/v1/query/stream` | 질의 → 노드별 진행 상황 SSE 스트리밍 |
 | POST | `/api/v1/suggestions` | 직전 턴 기반 후속질문(버튼용) 최대 2개, 동기 반환 |
+| GET | `/api/v1/metrics` | Home 대시보드 KPI (Langfuse 집계 프록시): 오늘 LLM호출·토큰·비용·평균지연 + 어제 대비 delta |
 
 ---
 
@@ -85,6 +87,9 @@ curl -X POST http://localhost:8000/api/v1/query \
 | `difficulty` | string | `easy` \| `medium` \| `hard` \| `extra_hard` |
 | `model` | string | 라우팅된 solar 모델 |
 | `error` | string | 오류 시 사유 (정상 시 "") |
+| `latency_ms` | int | 이 질의 처리 소요(ms, 그래프 전체 wall-clock) |
+| `total_tokens` | int | 이 질의가 쓴 LLM 토큰 합(입력+출력, 전 노드 합산) |
+| `cost_usd` | float | `total_tokens` 의 Upstage 단가 환산(USD). Langfuse totalCost=0 라 서버가 직접 계산 |
 
 ```json
 {
@@ -93,10 +98,17 @@ curl -X POST http://localhost:8000/api/v1/query \
   "rows": [["cama_mesa_banho", 11115], ["beleza_saude", 9670], ["esporte_lazer", 8641]],
   "sql": "SELECT p.product_category_name, COUNT(*) AS order_count FROM olist_order_items oi JOIN olist_products p ON oi.product_id = p.product_id GROUP BY p.product_category_name ORDER BY order_count DESC LIMIT 10",
   "difficulty": "medium",
-  "model": "solar-mini",
-  "error": ""
+  "model": "solar-pro2",
+  "error": "",
+  "latency_ms": 1240,
+  "total_tokens": 8280,
+  "cost_usd": 0.001357
 }
 ```
+
+> `latency_ms`·`total_tokens`·`cost_usd` 는 Ask 화면의 "0.8초 · N토큰 · ₩N" 메타 표시에 쓴다.
+> SSE(`/query/stream`)에서는 별도 필드가 아니라 `done` 이벤트 payload 의 `meta` 객체로 온다
+> (`{"latency_ms":…, "total_tokens":…, "cost_usd":…}`).
 
 ### 예외 응답
 
@@ -201,6 +213,54 @@ curl -X POST http://localhost:8000/api/v1/suggestions \
 프론트는 `suggestions` 가 비어 있으면 버튼을 0개 렌더링하면 된다(별도 에러 처리 불필요).
 버튼 클릭 시 새 API 호출은 없다 — 그 문구를 사용자 입력창에 채워 넣기만 하고, 실제
 전송(→ `/query` 또는 `/query/stream` 호출)은 사용자가 직접 눌러야 한다(오클릭 방지).
+
+---
+
+## GET /api/v1/metrics
+
+Home 대시보드 KPI. Langfuse Metrics API 를 서버가 프록시해 **오늘(KST 00:00~현재)** 집계와
+**어제 대비 delta** 를 만들어 준다. 질의별 관측치(토큰·지연)가 이미 Langfuse 에 쌓이므로
+(litellm→langfuse 콜백), 그걸 일 단위로 집계해 온다. 비용은 Langfuse 가 solar 단가를 몰라
+0 으로 남기므로 **토큰 × Upstage 단가로 서버가 계산**한다.
+
+```bash
+curl http://localhost:8000/api/v1/metrics
+```
+
+### 응답 (MetricsResponse)
+
+| 필드 | 타입 | 설명 |
+|---|---|---|
+| `kpis` | Kpi[] | KPI 카드 배열(아래) |
+| `as_of` | string | 기준 날짜 (KST, `YYYY-MM-DD`) |
+| `available` | bool | Langfuse 미연결/조회 실패면 `false` (이때 `kpis` 빈 배열 — 에러 아님) |
+
+**Kpi** = `{ "key": string, "value": number, "delta_pct": number|null }`
+
+| `key` | 의미 | 비고 |
+|---|---|---|
+| `llm_calls` | 오늘 LLM 호출 수 | Langfuse observation 수. 질의 1건이 4콜 안팎이라 **사용자 "질의 수"와는 다름**(정확한 질의 수는 별도 로컬 집계 필요) |
+| `avg_latency_ms` | 오늘 평균 LLM 응답시간(ms) | |
+| `total_tokens` | 오늘 누적 토큰(입력+출력) | |
+| `cost_usd` | 오늘 누적 비용(USD) | 토큰 × Upstage 단가 |
+
+`delta_pct` 는 어제 대비 증감률(%). 어제 값이 0/없으면 `null`(비교 불가).
+
+```json
+{
+  "kpis": [
+    { "key": "llm_calls",      "value": 408,    "delta_pct": 12.4 },
+    { "key": "avg_latency_ms", "value": 3594.2, "delta_pct": -8.1 },
+    { "key": "total_tokens",   "value": 109007, "delta_pct": 3.2 },
+    { "key": "cost_usd",       "value": 0.0188, "delta_pct": 3.2 }
+  ],
+  "as_of": "2026-07-14",
+  "available": true
+}
+```
+
+> Langfuse 키가 없거나 조회에 실패하면 `{"kpis": [], "as_of": "…", "available": false}` 를 반환한다
+> (HTTP 200). 프론트는 `available` 이 false 면 KPI 영역을 빈 상태/스켈레톤으로 그리면 된다.
 
 ---
 

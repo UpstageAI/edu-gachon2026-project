@@ -35,6 +35,10 @@ class QueryResponse(BaseModel):
     difficulty: str = ""
     model: str = ""
     error: str = ""
+    # ── 관측 메타 (이 질의 1건 기준; UI 의 "지연·토큰·비용" 표시용) ──
+    latency_ms: int = 0        # 그래프 전체 처리 wall-clock (ms)
+    total_tokens: int = 0      # 이 질의가 쓴 LLM 토큰 합(입력+출력, 전 노드)
+    cost_usd: float = 0.0      # total_tokens 의 Upstage 단가 환산 (Langfuse totalCost=0 라 직접 계산)
 
 
 class SuggestionsRequest(BaseModel):
@@ -53,6 +57,33 @@ class SuggestionsResponse(BaseModel):
     """
 
     suggestions: list[str] = Field(default_factory=list)
+
+
+class Kpi(BaseModel):
+    """대시보드 KPI 카드 1개.
+
+    key: llm_calls | avg_latency_ms | total_tokens | cost_usd
+      - llm_calls 는 Langfuse GENERATION(실제 LLM 호출) 수. 질의 1건이 4콜 안팎이라
+        사용자 "질의 수"와 다르다(정확한 질의 수는 로컬 집계가 있어야 함).
+      - avg_latency_ms 는 LLM 콜 1건당 평균 지연(질의 전체 wall-clock 아님).
+    delta_pct: 어제 대비 증감률(%). 어제 값이 0/없으면 None.
+    """
+
+    key: str
+    value: float = 0.0
+    delta_pct: float | None = None
+
+
+class MetricsResponse(BaseModel):
+    """Home 대시보드 KPI (Langfuse Metrics API 집계 프록시).
+
+    오늘(KST 00:00~현재) 값 + 어제 대비 delta. Langfuse 키가 없거나 조회 실패면
+    available=False + 빈 kpis (에러 아님 — 대시보드는 빈 카드로 그리면 됨).
+    """
+
+    kpis: list[Kpi] = Field(default_factory=list)
+    as_of: str = ""            # 기준 날짜 (KST, YYYY-MM-DD)
+    available: bool = True     # Langfuse 미연결/조회 실패면 False
 
 
 class StreamEvent(BaseModel):

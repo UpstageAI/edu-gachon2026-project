@@ -9,7 +9,14 @@ from __future__ import annotations
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 
-from app.schemas.query import QueryRequest, QueryResponse, SuggestionsRequest, SuggestionsResponse
+from app.schemas.query import (
+    MetricsResponse,
+    QueryRequest,
+    QueryResponse,
+    SuggestionsRequest,
+    SuggestionsResponse,
+)
+from app.services import metrics_service
 from app.services.query_service import query_service
 
 router = APIRouter()
@@ -36,3 +43,9 @@ async def query_stream(req: QueryRequest):
 async def suggestions(req: SuggestionsRequest) -> SuggestionsResponse:
     """직전 성공 턴을 바탕으로 후속질문 버튼용 텍스트를 최대 2개 반환한다."""
     return SuggestionsResponse(suggestions=await query_service.suggest_followups(req.session_id))
+
+
+@router.get("/metrics", response_model=MetricsResponse)
+async def metrics() -> MetricsResponse:
+    """Home 대시보드 KPI (Langfuse Metrics API 집계 프록시). 미연결 시 available=False."""
+    return await metrics_service.dashboard_kpis()

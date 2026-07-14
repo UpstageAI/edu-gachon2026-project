@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from typing import AsyncIterator
 
 from app.core import prompts
-from app.core.llm import complete
+from app.core.llm import collect_usage, complete
 from app.core.observability import graph_callbacks
+from app.core.pricing import token_cost_usd
 from app.core.session_store import session_store
 from app.graph.builder import NODE_NAMES, build_graph
 from app.graph.state import initial_state
@@ -34,12 +36,15 @@ class QueryService:
         출력: QueryResponse
         """
         history = session_store.get_history(session_id)
-        try:
-            state = await self._graph.ainvoke(
-                initial_state(question, history), config={"callbacks": graph_callbacks()})
-        except Exception:  # noqa: BLE001 — 외부(LLM/DB) 실패를 API 계약(error)으로 변환. 상세는 로그로만.
-            logger.exception("query 실패")
-            return QueryResponse(error=_ERR_MSG)
+        with collect_usage() as usage:  # 이 질의의 전 노드 LLM 토큰 합산
+            t0 = time.perf_counter()
+            try:
+                state = await self._graph.ainvoke(
+                    initial_state(question, history), config={"callbacks": graph_callbacks()})
+            except Exception:  # noqa: BLE001 — 외부(LLM/DB) 실패를 API 계약(error)으로 변환. 상세는 로그로만.
+                logger.exception("query 실패")
+                return QueryResponse(error=_ERR_MSG, latency_ms=int((time.perf_counter() - t0) * 1000))
+            latency_ms = int((time.perf_counter() - t0) * 1000)
         answer = state.get("answer", {})
         table = answer.get("table", {})
         rows = table.get("rows", [])
@@ -53,6 +58,9 @@ class QueryService:
             difficulty=state.get("difficulty", ""),
             model=state.get("model", ""),
             error=state.get("error", ""),
+            latency_ms=latency_ms,
+            total_tokens=usage["input"] + usage["output"],
+            cost_usd=token_cost_usd(usage["input"], usage["output"]),
         )
 
     async def stream(self, question: str, session_id: str | None = None) -> AsyncIterator[StreamEvent]:
@@ -65,24 +73,33 @@ class QueryService:
         # 그래프를 한 번만 실행하고, format 노드 출력에서 최종 answer 를 캡처한다
         # (재-invoke 하면 LLM/SQL 비용 2배 + 스트림과 done 답변 불일치 위험).
         answer: dict = {}
-        try:
-            async for event in self._graph.astream_events(
-                    initial_state(question, history), version="v2", config={"callbacks": graph_callbacks()}):
-                if event.get("event") == "on_chain_end" and event.get("name") in NODE_NAMES:
-                    output = event.get("data", {}).get("output", {}) or {}
-                    yield StreamEvent(
-                        event="node",
-                        node=event["name"],
-                        data=json.dumps(output, ensure_ascii=False, default=str),
-                    )
-                    if "answer" in output:  # format 노드가 쓴 최종 answer
-                        answer = output["answer"]
-        except Exception:  # noqa: BLE001 — 상세는 로그로만, 클라이언트엔 일반 메시지
-            logger.exception("stream 실패")
-            yield StreamEvent(event="error", data=_ERR_MSG)
-            return
+        with collect_usage() as usage:  # 이 질의의 전 노드 LLM 토큰 합산
+            t0 = time.perf_counter()
+            try:
+                async for event in self._graph.astream_events(
+                        initial_state(question, history), version="v2", config={"callbacks": graph_callbacks()}):
+                    if event.get("event") == "on_chain_end" and event.get("name") in NODE_NAMES:
+                        output = event.get("data", {}).get("output", {}) or {}
+                        yield StreamEvent(
+                            event="node",
+                            node=event["name"],
+                            data=json.dumps(output, ensure_ascii=False, default=str),
+                        )
+                        if "answer" in output:  # format 노드가 쓴 최종 answer
+                            answer = output["answer"]
+            except Exception:  # noqa: BLE001 — 상세는 로그로만, 클라이언트엔 일반 메시지
+                logger.exception("stream 실패")
+                yield StreamEvent(event="error", data=_ERR_MSG)
+                return
+            latency_ms = int((time.perf_counter() - t0) * 1000)
         if answer.get("table", {}).get("rows"):  # 실패/무결과 턴은 히스토리에 남기지 않는다
             session_store.append_turn(session_id, question, answer.get("sql", ""), answer.get("summary", ""))
+        # done 페이로드에 관측 메타를 얹는다(동기 /query 의 latency_ms/total_tokens/cost_usd 와 동일 값).
+        answer = {**answer, "meta": {
+            "latency_ms": latency_ms,
+            "total_tokens": usage["input"] + usage["output"],
+            "cost_usd": token_cost_usd(usage["input"], usage["output"]),
+        }}
         yield StreamEvent(
             event="done",
             data=json.dumps(answer, ensure_ascii=False, default=str),
