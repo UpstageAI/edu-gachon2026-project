@@ -20,6 +20,21 @@ def format_answer(state: AgentState) -> dict:
             summary=safety.get("reason") or "그 요청은 데이터를 변경할 수 있어 실행하지 않았어요. 저는 조회만 도와드려요.",
         )}
 
+    # 1.5) 값 매칭 애매 → 되묻기 (그래프가 generate 전에 보냄 — 이 경로에서만 애매 힌트가 남는다)
+    amb = [h for h in state.get("value_hints", [])
+           if h.get("how") == "ambiguous" and h.get("candidates")]
+    if amb:
+        lines = []
+        for h in amb:
+            opts = " · ".join(dict.fromkeys(  # top-1 + 후보, 중복 제거·순서 유지
+                v for v in [h.get("value", ""), *h.get("candidates", [])] if v))
+            lines.append(f"- **'{h.get('keyword')}'** → {opts}")
+        return {"answer": empty_answer(
+            summary="질문의 표현이 데이터의 여러 값과 비슷해서 확인이 필요해요.\n"
+                    + "\n".join(lines)
+                    + "\n\n원하시는 값으로 다시 질문해 주시면 정확히 조회할게요.",
+        )}
+
     # 2) 검증 소진 (재시도 후에도 실패)
     if not state.get("validation", {}).get("ok", True):
         return {"answer": empty_answer(
