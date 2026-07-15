@@ -67,7 +67,15 @@ def judge_price(
     else:
         status = "적정"
 
-    month_diff_pct = _pct_diff(last_month, avg) if dpr5 is not None else None
+    # [2026-07-15 (8) 수정] 기존엔 last_month(1개월전) vs avg(평년)로 계산했는데, 답변에는
+    # 이 수치가 화면에 실제로 표시되는 "현재 가격"(today_price=last_week, 1주일전 값)의
+    # 평년 대비인 것처럼 "현재 가격은 ...원, 평년 대비 X%"로 서술됨 — 계산 자체는 정확했지만
+    # 어느 시점 가격 기준인지가 화면 표시 시점과 어긋나 사용자에게 오해를 줄 수 있는 걸
+    # 실제 재현으로 확인함(상추 사례: 1개월전 기준으로는 평년 대비 -61.1%였지만, 실제
+    # 화면에 표시된 1주일전 가격 기준으로는 -57.1%였음). 화면에 노출되는 가격과 동일한
+    # 시점(last_week) 기준으로 계산하도록 수정 — "평년 대비"라는 라벨이 실제 표시 가격과
+    # 항상 일치하게 됨.
+    month_diff_pct = _pct_diff(last_week, avg)
 
     return JudgePriceOutput(
         status=status,
@@ -75,6 +83,10 @@ def judge_price(
         month_diff_pct=month_diff_pct,
         normalized_price=normalized_last_week,
         unit=normalized_unit,
+        # [2026-07-15 (9) 추가] normalized_price는 항상 last_week(dpr3=1주일전) 기준이라
+        # "당일"이라고 표시하면 안 됨 — app/tools/kamis.py의 dpr1 기반 price_as_of(compare_items_node
+        # 용)와는 별개로, 여기서는 이 값의 진짜 출처를 있는 그대로 고지.
+        price_as_of="1주일전",
     )
 
 
@@ -112,9 +124,12 @@ def judge_price_node(state: AgentState) -> dict[str, Any]:
                 # 답변 생성 단계에서 실제 금액을 지어내지 않도록 조회된 값 그대로 전달
                 "today_price": result.normalized_price,
                 "unit": result.unit,
-                # [2026-07-14 추가] today_price가 fallback(며칠 전 값)인 경우 답변에서
-                # "N일 전 기준"으로 밝히기 위해 전달 — "당일"이면 별도 표기 안 함
-                "price_as_of": item.get("price_as_of"),
+                # [2026-07-15 (9) 수정] item.get("price_as_of")(kamis.py가 dpr1 기준으로
+                # 계산한 값 — compare_items_node/시나리오 1 전용)를 그대로 전달하면
+                # today_price(dpr3=1주일전 기준)와 시점이 어긋나 잘못된 고지("당일" 등)가
+                # 될 수 있었음 — result.price_as_of(judge_price()가 today_price와 동일한
+                # 근거로 직접 계산한 값)로 교체.
+                "price_as_of": result.price_as_of,
             }
         )
         print(

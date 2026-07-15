@@ -56,7 +56,20 @@ _MARKDOWN_EMPHASIS_RE = re.compile(r"\*\*|__")
 # 정보는~" 식으로 시작할 가능성을 완전히 배제 못함) — "이모지는"/"라고 나와 있습니다"처럼
 # 정상 답변에 나올 일이 거의 없는 강한 마커는 그 자체로 판정하고, "사용자가"는 작성
 # 계획/지시사항을 서술하는 표현과 함께 나올 때만 유출로 판단하도록 분리.
-_STRONG_REASONING_LEAK_MARKERS = ("이모지는", "라고 나와 있습니다", "라고 나와있습니다")
+#
+# [2026-07-15 (5) 추가] 특정 문구 몇 개만 마커로 등록하는 방식은 새로운 유출 표현이
+# 나올 때마다 계속 마커를 추가해야 하는 두더지잡기라, "입력 프롬프트가 그대로 노출되는"
+# 사고가 계속 재발함(실제 사용자 재현 보고) — app/prompts/prompts.py에 실제로 존재하는
+# 구조적 표지(대괄호 섹션 제목, 노드별 프롬프트 공통 문구, 에이전트 자기소개 문장)를
+# 추가해 프롬프트 "구조" 자체가 새어나온 경우까지 넓게 잡는다. 이 표지들은 정상적인
+# 자연어 답변에서 나올 이유가 사실상 없어 강한 마커로 취급.
+_PROMPT_STRUCTURE_LEAK_MARKERS = (
+    "[데이터 무결성", "이 노드만의 규칙", "장바구니 물가 판단 에이전트입니다",
+)
+_STRONG_REASONING_LEAK_MARKERS = (
+    "이모지는", "라고 나와 있습니다", "라고 나와있습니다",
+    *_PROMPT_STRUCTURE_LEAK_MARKERS,
+)
 _WEAK_REASONING_LEAK_MARKER = "사용자가"
 _PLAN_LANGUAGE_MARKERS = ("하면 됩니다", "작성합니다", "생략하고", "제한합니다", "언급할 것", "지어내지")
 
@@ -69,6 +82,32 @@ def _looks_like_leaked_reasoning(text: str) -> bool:
     if any(marker in text for marker in _STRONG_REASONING_LEAK_MARKERS):
         return True
     return _WEAK_REASONING_LEAK_MARKER in text and any(p in text for p in _PLAN_LANGUAGE_MARKERS)
+
+
+# [2026-07-15 (7) 추가] Langfuse 트레이스에서 "... Potato Potato Potato Potato ..."처럼
+# 같은 단어를 수십 번 반복하며 생성이 망가지는 사고를 실제로 확인함 — LLM 디코딩이
+# 퇴화된 반복 루프에 빠지는 흔한 실패 모드로, 이게 응답 길이를 비정상적으로 늘려
+# 프론트엔드의 httpx 타임아웃(ReadTimeout)까지 유발한 것으로 보임. app/core/llm.py의
+# max_tokens/frequency_penalty로 발생 확률 자체를 낮췄지만, 그래도 새어나온 경우를
+# 최종적으로 잡기 위한 코드 레벨 하드 개런티.
+_MAX_CONSECUTIVE_WORD_REPEATS = 4
+
+
+class _DegenerateOutputError(RuntimeError):
+    """LLM이 같은 단어를 반복 생성하는 등 출력이 퇴화된 것으로 보일 때 발생."""
+
+
+def _looks_like_degenerate_repetition(text: str) -> bool:
+    words = text.split()
+    run_length = 1
+    for prev, curr in zip(words, words[1:], strict=False):
+        if curr == prev:
+            run_length += 1
+            if run_length > _MAX_CONSECUTIVE_WORD_REPEATS:
+                return True
+        else:
+            run_length = 1
+    return False
 
 
 def _invoke_with_prompts(specific_prompt: str, context: str) -> str:
@@ -99,6 +138,9 @@ def _invoke_with_prompts(specific_prompt: str, context: str) -> str:
         # 원문은 별도로 콘솔에만 출력하고, 예외는 짧고 고정된 메시지만 사용.
         print(f"[nodes] LLM 응답이 추론 유출로 보여 폐기: {text!r}")
         raise _ReasoningLeakError("LLM이 최종 답변 대신 추론 과정을 반환한 것으로 보임")
+    if _looks_like_degenerate_repetition(text):
+        print(f"[nodes] LLM 응답이 반복 생성으로 퇴화된 것으로 보여 폐기: {text!r}")
+        raise _DegenerateOutputError("LLM이 같은 단어를 반복 생성한 것으로 보임")
     return text
 
 
@@ -644,6 +686,13 @@ def _compound_base(item_name: str) -> str | None:
 
 _SPECIES_PROXIMITY_WINDOW = 10
 
+# [2026-07-15 (5) 추가] "계란 특란10구"처럼 kind_name 자체가 "품종+수량단위" 합성인 경우,
+# LLM이 자연스럽게 "특란"(품종)을 생략하고 "30구"(수량단위)만 말하는 경우가 실제로
+# 확인됨(예: "계란 30구는 현재가 ..."). core(예: "특란30구") 전체 일치만 보면 이런
+# 정상 답변도 "품목명 누락"으로 오판해 불필요하게 딱딱한 템플릿으로 폴백하던 문제 —
+# core 끝의 숫자+단위(예: "30구", "10kg", "100개")만으로도 언급된 것으로 인정.
+_TRAILING_QUANTITY_RE = re.compile(r"(\d+(?:\.\d+)?[가-힣]+)$")
+
 
 def _judgment_mentioned(item_name: str, answer: str, ambiguous_species: bool) -> bool:
     """답변이 이 판정 항목을 실제로 언급하고 있는지 확인.
@@ -666,15 +715,18 @@ def _judgment_mentioned(item_name: str, answer: str, ambiguous_species: bool) ->
     if item_name in answer:
         return True
     core = item_name.rsplit(" ", 1)[-1]
+    qty_match = _TRAILING_QUANTITY_RE.search(core)
+    core_candidates = [core, qty_match.group(1)] if qty_match else [core]
     if not ambiguous_species:
-        return core in answer
+        return any(c in answer for c in core_candidates)
     base = _compound_base(item_name)
     if base is None:
-        return core in answer
-    for match in re.finditer(re.escape(core), answer):
-        window_start = max(0, match.start() - _SPECIES_PROXIMITY_WINDOW)
-        if base in answer[window_start : match.start()]:
-            return True
+        return any(c in answer for c in core_candidates)
+    for candidate in core_candidates:
+        for match in re.finditer(re.escape(candidate), answer):
+            window_start = max(0, match.start() - _SPECIES_PROXIMITY_WINDOW)
+            if base in answer[window_start : match.start()]:
+                return True
     return False
 
 
@@ -702,7 +754,9 @@ def _price_facts(judgments: list[dict], substitutes: list[str]) -> str:
         month_diff = j.get("month_diff_pct")
         if month_diff is not None:
             msign = "+" if month_diff >= 0 else ""
-            # month_diff_pct = 1개월전(dpr5) vs 평년(dpr7) → "평년 대비"가 정확한 라벨
+            # [2026-07-15 (8) 수정] month_diff_pct = 화면에 표시되는 현재가(1주일전) vs
+            # 평년(dpr7) → "현재가는 ~원, 평년 대비 X%"라고 답할 때 실제로 같은 시점
+            # 가격끼리 비교되도록 함(이전엔 1개월전 가격 기준이라 표시 가격과 시점이 어긋났음)
             line += f", 평년 대비 {msign}{month_diff}%"
         lines.append(line)
     if substitutes:

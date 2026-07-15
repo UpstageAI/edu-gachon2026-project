@@ -28,6 +28,11 @@ def _get_llm() -> ChatUpstage:
         model=settings.llm_model,
         timeout=30,
         max_retries=2,
+        # [2026-07-15 추가] app/core/llm.py의 build_llm()과 동일한 이유(퇴화된 반복
+        # 생성 방어) — 이 함수는 region/unit만 담은 짧은 JSON을 반환해야 하므로 더
+        # 짧게 제한.
+        max_tokens=200,
+        frequency_penalty=0.4,
     )
 llm = _get_llm()
 

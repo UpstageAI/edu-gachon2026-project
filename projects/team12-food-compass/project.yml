@@ -6,10 +6,10 @@ team:
   name: food-compass
   members:
     - name: 김단아
-      role: PM, Frontend, Backend, AI/ML, Data
+      role: chroma DB, AI, RAG
       github: kda5337
     - name: 김재우
-      role: Infra, Frontend, Backend, AI/ML, Data
+      role: Backend, DB, AI, Infra/CI-CD 
       github: turtle-jaewoo 
 
 project:
@@ -29,9 +29,9 @@ problem:
     - 식비 부담을 줄이고 싶은 대학생·사회초년생
 
 solution:
-  summary: KAMIS·참가격 공공 API로 시세를 수집해 Supabase에 저장하고, LangGraph 에이전트가 가격을 판정해 비쌀 경우 RAG로 대체 품목까지 추천합니다.
+  summary: KAMIS·참가격 공공 API로 시세를 매일 수집해 Supabase에 저장하고, LangGraph 에이전트가 가격을 판정해 비쌀 경우 RAG로 대체 품목까지 추천합니다.
   main_features:
-    - 자연어 질의 기반 시세 조회 및 비쌈/적정/쌈 판정
+    - 자연어 질의 기반 실시간 시세 조회 및 비쌈/적정/쌈 판정
     - RAG(ChromaDB) 기반 대체 품목 추천 및 제철·보관법 지식 답변
     - 원물↔가공식품 단위 정규화 비교 (예: 쌀 vs 즉석밥)
     - SSE 스트리밍 기반 실시간 챗봇 응답
@@ -55,9 +55,9 @@ tech_stack:
     - GCP Compute Engine
 
 links:
-  demo_video_url: https://drive.google.com/file/d/1EvE1wN4f4EpGvp2Ap0rl8nbjBJK2-W6p/view?usp=sharing
+  demo_video_url:
   deployed_url: http://food-compass.kro.kr:8501/
-  presentation_url: https://docs.google.com/presentation/d/1niETshVqtw14Z9JA0nRID4QbI-K6DuV68s2RWW-APe8/edit?usp=sharing
+  presentation_url:
   repository_url: https://github.com/food-compass-organization/food-compass
 
 blog:

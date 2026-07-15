@@ -198,6 +198,9 @@ if query:
     final_answer = ""
 
     try:
+        # [2026-07-15 수정] router→validate_request→judge_price→generate_answer로 이어지는
+        # LLM 호출 체인이 느려질 때(백업 모델 폴백 등) 기존 30초로는 부족해 실제로
+        # httpx.ReadTimeout이 발생한 것을 사용자 재현으로 확인 — 여유를 두고 60초로 상향.
         with httpx.stream(
             "POST",
             f"{BACKEND_URL}/chat",
@@ -206,7 +209,7 @@ if query:
                 "region": st.session_state.selected_region,
                 "unit": st.session_state.selected_unit,
             },
-            timeout=30,
+            timeout=60,
         ) as response:
             event_type = None
             for line in response.iter_lines():
@@ -227,6 +230,23 @@ if query:
     except httpx.ConnectError:
         status_placeholder.empty()
         final_answer = "⚠️ 백엔드 서버에 연결할 수 없습니다. uvicorn 서버가 실행 중인지 확인해주세요."
+        with answer_placeholder:
+            render_bubble("assistant", final_answer, variant="error")
+    except httpx.TimeoutException:
+        # [2026-07-15 추가] 응답이 오래 걸려 타임아웃되는 경우 — ConnectError와 원인이
+        # 달라 별도 안내 문구로 분리(서버가 아예 꺼진 게 아니라 지연된 것뿐이므로).
+        status_placeholder.empty()
+        final_answer = "⚠️ 서버 응답이 지연되고 있어요. 잠시 후 다시 시도해주세요."
+        with answer_placeholder:
+            render_bubble("assistant", final_answer, variant="error")
+    except Exception as e:
+        # [2026-07-15 추가] 예상 못 한 예외가 Streamlit 화면에 원문 트레이스백 그대로
+        # 노출되는 것을 막기 위한 최종 방어선 — 사용자에게는 "오류가 발생했다"는 사실만
+        # 안내하고, 실제 원인은 서버 콘솔 로그에만 남긴다(§0-1과 별개로, 사용자 대면
+        # 화면에는 내부 구현 세부사항을 노출하지 않는다는 원칙).
+        print(f"[frontend] /chat 요청 중 예상치 못한 오류: {type(e).__name__}: {e}")
+        status_placeholder.empty()
+        final_answer = "⚠️ 일시적인 오류가 발생했어요. 잠시 후 다시 시도해주세요."
         with answer_placeholder:
             render_bubble("assistant", final_answer, variant="error")
 

@@ -25,6 +25,14 @@ def build_llm(model: str) -> ChatUpstage:
         model=model,
         timeout=30,
         max_retries=2,
+        # [2026-07-15 추가] Langfuse 트레이스에서 "Potato Potato Potato..."처럼 같은
+        # 토큰을 수십 번 반복하며 생성이 망가지는 사고를 실제로 확인함(LLM 디코딩 단계의
+        # 퇴화된 반복 루프 — 흔한 실패 모드). max_tokens로 최악의 경우에도 응답 길이를
+        # 제한해 폭주를 조기에 끊고(타임아웃 유발도 방지), frequency_penalty로 같은
+        # 토큰이 반복될 확률 자체를 낮춤. 이 프로젝트 답변은 1~4문장이 기본이라 500
+        # 토큰이면 정상적인 답변엔 전혀 부족하지 않음.
+        max_tokens=500,
+        frequency_penalty=0.4,
     )
 
 

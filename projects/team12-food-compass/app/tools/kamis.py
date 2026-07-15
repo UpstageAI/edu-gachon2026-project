@@ -64,12 +64,46 @@ _DAY_LABELS = {
 
 
 def _pick_representative_row(rows: list[dict]) -> dict:
-    """같은 품목의 여러 품종·등급 row 중 대표 1건 선택 — '중품' 우선, 없으면 '상품', 그래도 없으면 첫 row."""
+    """같은 kind_name 안에서 여러 등급(rank_name) row 중 대표 1건 선택 — '중품' 우선, 없으면 '상품', 그래도 없으면 첫 row."""
     for preferred_rank in _PREFERRED_RANKS:
         for row in rows:
             if row.get("rank_name") == preferred_rank:
                 return row
     return rows[0]
+
+
+def _select_variant_rows(rows: list[dict]) -> list[dict]:
+    """같은 item_name 안에 서로 다른 "판매 단위"(unit)가 섞여 있으면 단위별로 전부
+    나열하고, unit이 하나뿐이면(품종만 다른 경우 포함) 기존처럼 등급(rank_name) 대표
+    1건만 선택.
+
+    [2026-07-15 (5) 추가] "계란"은 kind_name이 "특란10구"/"특란30구"로 나뉘고 unit도
+    "10구"/"30구"로 서로 달라 실제 가격이 단순 비례(3배)가 아닌데(대량 구매 할인 등),
+    기존엔 대표 1건("특란10구")만 골라 반환해서 사용자가 "30구는 얼마야?"처럼 다른
+    단위를 물어보면 그 데이터 자체가 없어 LLM이 "10구 가격 × 3" 같은 근거 없는 계산을
+    답변으로 만들어내는 사고가 실제로 발생함(재현 확인). DB 조사 결과 계란 외에도
+    고등어/당근/오이/풋고추/콩/포도/호박/들깨 등이 동일하게 "판매 단위 자체가 다른
+    여러 kind_name이 한 item_name 아래 섞여 있는데 대표 1건만 반환"하는 구조라 같은
+    문제를 안고 있었음.
+
+    [2026-07-15 (5) 코드 리뷰 반영] 처음엔 kind_name이 여러 개면 무조건 전부 나열하도록
+    짰는데, "상추"의 "적(4kg)"/"청(4kg)"처럼 unit은 같고 품종(색)만 다른 경우까지
+    전부 나열해버리면, 사용자는 애초에 "상추 얼마야?"처럼 특정 품종을 지목하지 않고
+    묻는 게 보통이라 LLM이 하나만 자연스럽게 언급해도 "품목명 누락"으로 오판돼 불필요한
+    템플릿 폴백이 늘어나는 부작용을 실제로 확인함. 사용자가 실제로 다른 값을 요구할 수
+    있는 건 "단위(unit) 자체가 다른" 경우(10구 vs 30구처럼 질문에 직접 등장 가능)뿐이라,
+    unit이 여러 개일 때만 나열하도록 조건을 좁힘 — 품종만 다른 경우는 기존처럼 대표
+    1건 선택(축산물 부위 전체 나열과는 별개로, 이 케이스는 "다른 판매 단위를 놓치지
+    않는다"는 좁은 목적에만 대응).
+    """
+    units = {row.get("unit") for row in rows}
+    if len(units) <= 1:
+        return [_pick_representative_row(rows)]
+
+    by_kind: dict[str, list[dict]] = {}
+    for row in rows:
+        by_kind.setdefault(row.get("kind_name") or "", []).append(row)
+    return [_pick_representative_row(kind_rows) for kind_rows in by_kind.values()]
 
 
 def _select_livestock_rows(rows: list[dict], item_name: str) -> list[dict]:
@@ -106,6 +140,17 @@ def _resolve_today_price(row: dict) -> dict:
     투명하게 밝히기 위해, 실제 사용된 필드가 며칠 전인지를 resolved["price_as_of"]에
     담아 반환 — 당일가를 그대로 썼으면 "당일", fallback을 탔으면 그 필드의 라벨, 아무
     필드도 못 찾았으면 None(가격 데이터 자체가 없는 경우이므로 시점 표기 불필요).
+
+    [2026-07-15 (9) 중요] 이 함수가 만드는 dpr1/price_as_of는 오직
+    `app/graph/nodes.py`의 `compare_items_node`(시나리오 1: 쌀 vs 즉석밥 비교)에서만
+    실제로 사용됨(kamis_item.get("dpr1")/get("price_as_of")). 반면 일반 가격 판정
+    경로(`app/tools/judge.py`의 `judge_price`/`judge_price_node`, "OO 지금 비싸?")는
+    이 dpr1 값을 아예 받지 않고 dpr3(1주일전)만 근거로 판정·표시하므로, 그쪽에서
+    "오늘 답변에 보여주는 가격이 며칠 전 기준인지"는 이 함수가 아니라
+    `JudgePriceOutput.price_as_of`(judge.py에서 직접, 항상 "1주일전"으로 계산)가
+    책임진다 — 두 price_as_of를 혼동해서 서로 다른 경로에 잘못 전달하지 않도록 주의
+    (실제로 judge_price_node가 한동안 이 함수의 dpr1 기준 price_as_of를 잘못
+    가져다 써서, 화면엔 1주일전 가격을 보여주면서 "당일"이라고 고지하던 사고가 있었음).
     """
     resolved = dict(row)
     resolved["price_as_of"] = _DAY_LABELS["dpr1"]
@@ -141,13 +186,16 @@ def _rows_to_price_entries(rows: list[dict], item_name: str) -> list[dict[str, A
     if is_livestock:
         selected_rows = _select_livestock_rows(rows, item_name)
     else:
-        selected_rows = [_pick_representative_row(rows)]
+        selected_rows = _select_variant_rows(rows)
 
     entries = []
     for raw_row in selected_rows:
         row = _resolve_today_price(raw_row)
-        # 축산물은 부위별로 나열하므로 "돼지 삼겹살"처럼 부위명을 붙여 항목을 구분
-        display_name = f"{row['item_name']} {row['kind_name']}" if is_livestock else row["item_name"]
+        # 축산물은 부위별로, 그 외 품목은 kind_name(포장단위·품종)이 여러 개로 나뉜
+        # 경우에만 "계란 특란10구"처럼 kind_name을 붙여 항목을 구분 — kind_name이
+        # 원래 하나뿐인 품목(대부분의 채소 등)은 기존처럼 item_name만 노출.
+        needs_kind_suffix = is_livestock or len(selected_rows) > 1
+        display_name = f"{row['item_name']} {row['kind_name']}" if needs_kind_suffix else row["item_name"]
         entries.append(
             {
                 "item_name": display_name,

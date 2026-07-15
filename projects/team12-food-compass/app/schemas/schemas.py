@@ -70,6 +70,16 @@ class JudgePriceOutput(BaseModel):
 
     status: Literal["비쌈", "적정", "쌈"]
     diff_pct: float  # 1주일전(dpr3) vs 1개월전(dpr5) 대비 — 비쌈/적정/쌈 판정 기준
-    month_diff_pct: float | None = None  # 1개월전(dpr5) vs 평년(dpr7) 대비 — 참고용 부가 정보
+    # [2026-07-15 (8) 수정] 화면에 표시되는 현재 가격(1주일전=dpr3) vs 평년(dpr7) 대비 —
+    # 참고용 부가 정보. 이전엔 1개월전(dpr5) 기준으로 계산돼 표시 가격과 시점이 어긋났음.
+    month_diff_pct: float | None = None
     normalized_price: float | None = None  # 변환된 가격
     unit: str | None = None  # 가격 단위 (예: 100g, 1개)
+    # [2026-07-15 (9) 추가] normalized_price(=오늘 답변에 노출되는 "현재가")는 항상
+    # dpr3(1주일전) 값에서 나오는데, 이 필드가 없을 땐 app/tools/kamis.py의
+    # _resolve_today_price()가 dpr1(당일가) 기준으로 계산한 price_as_of가 그대로
+    # 전달되고 있었음 — 그건 compare_items_node(시나리오 1)가 dpr1을 직접 쓸 때만
+    # 맞는 값이고, 여기(일반 가격 판정)서는 실제 근거(dpr3)와 무관해 "당일" 등으로
+    # 잘못 표시될 수 있었음(실제 사용자 재현 확인). normalized_price의 진짜 출처를
+    # 이 함수 안에서 직접 계산해 항상 정확하게 고지.
+    price_as_of: str | None = None
