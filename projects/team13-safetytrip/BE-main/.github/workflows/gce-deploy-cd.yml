@@ -1,0 +1,172 @@
+name: GCE Deploy CD
+
+on:
+  workflow_run:
+    workflows: ["Docker Build & Push CD"]
+    types: [completed]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: safetytrip
+  REGION: asia-northeast3
+  ZONE: asia-northeast3-c
+  MIG_NAME: safetytrip-be-mig
+  TEMPLATE_PREFIX: safetytrip-be-template
+  IMAGE_NAME: ghcr.io/safetytrip2026/be
+  SECRET_NAME: safetytrip-be-env
+
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: vars
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            SHA="${{ github.event.workflow_run.head_sha }}"
+          else
+            SHA="${{ github.sha }}"
+          fi
+
+          SHORT_SHA="${SHA:0:7}"
+          IMAGE_TAG="sha-${SHORT_SHA}"
+          IMAGE_URI="${IMAGE_NAME}:${IMAGE_TAG}"
+          TEMPLATE_NAME="${TEMPLATE_PREFIX}-${IMAGE_TAG}"
+
+          echo "sha=${SHA}" >> "$GITHUB_OUTPUT"
+          echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image_uri=${IMAGE_URI}" >> "$GITHUB_OUTPUT"
+          echo "template_name=${TEMPLATE_NAME}" >> "$GITHUB_OUTPUT"
+
+          echo "IMAGE_URI=${IMAGE_URI}"
+          echo "TEMPLATE_NAME=${TEMPLATE_NAME}"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Create instance template
+        shell: bash
+        run: |
+          cat > startup-script.sh <<'EOF'
+          #!/bin/bash
+          set -euxo pipefail
+
+          apt-get update
+          apt-get install -y ca-certificates curl gnupg
+
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          chmod a+r /etc/apt/keyrings/docker.gpg
+
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" \
+            > /etc/apt/sources.list.d/docker.list
+
+          apt-get update
+          apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+          systemctl enable docker
+          systemctl start docker
+
+          usermod -aG docker appuser || true
+
+          gcloud secrets versions access latest --secret="safetytrip-be-env" > /home/appuser/.env.backend
+          chown appuser:appuser /home/appuser/.env.backend
+          chmod 600 /home/appuser/.env.backend
+
+          GHCR_READ_TOKEN=$(grep '^GHCR_READ_TOKEN=' /home/appuser/.env.backend | cut -d '=' -f2- | tr -d '"')
+          echo "$GHCR_READ_TOKEN" | docker login ghcr.io -u chohyerinn --password-stdin
+
+          docker pull "${IMAGE_URI}"
+
+          docker rm -f safetytrip-be || true
+
+          docker run -d \
+            --name safetytrip-be \
+            --restart unless-stopped \
+            --env-file /home/appuser/.env.backend \
+            -p 8080:8080 \
+            "${IMAGE_URI}"
+
+          for i in $(seq 1 20); do
+            if curl -fsS http://localhost:8080/health > /dev/null; then
+              echo "health check passed"
+              exit 0
+            fi
+            sleep 3
+          done
+
+          docker logs safetytrip-be --tail 100
+          exit 1
+          EOF
+
+          gcloud compute instance-templates create "${{ steps.vars.outputs.template_name }}" \
+            --project="${PROJECT_ID}" \
+            --region="${REGION}" \
+            --machine-type=e2-medium \
+            --network=default \
+            --subnet=default \
+            --no-address \
+            --tags=safetytrip-be \
+            --image-family=debian-13 \
+            --image-project=debian-cloud \
+            --boot-disk-size=10GB \
+            --boot-disk-type=pd-balanced \
+            --service-account="${{ secrets.GCE_SERVICE_ACCOUNT_EMAIL }}" \
+            --scopes=https://www.googleapis.com/auth/cloud-platform \
+            --metadata-from-file=startup-script=startup-script.sh \
+            --metadata=IMAGE_URI="${{ steps.vars.outputs.image_uri }}"
+
+      - name: Update MIG instance template
+        shell: bash
+        run: |
+          gcloud compute instance-groups managed set-instance-template "${MIG_NAME}" \
+            --project="${PROJECT_ID}" \
+            --zone="${ZONE}" \
+            --template="${{ steps.vars.outputs.template_name }}"
+
+      - name: Rolling update MIG
+        shell: bash
+        run: |
+          gcloud compute instance-groups managed rolling-action start-update "${MIG_NAME}" \
+            --project="${PROJECT_ID}" \
+            --zone="${ZONE}" \
+            --version=template="${{ steps.vars.outputs.template_name }}" \
+            --type=proactive \
+            --max-surge=1 \
+            --max-unavailable=0
+
+      - name: Wait for MIG rollout
+        shell: bash
+        run: |
+          gcloud compute instance-groups managed wait-until "${MIG_NAME}" \
+            --project="${PROJECT_ID}" \
+            --zone="${ZONE}" \
+            --stable \
+            --timeout=600
+
+      - name: Verify load balancer health
+        shell: bash
+        run: |
+          curl -f -s "http://136.68.189.140/health"
+          echo "Load Balancer health check passed"

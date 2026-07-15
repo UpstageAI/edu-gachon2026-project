@@ -1,0 +1,33 @@
+name: DB Schema CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'preprocessors/*_schema.sql'
+  workflow_dispatch:  # Actions 탭에서 수동으로 실행 가능 (머지 전 테스트용)
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install postgresql-client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Apply schema files to Supabase
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -e
+          for f in preprocessors/*_schema.sql; do
+            echo "Applying $f"
+            psql "$DATABASE_URL" -f "$f"
+          done
+
+      - name: Verify tables exist
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          psql "$DATABASE_URL" -c "\dt"

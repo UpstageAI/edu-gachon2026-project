@@ -1,0 +1,67 @@
+schema_version: 1
+
+team:
+  number: 13
+  folder_name: team13-safetytrip
+  name: SafetyTrip
+  members:
+    - name: 정명성
+      role: Backend, AI
+      github: https://github.com/Watchiiee
+    - name: 조혜린
+      role: Frontend, Infra
+      github: https://github.com/chohyerinn
+
+project:
+  title: 재난안전 여행 가이드 AI 에이전트
+  summary: 여행지의 과거 재난 발생 통계와 공식 행동요령을 근거로, 근거가 부족하면 답변 대신 공식 대응기관을 안내하는 LangGraph 기반 AI 에이전트
+  category: AI 서비스
+  keywords:
+    - AI
+    - RAG
+    - 재난안전
+
+problem:
+  summary: 여행객은 방문 지역·시기의 실제 재난 발생 패턴과 상황별 공식 대응 요령을 사전에 파악하기 어렵고, 재난 발생 시에도 신뢰할 수 있는 즉각적인 안내를 받기 힘듭니다.
+  target_users:
+    - 국내 여행을 계획 중인 일반 사용자
+    - 노약자·어린이 등 취약계층을 동반한 여행객
+
+solution:
+  summary: 재난문자 이력 통계(SQL)와 공식 행동요령 벡터 검색(RAG)을 결합하고, 2중 게이트로 근거 충분성을 검증해 근거가 부족하면 답변 대신 공식 대응기관을 안내합니다.
+  main_features:
+    - 지역×시기 기반 재난 발생 통계 자동 집계 및 표본 부족 시 자동 확대
+    - 재난유형별 공식 행동요령 RAG 검색 및 근거 인용
+    - 2중 게이트(임계값+LLM 판정) 기반 에스컬레이션
+    - SSE 실시간 스트리밍 및 대화 세션(멀티턴) 유지
+
+tech_stack:
+  frontend:
+    - React
+  backend:
+    - FastAPI
+    - LangGraph
+    - LangChain
+  ai:
+    - Solar API
+  database:
+    - PostgreSQL
+    - pgvector
+  infra:
+    - Docker
+    - GCE
+    - GitHub Actions
+
+links:
+  demo_video_url: https://drive.google.com/file/d/1gpjS4yhiWbBQ0oz3ZABo80p0CdgU6X-d/view?usp=sharing
+  deployed_url: http://8.230.0.76/
+  presentation_url: https://docs.google.com/presentation/d/1nehsr4RXqUi0QQ7JWQJbsvmDsi4Z65yg5vZAyUqAeYo/edit?slide=id.g3eab5f302ec_36_373#slide=id.g3eab5f302ec_36_373
+  repository_url: https://github.com/SafetyTrip2026/BE
+
+blog:
+  slug: disaster-safety-agent
+  tags:
+    - AI
+    - 재난안전
+    - RAG
+  cover_image: assets/cover.png

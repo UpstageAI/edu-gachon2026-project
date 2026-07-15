@@ -1,0 +1,14 @@
+requests
+python-dotenv
+pandas
+psycopg2-binary
+sqlalchemy
+fastapi
+uvicorn[standard]
+langgraph
+langgraph-checkpoint-postgres
+psycopg[binary]
+langchain
+openai
+langfuse
+langsmith

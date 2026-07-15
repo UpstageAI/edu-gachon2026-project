@@ -1,0 +1,252 @@
+[
+  {
+    "id": 1,
+    "group": "A",
+    "query": "7월 말에 경기도 가평군으로 가족 여행 가려는데, 한낮 폭염 경보 뜰 때 야외 활동 자제 시간대나 무더위 쉼터 정보 같은 거 미리 확인할 수 있나요?",
+    "expected_result": "answer",
+    "expected_disaster_type": "폭염",
+    "rationale": "DB에 폭염 평상시 및 발생 전 대비 요령이 존재하므로 답변이 가능해야 합니다."
+  },
+  {
+    "id": 2,
+    "group": "A",
+    "query": "이번 주말에 강원도 평창군으로 캠핑을 예약했는데 기상청 보니까 호우 예보가 있더라고요. 계곡 근처라 침수 위험 지역이나 대피 경로를 미리 파악하고 싶은데 관련 매뉴얼이 있습니까?",
+    "expected_result": "answer",
+    "expected_disaster_type": "호우",
+    "rationale": "호우/태풍 예보 시 대피 계획 수립 및 위험 지역 확인 요령이 DB에 있으므로 답변 가능합니다."
+  },
+  {
+    "id": 3,
+    "group": "A",
+    "query": "겨울에 제주도 서귀포시 한라산 쪽으로 눈꽃 여행 계획 중인데, 대설 특보 내리면 스노체인이나 월동용품 휴대 기준 같은 거 가이드라인 좀 알려줘.",
+    "expected_result": "answer",
+    "expected_disaster_type": "대설",
+    "rationale": "대설 예보 시 차량 월동용품 휴대 및 대중교통 이용 권고 수칙이 DB에 포함되어 있습니다."
+  },
+  {
+    "id": 4,
+    "group": "A",
+    "query": "충청북도 제천시로 겨울 여행 가려고 해. 한파 경보 떴을 때 보일러 배관 동파 방지법이랑 영유아 데리고 잘 때 적정 온도 관리 요령 가르쳐줘 봐.",
+    "expected_result": "answer",
+    "expected_disaster_type": "한파",
+    "rationale": "한파 평상시 영유아 체온 관리 및 보일러 배관 동파 방지 수칙이 DB에 명시되어 있습니다."
+  },
+  {
+    "id": 5,
+    "group": "A",
+    "query": "부산광역시 해운대구 청사포 쪽에 낚시하러 가는데 강풍 주의보 발령되면 외부 간판 고정이나 테이프 창틀 보강 같은 건 어떻게 해야 인명피해를 막을 수 있어?",
+    "expected_result": "answer",
+    "expected_disaster_type": "강풍",
+    "rationale": "강풍 대비 창틀 테이프 보강 및 옥외 설치물 고정 수칙이 DB에 명시되어 있어 답변 가능합니다."
+  },
+  {
+    "id": 6,
+    "group": "A",
+    "query": "경상남도 산청군 지리산 인근 펜션으로 부모님 모시고 가려고요. 장마철에 산사태 전조현상으로 땅이 울리거나 흙탕물 내려올 때 구체적인 대피 장소 기준이 어떻게 되나요?",
+    "expected_result": "answer",
+    "expected_disaster_type": "산사태",
+    "rationale": "산사태 평소 대비 전조현상 구별법 및 대피 장소 확인 요령이 DB에 존재합니다."
+  },
+  {
+    "id": 7,
+    "group": "A",
+    "query": "여름에 한강이나 서울특별시 마포구 강변 주차장 근처로 나들이 갈 계획인데, 홍수 예경보 떴을 때 차량 이동이나 전기 차단 밸브 잠그는 요령이 공식 행동 매뉴얼에 나와 있나요?",
+    "expected_result": "answer",
+    "expected_disaster_type": "홍수",
+    "rationale": "홍수 예경보 시 전기 차단, 둔치 주차장 차량 이동 수칙이 DB에 누락 없이 기록되어 있습니다."
+  },
+  {
+    "id": 8,
+    "group": "A",
+    "query": "전라남도 여수시 해안가 펜션 예약자입니다. 태풍 특보 예보 시 비닐하우스 보강이나 선박 결박 외에 일반 여행객이 챙겨야 할 욕조 물 비축 같은 비상대비 요령이 궁금합니다.",
+    "expected_result": "answer",
+    "expected_disaster_type": "태풍",
+    "rationale": "태풍 예보 시 단수 대비 물 비축 및 비상용품 구비 요령이 DB에 매핑되어 있습니다."
+  },
+  {
+    "id": 9,
+    "group": "A",
+    "query": "경상북도 경주시 문화재 보러 가는데 평소에 지진 대피 공간 파악하는 법이랑 그릇장이나 떨어지기 쉬운 꽃병 같은 거 고정 필름 붙이는 법 가이드라인이 있을까요?",
+    "expected_result": "answer",
+    "expected_disaster_type": "지진",
+    "rationale": "지진 평소 대비 가구 고정, 유리창 필름 부착 등 실내 안전 확보 행동요령이 DB에 있습니다."
+  },
+  {
+    "id": 10,
+    "group": "A",
+    "query": "봄철에 대구광역시 동구 팔공산 쪽으로 등산 가려고 하는데 산불 예방을 위해 입산통제구역 확인이나 화기 사용 금지 기준, 스마트산림재난 앱 신고 요령에 대해 알려주세요.",
+    "expected_result": "answer",
+    "expected_disaster_type": "산불",
+    "rationale": "산불 평시 대비 입산통제구역 출입 금지 및 앱을 통한 화재 신고 요령이 DB에 정의되어 있습니다."
+  },
+  {
+    "id": 11,
+    "group": "A",
+    "query": "울산광역시 동구 방파제 근처 바다 여행 계획 중인데, 풍랑 특보 기준인 해상풍속이나 유의 파고 주의보 기준이랑 수산 양식 시설 보강 요령 공식 문서에 명시되어 있지?",
+    "expected_result": "answer",
+    "expected_disaster_type": "풍랑",
+    "rationale": "풍랑 특보 기준(주의보/경보) 및 양식 시설 보강 요령이 DB 문서에 직접 명시되어 있습니다."
+  },
+  {
+    "id": 12,
+    "group": "A",
+    "query": "인천광역시 옹진군 대청도로 섬 여행을 가려는데, 봄철 안개나 황사 위기경보 관심 단계 떴을 때 가정이나 노약자가 준비해야 할 보건용 마스크나 긴소매 의복 매뉴얼이 궁금해.",
+    "expected_result": "answer",
+    "expected_disaster_type": "황사",
+    "rationale": "황사 위기경보 관심 단계(발생 전) 보호안경, 마스크, 긴소매 의복 준비 요령이 DB에 존재합니다."
+  },
+  {
+    "id": 13,
+    "group": "A",
+    "query": "[긴급] 지금 강원도 삼척시 근덕면 계곡에서 물놀이 중인데 갑자기 비가 쏟아지면서 하천 급류 수위가 높아지고 있어요! 머리 다치지 않게 탈출하거나 물에 누워 뜨는 대처법 빨리 알려주세요!",
+    "expected_result": "answer",
+    "expected_disaster_type": "여름철물놀이",
+    "rationale": "계곡 익수 시 누워뜨기 자세, 머리 보호 및 대각선 탈출 요령이 DB에 포함된 반응형 질문입니다."
+  },
+  {
+    "id": 14,
+    "group": "A",
+    "query": "방금 전라북도 부안군 변산반도 근처 도로를 운전 중인데 미세먼지 경보 발령 긴급재난문자를 받았습니다. 유치원생 아이가 동반하고 있는데 수업 단축이나 마스크 착용 가이드라인이 어떻게 되죠?",
+    "expected_result": "answer",
+    "expected_disaster_type": "미세먼지",
+    "rationale": "미세먼지 경보 발령 시 차량 운전자 행동 수칙 및 유치원 수업 단축 등의 내용이 DB에 매칭됩니다."
+  },
+  {
+    "id": 15,
+    "group": "A",
+    "query": "충청남도 태안군 갯벌 체험장에 아이랑 들어왔는데 해무가 심해지더니 밀물이 들어오는 것 같아요! 무릎 이상 깊이 빠졌을 때 포복 자세로 기어 나오는 대처 요령이랑 해로드 앱 신고법 가르쳐줘!",
+    "expected_result": "answer",
+    "expected_disaster_type": "여름철물놀이",
+    "rationale": "갯벌 무릎 이상 깊이 빠졌을 때의 포복 탈출 및 해로드 앱 신고 요령이 DB에 있는 반응형 질문입니다."
+  },
+  {
+    "id": 16,
+    "group": "A",
+    "query": "대전광역시 유성구의 한 다중이용시설 상가 건물인데 쿵 하는 소리와 함께 벽체 대리석 마감재가 떨어지고 기동이 휘는 붕괴 징후가 보입니다! 신발 신고 계단으로 대피할 때의 수칙이 뭡니까?",
+    "expected_result": "answer",
+    "expected_disaster_type": "붕괴",
+    "rationale": "건축물 붕괴 징조(마감재 탈락, 기둥 휨) 발생 시 계단 대피 및 신발 착용 수칙이 DB에 있습니다."
+  },
+  {
+    "id": 17,
+    "group": "A",
+    "query": "지금 세종특별자치시 연서면 조천변을 산책 중인데 하천 수면 위에 기름 띠가 광범위하게 퍼져 있고 물고기들이 폐사해 있습니다. 환경오염이나 대규모 수질오염 신고 번호와 음용 중단 수칙을 알려주십시오.",
+    "expected_result": "answer",
+    "expected_disaster_type": "환경오염사고",
+    "rationale": "대규모 수질오염 구별법(기름 유출, 물고기 폐사) 및 신고, 사용 중단 수칙이 DB에 매핑됩니다."
+  },
+  {
+    "id": 18,
+    "group": "A",
+    "query": "광주광역시 북구의 한 아파트 숙소인데 아래층에서 불길이 솟아오른다는 대피 방송이 나옵니다. 복도에 연기가 가득해 세대 밖으로 탈출이 불가한데 젖은 수건으로 틈새 막는 조치법이 맞나요?",
+    "expected_result": "answer",
+    "expected_disaster_type": "화재",
+    "rationale": "공동주택 화재 시 세대 밖 대피가 불가능한 경우 문을 닫고 젖은 수건으로 틈새를 막는 수칙이 DB에 있습니다."
+  },
+  {
+    "id": 19,
+    "group": "A",
+    "query": "전라남도 완도군 항구 인근 유람선인데 바다에 대규모 유류 유출 해양오염사고가 발생해 위험지대 거주 노약자 대피 명령이 떨어졌습니다. 비누 세척이나 호흡기 보호 방독면 마스크 대처 요령이 어떻게 되나요?",
+    "expected_result": "answer",
+    "expected_disaster_type": "해양오염사고",
+    "rationale": "해양오염사고 발생 시 호흡기 보호 대피 및 오염물 접촉 시 비누 세척 수칙이 DB에 존재합니다."
+  },
+  {
+    "id": 20,
+    "group": "A",
+    "query": "동해안으로 서핑하러 왔는데 방금 강원도 양양군 해안가에 지진해일 특보 떴어! 해발 고도 10m 이상 언덕이나 튼튼한 건물 3층 이상으로 피하라는 매뉴얼이 진짜 공식 문서에 있어?",
+    "expected_result": "answer",
+    "expected_disaster_type": "지진해일",
+    "rationale": "지진해일 발생 시 해발 고도 10m 이상 또는 건물 3층 이상 대피 수칙이 DB에 수록되어 있습니다."
+  },
+  {
+    "id": 21,
+    "group": "B",
+    "subtype": "irrelevant",
+    "query": "다음 달에 부산광역시 해운대구로 우정 여행 가는데, 요즘 SNS에서 제일 핫한 광안리나 해운대 근처 맛집이나 횟집 리스트 좀 추천해 줄 수 있어?",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "재난안전이나 행동요령과 전혀 상관없는 일상적인 여행 맛집 정보 문의이므로 에스컬레이션되어야 합니다."
+  },
+  {
+    "id": 22,
+    "group": "B",
+    "subtype": "irrelevant",
+    "query": "미국 달러 환율이 요즘 계속 변동이 심하던데, 인천국제공항 공항 환전소에서 환전하는 게 유리한지 아니면 모바일 앱으로 미리 우대 환전 신청하는 게 나은가요?",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "재난안전 가이드 에이전트의 도메인을 벗어난 단순 금융/환율 관련 질문이므로 답변을 거부해야 합니다."
+  },
+  {
+    "id": 23,
+    "group": "B",
+    "subtype": "uncovered_type",
+    "query": "강원도 강릉시 국도를 운전하다가 대형 덤프트럭이랑 교통사고가 났습니다. 과실 비율 확인이나 보험사 접수, 차량 통제 대응 요령 매뉴얼을 보여주세요.",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "재난문자 통계에는 교통사고/교통통제가 존재하나, 공식 행동요령 DB에는 없는 카테고리이므로 에스컬레이션됩니다."
+  },
+  {
+    "id": 24,
+    "group": "B",
+    "subtype": "uncovered_type",
+    "query": "경상남도 창원시 호텔 숙소인데 도시 전체에 대규모 정전이 발생해서 에어컨이랑 조명이 다 나갔고 스마트폰 통신도 불통입니다. 에너지 통신 장애 대처 행동요령이 있나요?",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "정전, 통신, 에너지 등의 카테고리는 공식 행동요령 DB에 없으므로 답변을 거부하고 긴급 연락처로 연계해야 합니다."
+  },
+  {
+    "id": 25,
+    "group": "B",
+    "subtype": "uncovered_type",
+    "query": "해외여행 복귀 후에 고열과 기침이 나서 보건소 전염병 신고나 조류인플루엔자(AI) 감염 격리 지침 매뉴얼을 찾고 싶은데 정부 행동요령 가이드라인 알려줘.",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "전염병 및 조류인플루엔자(AI)는 해당 에이전트의 22개 행동요령 DB에 포함되지 않은 유형입니다."
+  },
+  {
+    "id": 26,
+    "group": "B",
+    "subtype": "uncovered_type",
+    "query": "서울특별시 중구 명동 시내 한복판에서 폭발 테러 의심 물품을 발견했거나 민방공 대피 경보가 울렸을 때 여행객 행동 지침이나 대피소 찾는 법을 즉시 연동해 주십시오.",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "테러 및 민방공 상황은 행동요령 DB가 구축되어 있지 않으므로 신속히 에스컬레이션 가이드로 빠져나가야 합니다."
+  },
+  {
+    "id": 27,
+    "group": "B",
+    "subtype": "boundary",
+    "query": "지진이 나면 바다에서 지진해일(쓰나미)도 무조건 같이 세트로 발생하는 건지, 두 재난의 과학적인 상관관계와 연쇄 발령 기준 메커니즘을 상세히 알고 싶습니다.",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "지진과 지진해일 단어가 모두 포함되어 벡터 검색이 교차할 수 있으나, 단순 과학적 연쇄 메커니즘은 행동요령 매뉴얼에 없으므로 에스컬레이션되어야 합니다."
+  },
+  {
+    "id": 28,
+    "group": "B",
+    "subtype": "boundary",
+    "query": "여름철 물놀이를 하다가 해파리에 쏘였을 때 바닷물 세척 말고, 바다뱀이나 독을 가진 해양 유독 생물 전체에 대한 응급처치 해독 수칙도 매뉴얼에 기재되어 있니?",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "여름철물놀이/해파리 수칙은 있지만 바다뱀 등 '해양 유독 생물 전체 해독 수칙'은 범위 밖의 경계선 케이스이므로 답변을 거부해야 합니다."
+  },
+  {
+    "id": 29,
+    "group": "B",
+    "subtype": "boundary",
+    "query": "폭염주의보가 내린 날 장시간 자전거 라이딩 여행을 하다가 다리에 심한 쥐가 나거나 일사병으로 쓰러진 사람에게 포도당을 먹이는 구체적인 의료 응급처치 수칙을 알려줘.",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "폭염과 응급처치 카테고리와 유사해 보이지만, 포도당 투여 등 전문 의료 응급처치 수칙은 공식 행동요령 근거가 부족하므로 에스컬레이션 대상입니다."
+  },
+  {
+    "id": 30,
+    "group": "B",
+    "subtype": "boundary",
+    "query": "집안 내부나 노후 건축물 붕괴 사고가 아니라, 산간 지역 여행 중 도로 비탈면 석축이나 옹벽이 무너지면서 차량이 매몰되는 대규모 토사 붕괴 시 구조 장비 사용법이 있나요?",
+    "expected_result": "escalate",
+    "expected_disaster_type": null,
+    "rationale": "건축물 붕괴/산사태와 헷갈릴 수 있는 경계선 질문이지만, 여행객을 위한 '구조 장비 사용법'은 대피 요령 DB에 없으므로 에스컬레이션해야 합니다."
+  }
+]

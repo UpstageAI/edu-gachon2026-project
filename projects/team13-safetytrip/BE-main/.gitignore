@@ -1,0 +1,11 @@
+.env
+raw_data/
+processed_data/
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.log
+.pytest_cache/
+.DS_Store
+.coverage

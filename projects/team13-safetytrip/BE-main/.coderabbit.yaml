@@ -1,0 +1,18 @@
+language: "ko-KR"
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!raw_data/**"
+    - "!processed_data/**"
+    - "!venv/**"
+    - "!.venv/**"
+
+chat:
+  auto_reply: true
