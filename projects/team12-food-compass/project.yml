@@ -1,0 +1,69 @@
+schema_version: 1
+
+team:
+  number: 12
+  folder_name: team12-food-compass
+  name: food-compass
+  members:
+    - name: 김단아
+      role: chroma DB, AI, RAG
+      github: kda5337
+    - name: 김재우
+      role: Backend, DB, AI, Infra/CI-CD 
+      github: turtle-jaewoo 
+
+project:
+  title: Food Compass (푸드 나침반)
+  summary: 고물가 시대 자취생을 위해 농수산물·가공식품 가격을 비교하고 "지금 사도 되는지, 대체품은 없는지"를 판단해주는 AI 챗봇입니다.
+  category: AI 서비스
+  keywords:
+    - AI
+    - LangGraph
+    - RAG
+    - Chatbot
+
+problem:
+  summary: 농수산물은 계절·지역·판매처·수급 상황에 따라 가격 차이가 커서 자취생이 직접 비교해 합리적인 구매 판단을 내리기 어렵습니다.
+  target_users:
+    - 자취생/1인 가구
+    - 식비 부담을 줄이고 싶은 대학생·사회초년생
+
+solution:
+  summary: KAMIS·참가격 공공 API로 시세를 매일 수집해 Supabase에 저장하고, LangGraph 에이전트가 가격을 판정해 비쌀 경우 RAG로 대체 품목까지 추천합니다.
+  main_features:
+    - 자연어 질의 기반 실시간 시세 조회 및 비쌈/적정/쌈 판정
+    - RAG(ChromaDB) 기반 대체 품목 추천 및 제철·보관법 지식 답변
+    - 원물↔가공식품 단위 정규화 비교 (예: 쌀 vs 즉석밥)
+    - SSE 스트리밍 기반 실시간 챗봇 응답
+
+tech_stack:
+  frontend:
+    - Streamlit
+  backend:
+    - FastAPI
+    - LangGraph
+  ai:
+    - Upstage Solar
+    - ChromaDB (RAG)
+  database:
+    - Supabase (PostgreSQL)
+    - ChromaDB
+  infra:
+    - Docker
+    - GitHub Actions (CI/CD)
+    - GHCR
+    - GCP Compute Engine
+
+links:
+  demo_video_url:
+  deployed_url: http://food-compass.kro.kr:8501/
+  presentation_url:
+  repository_url: https://github.com/food-compass-organization/food-compass
+
+blog:
+  slug: food-compass
+  tags:
+    - AI
+    - LangGraph
+    - RAG
+  cover_image: assets/cover.png

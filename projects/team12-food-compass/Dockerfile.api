@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1
+FROM python:3.12-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON=3.12 \
+    PYTHONUNBUFFERED=1
+
+# 의존성만 먼저 설치하는 레이어 — app/ 코드만 바뀌었을 땐 이 레이어가 캐시돼서 재빌드 안 됨
+COPY pyproject.toml uv.lock ./
+# [2026-07-15 추가] --group stretch(langfuse/langchain) — 이게 빠져있어서 실제 배포
+# 서버에는 Langfuse 트레이싱 코드(app/core/tracing.py)는 있는데 정작 langfuse 패키지가
+# 없어 매 요청마다 ImportError로 조용히 건너뛰고 있었음(운영 환경에서 트레이스가 하나도
+# 안 찍히던 원인 — 로컬 검증 스크립트만 Langfuse에 찍혔던 이유).
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --group stretch
+
+# [2026-07-14 추가] app/tools/vector_store.py가 쓰는 임베딩 모델(jhgan/ko-sroberta-multitask,
+# ~443MB)을 빌드 타임에 미리 받아 이미지에 포함시킴 — 안 그러면 컨테이너가 재배포/재시작될
+# 때마다 매번 새로 다운로드해야 해서, CD 헬스체크(최대 60초) 안에 기동을 못 마치고
+# 자동 롤백되는 문제가 실제로 발생했음(2026-07-14 CD 배포 실패로 확인).
+# `uv run`이 아니라 `.venv/bin/python`을 직접 써야 함 — `uv run`은 실행 시 dev 그룹까지
+# 다시 동기화해서 `--no-dev`로 설치한 걸 무의미하게 만듦(CMD에서 이미 겪었던 것과 동일 문제)
+RUN .venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('jhgan/ko-sroberta-multitask')"
+
+COPY app/ app/
+
+# [2026-07-15 추가] 지식 RAG 적재 스크립트와 원본 문서를 이미지에 포함 — 프로덕션에서
+# `docker compose exec api .venv/bin/python data/insertion_knowledge_rag.py`로 컨테이너
+# 안에서 바로 실행해 food_knowledge 컬렉션을 (재)적재하기 위함. 컨테이너엔 chromadb·
+# 임베딩 모델이 이미 있고 data/chroma_db는 볼륨 마운트라, 여기서 쓴 결과가 호스트에 남음.
+# (data/chroma_db 자체는 .dockerignore로 제외되므로 무거운 로컬 DB는 안 들어감.)
+# 앞으로 지식 문서 수정 시: JSON 편집 → 배포 → 위 명령 재실행 흐름으로 반복 활용.
+COPY data/insertion_knowledge_rag.py ./data/insertion_knowledge_rag.py
+COPY data/build_substitute_collection.py ./data/build_substitute_collection.py
+COPY data/inspect_chroma.py ./data/inspect_chroma.py
+COPY data/rag_docs/ ./data/rag_docs/
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+EXPOSE 8000
+
+CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000"]

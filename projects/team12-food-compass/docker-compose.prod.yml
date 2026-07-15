@@ -1,0 +1,20 @@
+services:
+  api:
+    image: ${API_IMAGE:-ghcr.io/food-compass-organization/food-compass/api:latest}
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data/chroma_db:/app/data/chroma_db
+    restart: unless-stopped
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/food-compass-organization/food-compass/frontend:latest}
+    ports:
+      - "8501:8501"
+    environment:
+      BACKEND_URL: http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped

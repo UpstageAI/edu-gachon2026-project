@@ -1,0 +1,26 @@
+# API 키 값 등 보호해야하는 값들
+.env
+
+# chromaDB의 경우 용량 문제로 인한 github push X
+/data/chroma
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Mock/테스트 산출물
+.pytest_cache/
+
+# 개발 노트 (로컬 전용, GitHub push 제외)
+dev_notes/
+
+# 발표자료 준비 노트 (로컬 전용, GitHub push 제외)
+presentation_notes/
+
+# ChromaDB 로컬 DB
+chroma_db/
+
+#
+CLAUDE.md

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"python3.11\\\\|GSUTIL_PYTHON\\\\|order_python\" \"C:\\\\Program Files \\(x86\\)\\\\Google\\\\Cloud SDK\\\\google-cloud-sdk\\\\bin\\\\gsutil\")",
+      "Read(//c/Program Files \\\\\\(x86\\\\\\)/Google/Cloud SDK/google-cloud-sdk/bin/**)"
+    ]
+  }
+}
