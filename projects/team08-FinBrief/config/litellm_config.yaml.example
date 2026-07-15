@@ -1,0 +1,66 @@
+# FinBrief optional LiteLLM Proxy example.
+#
+# The current MVP calls LiteLLM through the Python SDK. Use this file only when
+# you decide to run a separate LiteLLM Proxy/Gateway service on GCE or another
+# host.
+
+model_list:
+  - model_name: finbrief-primary
+    litellm_params:
+      model: openai/solar-pro
+      api_base: os.environ/FINBRIEF_LLM_API_BASE
+      api_key: os.environ/UPSTAGE_API_KEY
+  - model_name: finbrief-fallback
+    litellm_params:
+      model: os.environ/LITELLM_FALLBACK_MODEL
+      api_key: os.environ/OPENAI_API_KEY
+
+router_settings:
+  routing_strategy: simple-shuffle
+  enable_pre_call_checks: true
+  num_retries: 2
+  timeout: 30
+  fallbacks:
+    - finbrief-primary:
+        - finbrief-fallback
+
+litellm_settings:
+  skip_system_message_in_guardrail: true
+
+guardrails:
+  - guardrail_name: finbrief-financial-safety
+    litellm_params:
+      guardrail: litellm_content_filter
+      mode: [pre_call, post_call]
+      default_on: true
+      patterns:
+        - pattern_type: prebuilt
+          pattern_name: email
+          action: MASK
+        - pattern_type: prebuilt
+          pattern_name: aws_access_key
+          action: BLOCK
+        - pattern_type: prebuilt
+          pattern_name: github_token
+          action: BLOCK
+      categories:
+        - category: denied_financial_advice
+          enabled: true
+          action: BLOCK
+          severity_threshold: medium
+      blocked_words:
+        - keyword: "확정 수익"
+          action: BLOCK
+          description: "Investment return guarantee"
+        - keyword: "목표가"
+          action: BLOCK
+          description: "Specific target price"
+        - keyword: "지금 사야"
+          action: BLOCK
+          description: "Direct buy recommendation"
+        - keyword: "지금 팔아야"
+          action: BLOCK
+          description: "Direct sell recommendation"
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

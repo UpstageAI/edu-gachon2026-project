@@ -1,0 +1,440 @@
+name: FinBrief CD
+
+on:
+  workflow_run:
+    workflows:
+      - FinBrief CI
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Deployment mode"
+        required: true
+        default: deploy
+        type: choice
+        options:
+          - deploy
+          - rollback
+      image:
+        description: "Full image reference for rollback. Empty uses server .previous_image."
+        required: false
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/finbrief-api
+  SERVICE_NAME: finbrief-api
+  SERVICE_PORT: "8000"
+
+jobs:
+  resolve:
+    name: Resolve Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+      ref: ${{ steps.plan.outputs.ref }}
+      image: ${{ steps.plan.outputs.image }}
+      image_repo: ${{ steps.plan.outputs.image_repo }}
+      should_build: ${{ steps.plan.outputs.should_build }}
+      should_deploy: ${{ steps.plan.outputs.should_deploy }}
+    steps:
+      - name: Resolve deployment plan
+        id: plan
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WORKFLOW_RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          DISPATCH_MODE: ${{ inputs.mode }}
+          DISPATCH_IMAGE: ${{ inputs.image }}
+          DEFAULT_REF: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          mode="${DISPATCH_MODE:-deploy}"
+          ref="$DEFAULT_REF"
+          should_build="true"
+          should_deploy="true"
+          image=""
+
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            mode="deploy"
+            ref="$WORKFLOW_RUN_HEAD_SHA"
+
+            if [ "$WORKFLOW_RUN_CONCLUSION" != "success" ]; then
+              should_build="false"
+              should_deploy="false"
+            fi
+          fi
+
+          image_repo="$(printf '%s/%s' "$REGISTRY" "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')"
+
+          if [ "$mode" = "rollback" ]; then
+            should_build="false"
+            image="$DISPATCH_IMAGE"
+          else
+            image="${image_repo}:sha-${ref:0:12}"
+          fi
+
+          {
+            echo "mode=$mode"
+            echo "ref=$ref"
+            echo "image=$image"
+            echo "image_repo=$image_repo"
+            echo "should_build=$should_build"
+            echo "should_deploy=$should_deploy"
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build & Push to GHCR
+    runs-on: ubuntu-latest
+    needs: resolve
+    if: needs.resolve.outputs.should_build == 'true'
+    outputs:
+      image: ${{ needs.resolve.outputs.image }}
+    steps:
+      - name: Checkout deployment source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.ref }}
+
+      - name: Log in to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" \
+            | docker login "$REGISTRY" -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Set up Docker Buildx
+        run: |
+          set -euo pipefail
+          docker buildx create --use
+          docker buildx inspect --bootstrap
+
+      - name: Build and push image
+        env:
+          IMAGE: ${{ needs.resolve.outputs.image }}
+          IMAGE_REPO: ${{ needs.resolve.outputs.image_repo }}
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            --file Dockerfile \
+            --tag "$IMAGE" \
+            --tag "${IMAGE_REPO}:main" \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            --push \
+            .
+
+  deploy:
+    name: Deploy to Compute Engine
+    runs-on: ubuntu-latest
+    needs:
+      - resolve
+      - build
+    if: always() && needs.resolve.outputs.should_deploy == 'true' && (needs.resolve.outputs.should_build == 'false' || needs.build.result == 'success')
+    steps:
+      - name: Validate deployment secrets
+        env:
+          GCE_HOST: ${{ secrets.GCE_HOST }}
+          GCE_USERNAME: ${{ secrets.GCE_USERNAME }}
+          GCE_SSH_KEY: ${{ secrets.GCE_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$GCE_HOST"
+          test -n "$GCE_USERNAME"
+          test -n "$GCE_SSH_KEY"
+
+      - name: Prepare SSH
+        env:
+          GCE_HOST: ${{ secrets.GCE_HOST }}
+          GCE_SSH_KEY: ${{ secrets.GCE_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$GCE_SSH_KEY" > "$HOME/.ssh/finbrief"
+          chmod 600 "$HOME/.ssh/finbrief"
+          ssh-keyscan -H "$GCE_HOST" >> "$HOME/.ssh/known_hosts"
+
+      - name: Deploy image over SSH
+        env:
+          DEPLOY_IMAGE: ${{ needs.resolve.outputs.image }}
+          DEPLOY_MODE: ${{ needs.resolve.outputs.mode }}
+          GCE_HOST: ${{ secrets.GCE_HOST }}
+          GCE_USERNAME: ${{ secrets.GCE_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USERNAME: ${{ github.actor }}
+          SERVICE_PORT_SECRET: ${{ secrets.SERVICE_PORT }}
+          ENABLE_MOCK_DATA_SECRET: ${{ secrets.ENABLE_MOCK_DATA }}
+          FINBRIEF_LLM_STUB_SECRET: ${{ secrets.FINBRIEF_LLM_STUB }}
+          FINBRIEF_IMAGE_STUB_SECRET: ${{ secrets.FINBRIEF_IMAGE_STUB }}
+          DELIVERY_DRY_RUN_SECRET: ${{ secrets.DELIVERY_DRY_RUN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_DB_SCHEMA: ${{ secrets.SUPABASE_DB_SCHEMA }}
+          LITELLM_MODEL: ${{ secrets.LITELLM_MODEL }}
+          LITELLM_FALLBACK_MODEL: ${{ secrets.LITELLM_FALLBACK_MODEL }}
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FINBRIEF_IMAGE_MODEL: ${{ secrets.FINBRIEF_IMAGE_MODEL }}
+          FINBRIEF_FONT: ${{ secrets.FINBRIEF_FONT }}
+          FINBRIEF_REPORT_OUT: ${{ secrets.FINBRIEF_REPORT_OUT }}
+          LANGFUSE_ENABLED: ${{ secrets.LANGFUSE_ENABLED }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
+          LANGFUSE_OTEL_HOST: ${{ secrets.LANGFUSE_OTEL_HOST }}
+          LANGFUSE_CAPTURE_IO: ${{ secrets.LANGFUSE_CAPTURE_IO }}
+          LANGFUSE_FLUSH_ON_SHUTDOWN: ${{ secrets.LANGFUSE_FLUSH_ON_SHUTDOWN }}
+          FINBRIEF_TRACE_SALT: ${{ secrets.FINBRIEF_TRACE_SALT }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+          NEWS_RSS_URLS: ${{ secrets.NEWS_RSS_URLS }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_GUILD_ID: ${{ secrets.DISCORD_GUILD_ID }}
+        run: |
+          set -euo pipefail
+
+          b64() {
+            printf '%s' "${1:-}" | base64 -w 0
+          }
+
+          service_port="${SERVICE_PORT_SECRET:-$SERVICE_PORT}"
+          enable_mock_data="${ENABLE_MOCK_DATA_SECRET:-true}"
+          llm_stub="${FINBRIEF_LLM_STUB_SECRET:-1}"
+          image_stub="${FINBRIEF_IMAGE_STUB_SECRET:-1}"
+          delivery_dry_run="${DELIVERY_DRY_RUN_SECRET:-true}"
+          report_out="${FINBRIEF_REPORT_OUT:-/app/reports}"
+          langfuse_host="${LANGFUSE_HOST:-https://cloud.langfuse.com}"
+          langfuse_base_url="${LANGFUSE_BASE_URL:-$langfuse_host}"
+          langfuse_otel_host="${LANGFUSE_OTEL_HOST:-$langfuse_base_url}"
+          langfuse_capture_io="${LANGFUSE_CAPTURE_IO:-true}"
+          langfuse_flush_on_shutdown="${LANGFUSE_FLUSH_ON_SHUTDOWN:-false}"
+          finbrief_trace_salt="${FINBRIEF_TRACE_SALT:-}"
+          deploy_dir="/home/${GCE_USERNAME}/finbrief"
+          ssh_target="${GCE_USERNAME}@${GCE_HOST}"
+
+          ssh -i "$HOME/.ssh/finbrief" "$ssh_target" \
+            "DEPLOY_DIR='$deploy_dir' DEPLOY_IMAGE='$DEPLOY_IMAGE' DEPLOY_MODE='$DEPLOY_MODE' GHCR_TOKEN_B64='$(b64 "$GHCR_TOKEN")' GHCR_USERNAME='$GHCR_USERNAME' REGISTRY='$REGISTRY' SERVICE_PORT='$service_port' ENABLE_MOCK_DATA_B64='$(b64 "$enable_mock_data")' FINBRIEF_LLM_STUB_B64='$(b64 "$llm_stub")' FINBRIEF_IMAGE_STUB_B64='$(b64 "$image_stub")' DELIVERY_DRY_RUN_B64='$(b64 "$delivery_dry_run")' SUPABASE_URL_B64='$(b64 "$SUPABASE_URL")' SUPABASE_ANON_KEY_B64='$(b64 "$SUPABASE_ANON_KEY")' SUPABASE_SERVICE_ROLE_KEY_B64='$(b64 "$SUPABASE_SERVICE_ROLE_KEY")' SUPABASE_DB_SCHEMA_B64='$(b64 "${SUPABASE_DB_SCHEMA:-public}")' LITELLM_MODEL_B64='$(b64 "${LITELLM_MODEL:-upstage/solar-pro}")' LITELLM_FALLBACK_MODEL_B64='$(b64 "$LITELLM_FALLBACK_MODEL")' UPSTAGE_API_KEY_B64='$(b64 "$UPSTAGE_API_KEY")' GEMINI_API_KEY_B64='$(b64 "$GEMINI_API_KEY")' FINBRIEF_IMAGE_MODEL_B64='$(b64 "${FINBRIEF_IMAGE_MODEL:-gemini-3.1-flash-lite-image}")' FINBRIEF_FONT_B64='$(b64 "$FINBRIEF_FONT")' FINBRIEF_REPORT_OUT_B64='$(b64 "$report_out")' LANGFUSE_ENABLED_B64='$(b64 "${LANGFUSE_ENABLED:-false}")' LANGFUSE_PUBLIC_KEY_B64='$(b64 "$LANGFUSE_PUBLIC_KEY")' LANGFUSE_SECRET_KEY_B64='$(b64 "$LANGFUSE_SECRET_KEY")' LANGFUSE_HOST_B64='$(b64 "$langfuse_host")' LANGFUSE_BASE_URL_B64='$(b64 "$langfuse_base_url")' LANGFUSE_OTEL_HOST_B64='$(b64 "$langfuse_otel_host")' LANGFUSE_CAPTURE_IO_B64='$(b64 "$langfuse_capture_io")' LANGFUSE_FLUSH_ON_SHUTDOWN_B64='$(b64 "$langfuse_flush_on_shutdown")' FINBRIEF_TRACE_SALT_B64='$(b64 "$finbrief_trace_salt")' FRED_API_KEY_B64='$(b64 "$FRED_API_KEY")' ECOS_API_KEY_B64='$(b64 "$ECOS_API_KEY")' NEWS_RSS_URLS_B64='$(b64 "$NEWS_RSS_URLS")' DISCORD_BOT_TOKEN_B64='$(b64 "$DISCORD_BOT_TOKEN")' DISCORD_GUILD_ID_B64='$(b64 "$DISCORD_GUILD_ID")' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          decode() {
+            printf '%s' "${1:-}" | base64 -d
+          }
+
+          GHCR_TOKEN="$(decode "$GHCR_TOKEN_B64")"
+
+          write_compose() {
+            cat > docker-compose.yml <<'COMPOSE'
+          name: finbrief
+
+          services:
+            finbrief-api:
+              image: ${APP_IMAGE:?APP_IMAGE is required}
+              container_name: finbrief-api
+              restart: unless-stopped
+              env_file:
+                - .env
+              environment:
+                APP_NAME: ${APP_NAME:-FinBrief}
+                APP_ENV: ${APP_ENV:-prod}
+                FINBRIEF_REPORT_OUT: ${FINBRIEF_REPORT_OUT:-/app/reports}
+              ports:
+                - "${SERVICE_PORT:-8000}:8000"
+              volumes:
+                - finbrief_reports:/app/reports
+              healthcheck:
+                test:
+                  [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3).read()",
+                  ]
+                interval: 30s
+                timeout: 5s
+                retries: 3
+                start_period: 10s
+
+            finbrief-bot:
+              image: ${APP_IMAGE:?APP_IMAGE is required}
+              container_name: finbrief-bot
+              restart: unless-stopped
+              env_file:
+                - .env
+              environment:
+                APP_ENV: ${APP_ENV:-prod}
+              command: ["python", "-m", "app.services.discord_bot"]
+              healthcheck:
+                disable: true
+
+            finbrief-scheduler:
+              image: ${APP_IMAGE:?APP_IMAGE is required}
+              container_name: finbrief-scheduler
+              restart: unless-stopped
+              env_file:
+                - .env
+              environment:
+                APP_ENV: ${APP_ENV:-prod}
+                FINBRIEF_BATCH_HOUR: ${FINBRIEF_BATCH_HOUR:-7}
+              command: ["python", "-m", "app.services.scheduler"]
+              healthcheck:
+                disable: true
+
+          volumes:
+            finbrief_reports:
+          COMPOSE
+          }
+
+          append_env() {
+            printf '%s=%s\n' "$1" "$2" >> .env
+          }
+
+          write_env() {
+            image="$1"
+            {
+              printf 'APP_NAME=FinBrief\n'
+              printf 'APP_VERSION=0.1.0\n'
+              printf 'APP_ENV=prod\n'
+              printf 'API_V1_PREFIX=/api/v1\n'
+              printf 'LOG_LEVEL=INFO\n'
+              printf 'DEFAULT_TIMEZONE=Asia/Seoul\n'
+              printf 'SERVICE_PORT=%s\n' "$SERVICE_PORT"
+              printf 'APP_IMAGE=%s\n' "$image"
+            } > .env
+
+            append_env ENABLE_MOCK_DATA "$(decode "$ENABLE_MOCK_DATA_B64")"
+            append_env FINBRIEF_LLM_STUB "$(decode "$FINBRIEF_LLM_STUB_B64")"
+            append_env FINBRIEF_IMAGE_STUB "$(decode "$FINBRIEF_IMAGE_STUB_B64")"
+            append_env DELIVERY_DRY_RUN "$(decode "$DELIVERY_DRY_RUN_B64")"
+            append_env SUPABASE_URL "$(decode "$SUPABASE_URL_B64")"
+            append_env SUPABASE_ANON_KEY "$(decode "$SUPABASE_ANON_KEY_B64")"
+            append_env SUPABASE_SERVICE_ROLE_KEY "$(decode "$SUPABASE_SERVICE_ROLE_KEY_B64")"
+            append_env SUPABASE_DB_SCHEMA "$(decode "$SUPABASE_DB_SCHEMA_B64")"
+            append_env LITELLM_MODEL "$(decode "$LITELLM_MODEL_B64")"
+            append_env LITELLM_FALLBACK_MODEL "$(decode "$LITELLM_FALLBACK_MODEL_B64")"
+            append_env UPSTAGE_API_KEY "$(decode "$UPSTAGE_API_KEY_B64")"
+            append_env GEMINI_API_KEY "$(decode "$GEMINI_API_KEY_B64")"
+            append_env FINBRIEF_IMAGE_MODEL "$(decode "$FINBRIEF_IMAGE_MODEL_B64")"
+            append_env FINBRIEF_FONT "$(decode "$FINBRIEF_FONT_B64")"
+            append_env FINBRIEF_REPORT_OUT "$(decode "$FINBRIEF_REPORT_OUT_B64")"
+            append_env LANGFUSE_ENABLED "$(decode "$LANGFUSE_ENABLED_B64")"
+            append_env LANGFUSE_PUBLIC_KEY "$(decode "$LANGFUSE_PUBLIC_KEY_B64")"
+            append_env LANGFUSE_SECRET_KEY "$(decode "$LANGFUSE_SECRET_KEY_B64")"
+            append_env LANGFUSE_HOST "$(decode "$LANGFUSE_HOST_B64")"
+            append_env LANGFUSE_BASE_URL "$(decode "$LANGFUSE_BASE_URL_B64")"
+            append_env LANGFUSE_OTEL_HOST "$(decode "$LANGFUSE_OTEL_HOST_B64")"
+            append_env LANGFUSE_CAPTURE_IO "$(decode "$LANGFUSE_CAPTURE_IO_B64")"
+            append_env LANGFUSE_FLUSH_ON_SHUTDOWN "$(decode "$LANGFUSE_FLUSH_ON_SHUTDOWN_B64")"
+            append_env FINBRIEF_TRACE_SALT "$(decode "$FINBRIEF_TRACE_SALT_B64")"
+            append_env FRED_API_KEY "$(decode "$FRED_API_KEY_B64")"
+            append_env ECOS_API_KEY "$(decode "$ECOS_API_KEY_B64")"
+            append_env NEWS_RSS_URLS "$(decode "$NEWS_RSS_URLS_B64")"
+            append_env DISCORD_BOT_TOKEN "$(decode "$DISCORD_BOT_TOKEN_B64")"
+            append_env DISCORD_GUILD_ID "$(decode "$DISCORD_GUILD_ID_B64")"
+          }
+
+          wait_for_health() {
+            for attempt in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:${SERVICE_PORT}/api/v1/health" > health.json; then
+                cat health.json
+                return 0
+              fi
+              sleep 2
+            done
+            return 1
+          }
+
+          mkdir -p "$DEPLOY_DIR"
+          cd "$DEPLOY_DIR"
+
+          old_image="$(cat .current_image 2>/dev/null || true)"
+
+          if [ "$DEPLOY_MODE" = "rollback" ] && [ -z "$DEPLOY_IMAGE" ]; then
+            if [ ! -s .previous_image ]; then
+              echo "Rollback requested but .previous_image does not exist."
+              exit 1
+            fi
+            DEPLOY_IMAGE="$(cat .previous_image)"
+          fi
+
+          if [ -z "$DEPLOY_IMAGE" ]; then
+            echo "DEPLOY_IMAGE is required."
+            exit 1
+          fi
+
+          # 디스크 여유 확보: 배포마다 sha 태그 이미지가 누적되어 인스턴스 디스크가
+          # 가득 차면 docker login 조차 실패한다("no space left on device").
+          # 실행 중 컨테이너가 참조하는 이미지는 보존되므로 안전하다.
+          echo "[cleanup] reclaiming disk before pull"
+          docker container prune -f || true
+          docker image prune -af || true
+          docker builder prune -af || true
+          df -h / || true
+
+          printf '%s' "$GHCR_TOKEN" \
+            | docker login "$REGISTRY" -u "$GHCR_USERNAME" --password-stdin
+
+          write_compose
+          write_env "$DEPLOY_IMAGE"
+
+          docker pull "$DEPLOY_IMAGE"
+          docker compose up -d --force-recreate
+
+          if wait_for_health; then
+            if [ -n "$old_image" ] && [ "$old_image" != "$DEPLOY_IMAGE" ]; then
+              printf '%s\n' "$old_image" > .previous_image
+            fi
+            printf '%s\n' "$DEPLOY_IMAGE" > .current_image
+            docker compose ps
+          else
+            echo "Health check failed for $DEPLOY_IMAGE."
+            docker compose ps || true
+            docker logs finbrief-api --tail 100 || true
+
+            if [ -n "$old_image" ] && [ "$old_image" != "$DEPLOY_IMAGE" ]; then
+              echo "Rolling back to $old_image."
+              write_env "$old_image"
+              docker pull "$old_image" || true
+              docker compose up -d --force-recreate
+              printf '%s\n' "$old_image" > .current_image
+            fi
+
+            exit 1
+          fi
+          REMOTE
+
+  summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs:
+      - resolve
+      - build
+      - deploy
+    if: always()
+    steps:
+      - name: Write deployment summary
+        run: |
+          {
+            echo "### FinBrief CD"
+            echo ""
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Mode | ${{ needs.resolve.outputs.mode }} |"
+            echo "| Image | ${{ needs.resolve.outputs.image }} |"
+            echo "| Build | ${{ needs.build.result }} |"
+            echo "| Deploy | ${{ needs.deploy.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

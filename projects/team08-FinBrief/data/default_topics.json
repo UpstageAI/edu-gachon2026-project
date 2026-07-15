@@ -1,0 +1,2275 @@
+[
+  {
+    "topic_id": "topic_usdkrw",
+    "name": "USD/KRW 환율",
+    "normalized_name": "usdkrw",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "KRW=X",
+        "query": "USD/KRW 환율",
+        "news_keywords": [
+          "환율",
+          "원달러",
+          "달러",
+          "USD/KRW"
+        ],
+        "notes": "시연용 원달러 환율 ticker"
+      },
+      {
+        "provider": "fred",
+        "series_id": "DEXKOUS",
+        "query": "USD/KRW exchange rate",
+        "news_keywords": [
+          "환율",
+          "원달러",
+          "달러"
+        ],
+        "notes": "FRED daily exchange rate"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_rate",
+    "name": "미국 10년물 금리",
+    "normalized_name": "us_rate",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "DGS10",
+        "query": "미국 10년물 국채금리",
+        "news_keywords": [
+          "미국 금리",
+          "국채금리",
+          "10년물",
+          "연준"
+        ],
+        "notes": "FRED 10-year treasury yield"
+      },
+      {
+        "provider": "yfinance",
+        "ticker": "^TNX",
+        "query": "US 10-year treasury yield",
+        "news_keywords": [
+          "미국 금리",
+          "국채금리",
+          "10년물"
+        ],
+        "notes": "Yahoo Finance treasury yield proxy"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_nasdaq",
+    "name": "나스닥",
+    "normalized_name": "nasdaq",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^IXIC",
+        "query": "나스닥 지수",
+        "news_keywords": [
+          "나스닥",
+          "기술주",
+          "미국 증시"
+        ],
+        "notes": "NASDAQ Composite"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_btc",
+    "name": "비트코인",
+    "normalized_name": "btc",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "BTC-USD",
+        "query": "비트코인 가격",
+        "news_keywords": [
+          "비트코인",
+          "가상자산",
+          "암호화폐",
+          "BTC"
+        ],
+        "notes": "Bitcoin USD spot proxy"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_semi",
+    "name": "반도체",
+    "normalized_name": "semi",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "SOXX",
+        "query": "반도체 섹터",
+        "news_keywords": [
+          "반도체",
+          "AI 반도체",
+          "엔비디아",
+          "메모리"
+        ],
+        "notes": "Semiconductor ETF proxy"
+      },
+      {
+        "provider": "rag",
+        "query": "반도체 업황과 AI 반도체 뉴스",
+        "news_keywords": [
+          "반도체",
+          "AI 반도체",
+          "엔비디아",
+          "HBM"
+        ],
+        "notes": "News-only sector retrieval"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_rate_2y",
+    "name": "미국 2년물 금리",
+    "normalized_name": "us_rate_2y",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "DGS2",
+        "query": "미국 2년물 국채금리",
+        "news_keywords": [
+          "미국 2년물",
+          "단기금리",
+          "국채금리"
+        ],
+        "notes": "FRED 2-year treasury yield"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_fed_funds",
+    "name": "미국 기준금리",
+    "normalized_name": "fed_funds",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "FEDFUNDS",
+        "query": "미국 연방기금금리",
+        "news_keywords": [
+          "기준금리",
+          "연방기금금리",
+          "연준",
+          "FOMC"
+        ],
+        "notes": "FRED effective federal funds rate"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kr_base_rate",
+    "name": "한국 기준금리",
+    "normalized_name": "kr_base_rate",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "ecos",
+        "query": "한국은행 기준금리",
+        "news_keywords": [
+          "한국 기준금리",
+          "한국은행",
+          "금통위"
+        ],
+        "notes": "ECOS policy rate"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kr_rate_10y",
+    "name": "한국 10년물 금리",
+    "normalized_name": "kr_rate_10y",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "ecos",
+        "query": "한국 국고채 10년 금리",
+        "news_keywords": [
+          "한국 국채",
+          "국고채",
+          "10년물"
+        ],
+        "notes": "ECOS treasury bond yield"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_cpi",
+    "name": "미국 CPI",
+    "normalized_name": "us_cpi",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "CPIAUCSL",
+        "query": "미국 소비자물가지수",
+        "news_keywords": [
+          "CPI",
+          "소비자물가",
+          "인플레이션",
+          "물가"
+        ],
+        "notes": "FRED CPI all items"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_core_cpi",
+    "name": "미국 근원 CPI",
+    "normalized_name": "us_core_cpi",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "CPILFESL",
+        "query": "미국 근원 소비자물가",
+        "news_keywords": [
+          "근원 CPI",
+          "근원물가",
+          "인플레이션"
+        ],
+        "notes": "FRED core CPI"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_pce",
+    "name": "미국 근원 PCE 물가",
+    "normalized_name": "us_pce",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "PCEPILFE",
+        "query": "미국 근원 PCE 물가지수",
+        "news_keywords": [
+          "PCE",
+          "개인소비지출",
+          "물가"
+        ],
+        "notes": "FRED core PCE price index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kr_cpi",
+    "name": "한국 CPI",
+    "normalized_name": "kr_cpi",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "ecos",
+        "query": "한국 소비자물가지수",
+        "news_keywords": [
+          "한국 물가",
+          "소비자물가",
+          "인플레이션"
+        ],
+        "notes": "ECOS consumer price index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_unemployment",
+    "name": "미국 실업률",
+    "normalized_name": "us_unemployment",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "UNRATE",
+        "query": "미국 실업률",
+        "news_keywords": [
+          "실업률",
+          "고용",
+          "노동시장"
+        ],
+        "notes": "FRED unemployment rate"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_payrolls",
+    "name": "미국 비농업 고용",
+    "normalized_name": "us_payrolls",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "PAYEMS",
+        "query": "미국 비농업 고용지표",
+        "news_keywords": [
+          "비농업고용",
+          "고용지표",
+          "일자리"
+        ],
+        "notes": "FRED total nonfarm payrolls"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_gdp",
+    "name": "미국 GDP",
+    "normalized_name": "us_gdp",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "GDPC1",
+        "query": "미국 실질 GDP",
+        "news_keywords": [
+          "GDP",
+          "경제성장률",
+          "성장률"
+        ],
+        "notes": "FRED real GDP"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kr_gdp",
+    "name": "한국 GDP",
+    "normalized_name": "kr_gdp",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "ecos",
+        "query": "한국 실질 GDP 성장률",
+        "news_keywords": [
+          "한국 GDP",
+          "경제성장률",
+          "성장률"
+        ],
+        "notes": "ECOS real GDP"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_vix",
+    "name": "VIX 변동성지수",
+    "normalized_name": "vix",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^VIX",
+        "query": "VIX 변동성지수",
+        "news_keywords": [
+          "VIX",
+          "변동성",
+          "공포지수"
+        ],
+        "notes": "CBOE volatility index"
+      },
+      {
+        "provider": "fred",
+        "series_id": "VIXCLS",
+        "query": "CBOE volatility index",
+        "news_keywords": [
+          "VIX",
+          "변동성"
+        ],
+        "notes": "FRED VIX close"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_wti",
+    "name": "WTI 유가",
+    "normalized_name": "wti",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "CL=F",
+        "query": "WTI 원유 선물",
+        "news_keywords": [
+          "유가",
+          "WTI",
+          "국제유가",
+          "원유"
+        ],
+        "notes": "WTI crude futures"
+      },
+      {
+        "provider": "fred",
+        "series_id": "DCOILWTICO",
+        "query": "WTI crude oil price",
+        "news_keywords": [
+          "유가",
+          "WTI"
+        ],
+        "notes": "FRED WTI spot"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_brent",
+    "name": "브렌트유",
+    "normalized_name": "brent",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "BZ=F",
+        "query": "브렌트유 선물",
+        "news_keywords": [
+          "브렌트유",
+          "유가",
+          "국제유가"
+        ],
+        "notes": "Brent crude futures"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_natgas",
+    "name": "천연가스",
+    "normalized_name": "natgas",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "NG=F",
+        "query": "천연가스 선물",
+        "news_keywords": [
+          "천연가스",
+          "가스价",
+          "에너지"
+        ],
+        "notes": "Henry Hub natgas futures"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_dxy",
+    "name": "달러 인덱스",
+    "normalized_name": "dxy",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "DX-Y.NYB",
+        "query": "달러 인덱스",
+        "news_keywords": [
+          "달러인덱스",
+          "DXY",
+          "달러 강세"
+        ],
+        "notes": "US dollar index"
+      },
+      {
+        "provider": "fred",
+        "series_id": "DTWEXBGS",
+        "query": "broad dollar index",
+        "news_keywords": [
+          "달러인덱스",
+          "달러"
+        ],
+        "notes": "FRED broad dollar index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_usdjpy",
+    "name": "USD/JPY 환율",
+    "normalized_name": "usdjpy",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "JPY=X",
+        "query": "달러엔 환율",
+        "news_keywords": [
+          "엔화",
+          "달러엔",
+          "USD/JPY",
+          "엔저"
+        ],
+        "notes": "USD/JPY spot"
+      },
+      {
+        "provider": "fred",
+        "series_id": "DEXJPUS",
+        "query": "USD/JPY exchange rate",
+        "news_keywords": [
+          "엔화",
+          "달러엔"
+        ],
+        "notes": "FRED USD/JPY"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_eurusd",
+    "name": "EUR/USD 환율",
+    "normalized_name": "eurusd",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "EURUSD=X",
+        "query": "유로달러 환율",
+        "news_keywords": [
+          "유로",
+          "유로달러",
+          "EUR/USD"
+        ],
+        "notes": "EUR/USD spot"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_usdcny",
+    "name": "USD/CNY 환율",
+    "normalized_name": "usdcny",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "CNY=X",
+        "query": "달러위안 환율",
+        "news_keywords": [
+          "위안화",
+          "달러위안",
+          "USD/CNY"
+        ],
+        "notes": "USD/CNY spot"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_breakeven_10y",
+    "name": "미국 기대 인플레이션(10년)",
+    "normalized_name": "breakeven_10y",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "T10YIE",
+        "query": "미국 10년 기대인플레이션",
+        "news_keywords": [
+          "기대인플레이션",
+          "BEI",
+          "물가"
+        ],
+        "notes": "FRED 10Y breakeven inflation"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_yield_spread",
+    "name": "미국 장단기 금리차(10Y-2Y)",
+    "normalized_name": "yield_spread",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "T10Y2Y",
+        "query": "미국 장단기 금리차",
+        "news_keywords": [
+          "장단기 금리차",
+          "금리 역전",
+          "침체 신호"
+        ],
+        "notes": "FRED 10Y-2Y spread"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_hy_spread",
+    "name": "미국 하이일드 스프레드",
+    "normalized_name": "hy_spread",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "BAMLH0A0HYM2",
+        "query": "미국 하이일드 신용 스프레드",
+        "news_keywords": [
+          "하이일드",
+          "신용 스프레드",
+          "회사채"
+        ],
+        "notes": "FRED HY OAS"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_retail_sales",
+    "name": "미국 소매판매",
+    "normalized_name": "us_retail_sales",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "RSAFS",
+        "query": "미국 소매판매",
+        "news_keywords": [
+          "소매판매",
+          "소비",
+          "소비지표"
+        ],
+        "notes": "FRED advance retail sales"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_sentiment",
+    "name": "미국 소비자심리지수",
+    "normalized_name": "us_sentiment",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "UMCSENT",
+        "query": "미시간 소비자심리지수",
+        "news_keywords": [
+          "소비자심리",
+          "소비심리",
+          "미시간지수"
+        ],
+        "notes": "FRED U. Michigan sentiment"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_jobless_claims",
+    "name": "미국 신규 실업수당 청구",
+    "normalized_name": "us_jobless_claims",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "ICSA",
+        "query": "미국 신규 실업수당 청구건수",
+        "news_keywords": [
+          "실업수당",
+          "신규청구",
+          "고용"
+        ],
+        "notes": "FRED initial claims"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_housing_starts",
+    "name": "미국 주택착공",
+    "normalized_name": "us_housing_starts",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "fred",
+        "series_id": "HOUST",
+        "query": "미국 주택착공 건수",
+        "news_keywords": [
+          "주택착공",
+          "주택시장",
+          "부동산"
+        ],
+        "notes": "FRED housing starts"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kr_trade_balance",
+    "name": "한국 무역수지",
+    "normalized_name": "kr_trade_balance",
+    "type": "indicator",
+    "source_mapping": [
+      {
+        "provider": "ecos",
+        "query": "한국 무역수지와 수출",
+        "news_keywords": [
+          "무역수지",
+          "수출",
+          "경상수지"
+        ],
+        "notes": "ECOS trade balance"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_sp500",
+    "name": "S&P 500",
+    "normalized_name": "sp500",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^GSPC",
+        "query": "S&P 500 지수",
+        "news_keywords": [
+          "S&P500",
+          "미국 증시",
+          "스탠더드앤드푸어스"
+        ],
+        "notes": "S&P 500 index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_dow",
+    "name": "다우존스",
+    "normalized_name": "dow",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^DJI",
+        "query": "다우존스 산업평균지수",
+        "news_keywords": [
+          "다우존스",
+          "다우",
+          "미국 증시"
+        ],
+        "notes": "Dow Jones Industrial Average"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_russell2000",
+    "name": "러셀 2000",
+    "normalized_name": "russell2000",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^RUT",
+        "query": "러셀 2000 중소형주 지수",
+        "news_keywords": [
+          "러셀2000",
+          "중소형주",
+          "미국 증시"
+        ],
+        "notes": "Russell 2000"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kospi",
+    "name": "코스피",
+    "normalized_name": "kospi",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^KS11",
+        "query": "코스피 지수",
+        "news_keywords": [
+          "코스피",
+          "국내 증시",
+          "KOSPI"
+        ],
+        "notes": "KOSPI index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kosdaq",
+    "name": "코스닥",
+    "normalized_name": "kosdaq",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^KQ11",
+        "query": "코스닥 지수",
+        "news_keywords": [
+          "코스닥",
+          "국내 증시",
+          "KOSDAQ"
+        ],
+        "notes": "KOSDAQ index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_nikkei",
+    "name": "니케이 225",
+    "normalized_name": "nikkei",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^N225",
+        "query": "니케이 225 지수",
+        "news_keywords": [
+          "니케이",
+          "일본 증시",
+          "닛케이"
+        ],
+        "notes": "Nikkei 225"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_hangseng",
+    "name": "항셍지수",
+    "normalized_name": "hangseng",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^HSI",
+        "query": "항셍지수",
+        "news_keywords": [
+          "항셍",
+          "홍콩 증시",
+          "중화권"
+        ],
+        "notes": "Hang Seng index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_dax",
+    "name": "독일 DAX",
+    "normalized_name": "dax",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "^GDAXI",
+        "query": "독일 DAX 지수",
+        "news_keywords": [
+          "DAX",
+          "독일 증시",
+          "유럽 증시"
+        ],
+        "notes": "DAX index"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_apple",
+    "name": "애플",
+    "normalized_name": "apple",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "AAPL",
+        "query": "애플 주가",
+        "news_keywords": [
+          "애플",
+          "아이폰",
+          "빅테크"
+        ],
+        "notes": "Apple Inc."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_microsoft",
+    "name": "마이크로소프트",
+    "normalized_name": "microsoft",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "MSFT",
+        "query": "마이크로소프트 주가",
+        "news_keywords": [
+          "마이크로소프트",
+          "MS",
+          "클라우드"
+        ],
+        "notes": "Microsoft Corp."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_nvidia",
+    "name": "엔비디아",
+    "normalized_name": "nvidia",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "NVDA",
+        "query": "엔비디아 주가",
+        "news_keywords": [
+          "엔비디아",
+          "GPU",
+          "AI 반도체"
+        ],
+        "notes": "NVIDIA Corp."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_amazon",
+    "name": "아마존",
+    "normalized_name": "amazon",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "AMZN",
+        "query": "아마존 주가",
+        "news_keywords": [
+          "아마존",
+          "이커머스",
+          "AWS"
+        ],
+        "notes": "Amazon.com"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_alphabet",
+    "name": "알파벳(구글)",
+    "normalized_name": "alphabet",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "GOOGL",
+        "query": "알파벳 구글 주가",
+        "news_keywords": [
+          "구글",
+          "알파벳",
+          "검색"
+        ],
+        "notes": "Alphabet Inc."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_meta",
+    "name": "메타",
+    "normalized_name": "meta",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "META",
+        "query": "메타 주가",
+        "news_keywords": [
+          "메타",
+          "페이스북",
+          "소셜미디어"
+        ],
+        "notes": "Meta Platforms"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_tesla",
+    "name": "테슬라",
+    "normalized_name": "tesla",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "TSLA",
+        "query": "테슬라 주가",
+        "news_keywords": [
+          "테슬라",
+          "전기차",
+          "일론 머스크"
+        ],
+        "notes": "Tesla Inc."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_broadcom",
+    "name": "브로드컴",
+    "normalized_name": "broadcom",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "AVGO",
+        "query": "브로드컴 주가",
+        "news_keywords": [
+          "브로드컴",
+          "반도체",
+          "AI 반도체"
+        ],
+        "notes": "Broadcom Inc."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_amd",
+    "name": "AMD",
+    "normalized_name": "amd",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "AMD",
+        "query": "AMD 주가",
+        "news_keywords": [
+          "AMD",
+          "CPU",
+          "반도체"
+        ],
+        "notes": "Advanced Micro Devices"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_tsmc",
+    "name": "TSMC",
+    "normalized_name": "tsmc",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "TSM",
+        "query": "TSMC 주가",
+        "news_keywords": [
+          "TSMC",
+          "파운드리",
+          "반도체"
+        ],
+        "notes": "Taiwan Semiconductor"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_asml",
+    "name": "ASML",
+    "normalized_name": "asml",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "ASML",
+        "query": "ASML 주가",
+        "news_keywords": [
+          "ASML",
+          "노광장비",
+          "반도체장비"
+        ],
+        "notes": "ASML Holding"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_samsung_elec",
+    "name": "삼성전자",
+    "normalized_name": "samsung_elec",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "005930.KS",
+        "query": "삼성전자 주가",
+        "news_keywords": [
+          "삼성전자",
+          "메모리",
+          "반도체"
+        ],
+        "notes": "Samsung Electronics"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_sk_hynix",
+    "name": "SK하이닉스",
+    "normalized_name": "sk_hynix",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "000660.KS",
+        "query": "SK하이닉스 주가",
+        "news_keywords": [
+          "SK하이닉스",
+          "HBM",
+          "메모리"
+        ],
+        "notes": "SK hynix"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_hyundai_motor",
+    "name": "현대차",
+    "normalized_name": "hyundai_motor",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "005380.KS",
+        "query": "현대차 주가",
+        "news_keywords": [
+          "현대차",
+          "자동차",
+          "완성차"
+        ],
+        "notes": "Hyundai Motor"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_lg_energy",
+    "name": "LG에너지솔루션",
+    "normalized_name": "lg_energy",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "373220.KS",
+        "query": "LG에너지솔루션 주가",
+        "news_keywords": [
+          "LG에너지솔루션",
+          "2차전지",
+          "배터리"
+        ],
+        "notes": "LG Energy Solution"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_samsung_bio",
+    "name": "삼성바이오로직스",
+    "normalized_name": "samsung_bio",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "207940.KS",
+        "query": "삼성바이오로직스 주가",
+        "news_keywords": [
+          "삼성바이오로직스",
+          "바이오",
+          "위탁생산"
+        ],
+        "notes": "Samsung Biologics"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_naver",
+    "name": "네이버",
+    "normalized_name": "naver",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "035420.KS",
+        "query": "네이버 주가",
+        "news_keywords": [
+          "네이버",
+          "플랫폼",
+          "인터넷"
+        ],
+        "notes": "NAVER Corp."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_kakao",
+    "name": "카카오",
+    "normalized_name": "kakao",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "035720.KS",
+        "query": "카카오 주가",
+        "news_keywords": [
+          "카카오",
+          "플랫폼",
+          "메신저"
+        ],
+        "notes": "Kakao Corp."
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_ethereum",
+    "name": "이더리움",
+    "normalized_name": "ethereum",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "ETH-USD",
+        "query": "이더리움 가격",
+        "news_keywords": [
+          "이더리움",
+          "가상자산",
+          "ETH",
+          "암호화폐"
+        ],
+        "notes": "Ethereum USD"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_ripple",
+    "name": "리플(XRP)",
+    "normalized_name": "ripple",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XRP-USD",
+        "query": "리플 가격",
+        "news_keywords": [
+          "리플",
+          "XRP",
+          "가상자산"
+        ],
+        "notes": "XRP USD"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_solana",
+    "name": "솔라나",
+    "normalized_name": "solana",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "SOL-USD",
+        "query": "솔라나 가격",
+        "news_keywords": [
+          "솔라나",
+          "SOL",
+          "가상자산"
+        ],
+        "notes": "Solana USD"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_gold",
+    "name": "금",
+    "normalized_name": "gold",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "GC=F",
+        "query": "금 선물 가격",
+        "news_keywords": [
+          "금",
+          "금값",
+          "안전자산"
+        ],
+        "notes": "Gold futures"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_silver",
+    "name": "은",
+    "normalized_name": "silver",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "SI=F",
+        "query": "은 선물 가격",
+        "news_keywords": [
+          "은",
+          "은값",
+          "귀금속"
+        ],
+        "notes": "Silver futures"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_copper",
+    "name": "구리",
+    "normalized_name": "copper",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "HG=F",
+        "query": "구리 선물 가격",
+        "news_keywords": [
+          "구리",
+          "구리값",
+          "경기민감"
+        ],
+        "notes": "Copper futures"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_qqq_etf",
+    "name": "나스닥100 ETF(QQQ)",
+    "normalized_name": "qqq_etf",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "QQQ",
+        "query": "나스닥100 ETF",
+        "news_keywords": [
+          "QQQ",
+          "나스닥100",
+          "기술주 ETF"
+        ],
+        "notes": "Invesco QQQ"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_tlt_etf",
+    "name": "미국 장기국채 ETF(TLT)",
+    "normalized_name": "tlt_etf",
+    "type": "asset",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "TLT",
+        "query": "미국 장기국채 ETF",
+        "news_keywords": [
+          "장기국채",
+          "TLT",
+          "채권 ETF"
+        ],
+        "notes": "iShares 20+ Year Treasury"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_battery",
+    "name": "2차전지",
+    "normalized_name": "battery",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "LIT",
+        "query": "2차전지 배터리 섹터",
+        "news_keywords": [
+          "2차전지",
+          "배터리",
+          "리튬"
+        ],
+        "notes": "Global lithium & battery ETF"
+      },
+      {
+        "provider": "rag",
+        "query": "2차전지 업황 뉴스",
+        "news_keywords": [
+          "2차전지",
+          "전기차 배터리",
+          "양극재"
+        ],
+        "notes": "News-only"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_auto",
+    "name": "자동차",
+    "normalized_name": "auto",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "자동차 산업 업황",
+        "news_keywords": [
+          "자동차",
+          "완성차",
+          "전기차"
+        ],
+        "notes": "News-only sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_bio",
+    "name": "바이오/헬스케어",
+    "normalized_name": "bio",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLV",
+        "query": "헬스케어 섹터",
+        "news_keywords": [
+          "바이오",
+          "제약",
+          "헬스케어"
+        ],
+        "notes": "Health Care Select Sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_finance",
+    "name": "금융/은행",
+    "normalized_name": "finance",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLF",
+        "query": "금융 섹터",
+        "news_keywords": [
+          "은행",
+          "금융",
+          "증권"
+        ],
+        "notes": "Financial Select Sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_energy",
+    "name": "에너지",
+    "normalized_name": "energy",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLE",
+        "query": "에너지 섹터",
+        "news_keywords": [
+          "에너지",
+          "정유",
+          "석유"
+        ],
+        "notes": "Energy Select Sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_utilities",
+    "name": "유틸리티",
+    "normalized_name": "utilities",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLU",
+        "query": "유틸리티 섹터",
+        "news_keywords": [
+          "유틸리티",
+          "전력",
+          "전기요금"
+        ],
+        "notes": "Utilities Select Sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_consumer_staples",
+    "name": "필수소비재",
+    "normalized_name": "consumer_staples",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLP",
+        "query": "필수소비재 섹터",
+        "news_keywords": [
+          "필수소비재",
+          "소비재",
+          "생활필수품"
+        ],
+        "notes": "Consumer Staples Select"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_consumer_disc",
+    "name": "임의소비재",
+    "normalized_name": "consumer_disc",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLY",
+        "query": "임의소비재 섹터",
+        "news_keywords": [
+          "임의소비재",
+          "유통",
+          "리테일"
+        ],
+        "notes": "Consumer Discretionary Select"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_industrials",
+    "name": "산업재",
+    "normalized_name": "industrials",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLI",
+        "query": "산업재 섹터",
+        "news_keywords": [
+          "산업재",
+          "기계",
+          "설비"
+        ],
+        "notes": "Industrial Select Sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_materials",
+    "name": "소재",
+    "normalized_name": "materials",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLB",
+        "query": "소재 섹터",
+        "news_keywords": [
+          "소재",
+          "화학",
+          "원자재"
+        ],
+        "notes": "Materials Select Sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_realestate",
+    "name": "부동산/리츠",
+    "normalized_name": "realestate",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "XLRE",
+        "query": "부동산 리츠 섹터",
+        "news_keywords": [
+          "부동산",
+          "리츠",
+          "REITs"
+        ],
+        "notes": "Real Estate Select Sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_defense",
+    "name": "방산",
+    "normalized_name": "defense",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "ITA",
+        "query": "방산 국방 섹터",
+        "news_keywords": [
+          "방산",
+          "국방",
+          "무기"
+        ],
+        "notes": "Aerospace & Defense ETF"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_telecom",
+    "name": "통신",
+    "normalized_name": "telecom",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "통신 산업 업황",
+        "news_keywords": [
+          "통신",
+          "5G",
+          "통신사"
+        ],
+        "notes": "News-only sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_shipbuilding",
+    "name": "조선",
+    "normalized_name": "shipbuilding",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "조선 업황과 수주",
+        "news_keywords": [
+          "조선",
+          "선박",
+          "수주"
+        ],
+        "notes": "News-only sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_steel",
+    "name": "철강",
+    "normalized_name": "steel",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "철강 업황",
+        "news_keywords": [
+          "철강",
+          "제철",
+          "포스코"
+        ],
+        "notes": "News-only sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_chemical",
+    "name": "화학",
+    "normalized_name": "chemical",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "석유화학 업황",
+        "news_keywords": [
+          "화학",
+          "석유화학",
+          "정밀화학"
+        ],
+        "notes": "News-only sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_airline_travel",
+    "name": "항공/여행",
+    "normalized_name": "airline_travel",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "JETS",
+        "query": "항공 여행 섹터",
+        "news_keywords": [
+          "항공",
+          "여행",
+          "항공사"
+        ],
+        "notes": "US Global Jets ETF"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_solar",
+    "name": "태양광/신재생",
+    "normalized_name": "solar",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "yfinance",
+        "ticker": "TAN",
+        "query": "태양광 신재생에너지 섹터",
+        "news_keywords": [
+          "태양광",
+          "신재생에너지",
+          "재생에너지"
+        ],
+        "notes": "Solar ETF"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_game",
+    "name": "게임",
+    "normalized_name": "game",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "게임 산업 업황",
+        "news_keywords": [
+          "게임",
+          "게임주",
+          "콘솔"
+        ],
+        "notes": "News-only sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_shipping",
+    "name": "해운",
+    "normalized_name": "shipping",
+    "type": "sector",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "해운 업황과 운임",
+        "news_keywords": [
+          "해운",
+          "운임",
+          "컨테이너"
+        ],
+        "notes": "News-only sector"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_ai",
+    "name": "AI/인공지능",
+    "normalized_name": "ai",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "AI 인공지능 관련 뉴스",
+        "news_keywords": [
+          "AI",
+          "인공지능",
+          "생성형 AI"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_genai",
+    "name": "생성형 AI",
+    "normalized_name": "genai",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "생성형 AI 뉴스",
+        "news_keywords": [
+          "생성형 AI",
+          "챗GPT",
+          "LLM"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_datacenter",
+    "name": "데이터센터",
+    "normalized_name": "datacenter",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "데이터센터 뉴스",
+        "news_keywords": [
+          "데이터센터",
+          "서버",
+          "전력수요"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_cloud",
+    "name": "클라우드",
+    "normalized_name": "cloud",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "클라우드 산업 뉴스",
+        "news_keywords": [
+          "클라우드",
+          "SaaS",
+          "AWS"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_self_driving",
+    "name": "자율주행",
+    "normalized_name": "self_driving",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "자율주행 뉴스",
+        "news_keywords": [
+          "자율주행",
+          "로보택시",
+          "자율주행차"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_robotics",
+    "name": "로봇",
+    "normalized_name": "robotics",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "로봇 로보틱스 뉴스",
+        "news_keywords": [
+          "로봇",
+          "로보틱스",
+          "휴머노이드"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_ev",
+    "name": "전기차",
+    "normalized_name": "ev",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "전기차 뉴스",
+        "news_keywords": [
+          "전기차",
+          "EV",
+          "충전인프라"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_inflation",
+    "name": "인플레이션",
+    "normalized_name": "inflation",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "인플레이션 뉴스",
+        "news_keywords": [
+          "인플레이션",
+          "물가상승",
+          "디스인플레이션"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_recession",
+    "name": "경기침체",
+    "normalized_name": "recession",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "경기침체 뉴스",
+        "news_keywords": [
+          "경기침체",
+          "리세션",
+          "침체"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_fed_policy",
+    "name": "연준 통화정책",
+    "normalized_name": "fed_policy",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "연준 통화정책 뉴스",
+        "news_keywords": [
+          "연준",
+          "FOMC",
+          "통화정책"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_rate_cut",
+    "name": "금리인하",
+    "normalized_name": "rate_cut",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "금리인하 피벗 뉴스",
+        "news_keywords": [
+          "금리인하",
+          "피벗",
+          "통화완화"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_geopolitics",
+    "name": "지정학 리스크",
+    "normalized_name": "geopolitics",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "지정학 리스크 뉴스",
+        "news_keywords": [
+          "지정학",
+          "지정학 리스크",
+          "안보"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_middle_east",
+    "name": "중동 정세",
+    "normalized_name": "middle_east",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "중동 정세 뉴스",
+        "news_keywords": [
+          "중동",
+          "이스라엘",
+          "호르무즈"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_us_china",
+    "name": "미중 갈등",
+    "normalized_name": "us_china",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "미중 갈등 뉴스",
+        "news_keywords": [
+          "미중갈등",
+          "미중",
+          "수출규제"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_tariff",
+    "name": "관세/무역전쟁",
+    "normalized_name": "tariff",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "관세 무역전쟁 뉴스",
+        "news_keywords": [
+          "관세",
+          "무역전쟁",
+          "무역분쟁"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_supply_chain",
+    "name": "공급망",
+    "normalized_name": "supply_chain",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "공급망 뉴스",
+        "news_keywords": [
+          "공급망",
+          "물류",
+          "리쇼어링"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_esg",
+    "name": "ESG/탄소중립",
+    "normalized_name": "esg",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "ESG 탄소중립 뉴스",
+        "news_keywords": [
+          "ESG",
+          "탄소중립",
+          "친환경"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_dividend",
+    "name": "배당주",
+    "normalized_name": "dividend",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "배당주 뉴스",
+        "news_keywords": [
+          "배당",
+          "배당주",
+          "배당수익률"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_earnings",
+    "name": "실적시즌",
+    "normalized_name": "earnings",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "실적 어닝시즌 뉴스",
+        "news_keywords": [
+          "실적",
+          "어닝시즌",
+          "실적발표"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_ipo",
+    "name": "IPO/공모주",
+    "normalized_name": "ipo",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "IPO 공모주 뉴스",
+        "news_keywords": [
+          "IPO",
+          "상장",
+          "공모주"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_ma",
+    "name": "M&A",
+    "normalized_name": "ma",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "M&A 인수합병 뉴스",
+        "news_keywords": [
+          "M&A",
+          "인수합병",
+          "합병"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_buyback",
+    "name": "자사주 매입",
+    "normalized_name": "buyback",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "자사주 매입 주주환원 뉴스",
+        "news_keywords": [
+          "자사주",
+          "자사주매입",
+          "주주환원"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_stablecoin",
+    "name": "스테이블코인",
+    "normalized_name": "stablecoin",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "스테이블코인 뉴스",
+        "news_keywords": [
+          "스테이블코인",
+          "가상자산 규제",
+          "CBDC"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_cybersecurity",
+    "name": "사이버보안",
+    "normalized_name": "cybersecurity",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "사이버보안 뉴스",
+        "news_keywords": [
+          "사이버보안",
+          "보안",
+          "해킹"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_space",
+    "name": "우주항공",
+    "normalized_name": "space",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "우주항공 뉴스",
+        "news_keywords": [
+          "우주",
+          "항공우주",
+          "위성"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_glp1",
+    "name": "비만치료제(GLP-1)",
+    "normalized_name": "glp1",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "비만치료제 GLP-1 뉴스",
+        "news_keywords": [
+          "비만치료제",
+          "GLP-1",
+          "위고비"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_power_grid",
+    "name": "전력망/전력인프라",
+    "normalized_name": "power_grid",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "전력망 전력인프라 뉴스",
+        "news_keywords": [
+          "전력망",
+          "전력인프라",
+          "송전"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_quantum",
+    "name": "양자컴퓨팅",
+    "normalized_name": "quantum",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "양자컴퓨팅 뉴스",
+        "news_keywords": [
+          "양자컴퓨팅",
+          "퀀텀",
+          "양자"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_nuclear",
+    "name": "원자력/SMR",
+    "normalized_name": "nuclear",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "원자력 SMR 뉴스",
+        "news_keywords": [
+          "원자력",
+          "원전",
+          "SMR"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  },
+  {
+    "topic_id": "topic_reshoring",
+    "name": "리쇼어링",
+    "normalized_name": "reshoring",
+    "type": "keyword",
+    "source_mapping": [
+      {
+        "provider": "rag",
+        "query": "리쇼어링 공급망 재편 뉴스",
+        "news_keywords": [
+          "리쇼어링",
+          "온쇼어링",
+          "생산기지"
+        ],
+        "notes": "Theme keyword"
+      }
+    ]
+  }
+]

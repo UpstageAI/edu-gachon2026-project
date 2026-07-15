@@ -1,0 +1,133 @@
+name: FinBrief CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "tests/**"
+      - "data/**"
+      - "schemas/**"
+      - "evals/**"
+      - "pyproject.toml"
+      - ".env.example"
+      - ".dockerignore"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".github/workflows/**"
+      - "README.md"
+      - "frontend/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "tests/**"
+      - "data/**"
+      - "schemas/**"
+      - "evals/**"
+      - "pyproject.toml"
+      - ".env.example"
+      - ".dockerignore"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".github/workflows/**"
+      - "README.md"
+      - "frontend/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.11"
+  ENABLE_MOCK_DATA: "true"
+  FINBRIEF_LLM_STUB: "1"
+  FINBRIEF_IMAGE_STUB: "1"
+  DELIVERY_DRY_RUN: "true"
+  FINBRIEF_REPORT_OUT: .pytest_cache/reports
+
+jobs:
+  compile:
+    name: Compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Compile application
+        run: python -m compileall app
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: compile
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run pytest
+        run: |
+          mkdir -p .pytest_cache
+          python -m pytest -p no:cacheprovider --basetemp .pytest_cache/basetemp-ci --disable-warnings
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Build container image
+        run: docker build -t finbrief:ci -f Dockerfile .
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - compile
+      - test
+      - docker-build
+    steps:
+      - name: Write summary
+        run: |
+          {
+            echo "### FinBrief CI"
+            echo ""
+            echo "| Check | Result |"
+            echo "| --- | --- |"
+            echo "| Compile | ${{ needs.compile.result }} |"
+            echo "| Tests | ${{ needs.test.result }} |"
+            echo "| Docker Build | ${{ needs.docker-build.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finbrief.local/schemas/finbrief_state.schema.json",
+  "title": "FinBriefMorningPipelineState",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "run_date",
+    "status",
+    "indicators",
+    "top_news",
+    "unique_topics",
+    "cards",
+    "deliveries",
+    "errors"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "completed", "partial_success", "failed"]
+    },
+    "trace_id": {
+      "type": ["string", "null"]
+    },
+    "report_url": {
+      "type": ["string", "null"]
+    },
+    "indicators": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/indicator"
+      }
+    },
+    "missing_indicators": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "top_news": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/news"
+      }
+    },
+    "unique_topics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/topic"
+      }
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/card"
+      }
+    },
+    "deliveries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/delivery"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/pipeline_error"
+      }
+    }
+  },
+  "$defs": {
+    "indicator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["indicator_id", "name", "source", "current_value", "value_date"],
+      "properties": {
+        "indicator_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["fred", "yfinance", "ecos", "fixture"]
+        },
+        "current_value": {
+          "type": "number"
+        },
+        "previous_value": {
+          "type": ["number", "null"]
+        },
+        "change_percent": {
+          "type": ["number", "null"]
+        },
+        "unit": {
+          "type": ["string", "null"]
+        },
+        "value_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "news": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["news_id", "title", "source", "url", "published_at"],
+      "properties": {
+        "news_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "summary": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topic_id", "name", "type"],
+      "properties": {
+        "topic_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["indicator", "keyword", "sector", "asset"]
+        }
+      }
+    },
+    "card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["card_id", "topic_id", "title", "cached", "disclaimer"],
+      "properties": {
+        "card_id": {
+          "type": "string"
+        },
+        "topic_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "image_url": {
+          "type": ["string", "null"]
+        },
+        "report_url": {
+          "type": ["string", "null"]
+        },
+        "cached": {
+          "type": "boolean"
+        },
+        "disclaimer": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["delivery_id", "user_id", "channel", "status", "attempts"],
+      "properties": {
+        "delivery_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "channel": {
+          "type": "string",
+          "enum": ["discord", "slack"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "sent", "failed", "retrying", "skipped", "dry_run"]
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error_code": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "pipeline_error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "node"],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
