@@ -1304,6 +1304,46 @@ def _reorder_places_for_time_slots(
     return [place for place in ordered if place is not None]
 
 
+def _assemble_day_partitioned_places(
+    candidate_places: List[Place],
+    time_slots: List[Tuple[str, str]],
+    related_places: List[Place],
+    restaurant_places: List[Place],
+    protected_indexes: set[int],
+) -> List[Place]:
+    """
+    _search_day_partitioned_candidates 결과 전용 최종 배치(_reorder_places_for_time_slots
+    대신 씀). candidate_places[i]가 이미 time_slots[i]에 정확히 대응되도록 날짜별로 만들어져
+    있으므로, 일반 경로(_reorder_places_for_time_slots + candidate_count 절삭)를 그대로 쓰면
+    뒤쪽 날짜의 후보가 절삭으로 사라지거나 다른 날짜 후보가 밀려 들어온다. 대신 인덱스를 그대로
+    유지한 채 점심/저녁 자리만 식당으로 바꿔치기하고(protected_indexes에 있는 자리는 필수
+    방문지가 이미 차지한 자리이므로 건너뜀), 검색이 슬롯을 다 못 채운 날짜(드문 폴백 소진
+    상황)만 related_places로 뒤에서 보충한다.
+    """
+    max_places = len(time_slots)
+    places = list(candidate_places[:max_places])
+
+    if len(places) < max_places:
+        for place in related_places:
+            if len(places) >= max_places:
+                break
+            places.append(place)
+
+    meal_indexes = [
+        index
+        for index, (_, time_slot) in enumerate(time_slots[: len(places)])
+        if time_slot in MEAL_TIME_SLOTS and index not in protected_indexes
+    ]
+    restaurant_iter = iter(restaurant_places)
+    for index in meal_indexes:
+        restaurant = next(restaurant_iter, None)
+        if restaurant is None:
+            break
+        places[index] = restaurant
+
+    return _deduplicate_places(places)
+
+
 def _build_daily_schedule(
     selected_places: List[Place],
     routes: List[RouteSegment],
@@ -1632,7 +1672,7 @@ def _search_day_partitioned_candidates(
     prefer_local: bool,
     day_travel_style_overrides: Dict[int, List[str]],
     day_must_include_places: Dict[int, List[Place]] | None = None,
-) -> Tuple[List[Place], str]:
+) -> Tuple[List[Place], str, set[int]]:
     """
     daily_preferences로 일차별 취향/필수 방문지가 지정된 경우("2일차는 액티비티 위주",
     "2일차에는 국립경주박물관 가고 싶어") 전용 후보 검색.
@@ -1647,6 +1687,12 @@ def _search_day_partitioned_candidates(
     그 날짜 슬롯 맨 앞에 배치한다(슬롯 수를 넘으면 뒤쪽은 잘라낸다 — 날짜별 슬롯 수를
     넘겨서 다음 날짜 후보를 밀어내면 인덱스 정렬이 깨지기 때문). 나머지 슬롯만 기존과
     동일하게 취향 검색으로 채운다.
+
+    반환값의 세 번째 원소(must_include_indexes)는 all_candidates 안에서 필수 방문지가
+    자리한 절대 인덱스 집합이다 — 호출자(build_route_plan)가 나중에 점심/저녁 슬롯을
+    식당으로 바꿔치기할 때, 그 자리가 이미 필수 방문지라면 덮어쓰지 않고 건너뛰는 데 쓴다
+    (한 날짜에 필수 방문지를 2개 이상 지정했는데 그중 하나가 마침 점심 슬롯 위치에 오는
+    경우를 보호하기 위함).
 
     지리적 군집화(_filter_places_within_radius)도 날짜 그룹마다 독립적으로 적용한다
     (전역 하나로 묶으면 "Day 2는 완전히 다른 지역의 액티비티"인 경우 Day 1 근처가 아니라는
@@ -1664,6 +1710,7 @@ def _search_day_partitioned_candidates(
     day_must_include_places = day_must_include_places or {}
 
     all_candidates: List[Place] = []
+    must_include_indexes: set[int] = set()
     existing_keys: set[str] = set()
     data_sources: set[str] = set()
     # 날짜별 전용 취향으로 슬롯 수를 못 채우면(니치한 취향이라 후보가 적은 경우), 전체
@@ -1736,6 +1783,9 @@ def _search_day_partitioned_candidates(
         else:
             day_candidates = []
 
+        must_include_indexes.update(
+            range(len(all_candidates), len(all_candidates) + len(day_musts))
+        )
         all_candidates.extend(day_musts + day_candidates)
 
     if "rag" in data_sources:
@@ -1745,7 +1795,7 @@ def _search_day_partitioned_candidates(
     else:
         data_source = "mock"
 
-    return all_candidates, data_source
+    return all_candidates, data_source, must_include_indexes
 
 
 def build_route_plan(
@@ -1841,11 +1891,14 @@ def build_route_plan(
             if place is not None:
                 day_must_include_places.setdefault(day, []).append(place)
 
-    if day_travel_style_overrides or day_must_include_places:
+    is_day_partitioned = bool(day_travel_style_overrides or day_must_include_places)
+    day_must_include_indexes: set[int] = set()
+
+    if is_day_partitioned:
         # daily_preferences로 일차별 취향/필수 방문지가 지정된 경우: 날짜 그룹별로 따로
         # 검색하고 날짜 순서대로 이어붙인다. 이 경로는 그룹마다 이미 지리적 군집화가
         # 끝났으므로(아래 else 분기의) 전역 재필터링은 다시 거치지 않는다.
-        candidate_places, data_source = _search_day_partitioned_candidates(
+        candidate_places, data_source, day_must_include_indexes = _search_day_partitioned_candidates(
             city=city,
             time_slots=time_slots,
             travel_style=travel_style,
@@ -1866,6 +1919,10 @@ def build_route_plan(
                 if mp["name"] not in existing_names:
                     candidate_places.insert(0, mp)
                     existing_names.add(mp["name"])
+                    # 맨 앞에 하나 꽂을 때마다 뒤 인덱스가 전부 한 칸씩 밀리므로,
+                    # day_must_include_indexes로 지켜둔 위치도 같이 밀어줘야
+                    # 나중에 엉뚱한 자리(다른 날짜 슬롯)를 보호하는 사고가 안 난다.
+                    day_must_include_indexes = {i + 1 for i in day_must_include_indexes}
 
         # rag_ranked_places는 응답에 그대로 노출되는 필드라 이 경로에서도 채워야 한다 —
         # 날짜별로 여러 번 검색해서 단일 "원본 RAG 순위" 개념이 없으므로, data_source가
@@ -1980,16 +2037,39 @@ def build_route_plan(
         prefer_local=prefer_local,
     )
 
-    candidate_count = max(
-        1,
-        max_places - len(related_places) - len(restaurant_places),
-    )
-    selected_places = _deduplicate_places(
-        candidate_places[:candidate_count]
-        + related_places
-        + restaurant_places
-    )[:max_places]
-    selected_places = _reorder_places_for_time_slots(selected_places, time_slots)
+    if is_day_partitioned:
+        # 날짜별로 그 날의 슬롯 수만큼만 뽑아 순서대로 이어붙인 리스트라
+        # candidate_places[i]가 이미 time_slots[i]에 정확히 대응된다. 아래 else 분기의
+        # "candidate_count만큼만 남기고 나머지는 related/restaurant로 채운다" 방식을
+        # 그대로 쓰면 뒤쪽 날짜(늦은 Day)의 후보가 prefix 절삭으로 통째로 잘려나가고,
+        # 그 자리를 restaurant_places가 순서 없이 메우면서 날짜 정렬 자체가 깨진다
+        # (실측: "2일차에 덕수궁 가고 싶어"가 절삭으로 사라지고 1일차 후보가 2일차
+        # 자리까지 밀려 들어옴). 인덱스를 그대로 유지한 채 점심/저녁 자리만 식당으로
+        # 바꿔치기하고, 필수 방문지가 이미 차지한 자리(day_must_include_indexes)는
+        # 보호해서 덮어쓰지 않는다.
+        selected_places = _assemble_day_partitioned_places(
+            candidate_places=candidate_places,
+            time_slots=time_slots,
+            related_places=related_places,
+            restaurant_places=restaurant_places,
+            protected_indexes=day_must_include_indexes,
+        )
+    else:
+        # related_places(코스에 같이 묶여 있다는 이유만으로 뽑힌 연관 관광지)는
+        # travel_style/테마 적합성을 전혀 안 보고 뽑힌다 — 예전에는 여기서 무조건
+        # 자리를 마련해(candidate_count를 미리 줄여서) 끼워 넣다 보니, 취향에 맞는
+        # 후보가 있는데도 밀어내고 "역사답사" 여행에 테마와 무관한 코스 동반 장소가
+        # 그냥 꽂히는 문제가 있었다. restaurant_places(취향 검색을 거친 음식점)만
+        # 자리를 예약하고, related_places는 뒤에 붙여서 취향 후보+식당만으로
+        # max_places가 다 안 채워지는 경우에만(즉 진짜 빈자리가 남을 때만) 잘리지
+        # 않고 살아남게 한다.
+        candidate_count = max(1, max_places - len(restaurant_places))
+        selected_places = _deduplicate_places(
+            candidate_places[:candidate_count]
+            + restaurant_places
+            + related_places
+        )[:max_places]
+        selected_places = _reorder_places_for_time_slots(selected_places, time_slots)
 
     route_summary, route_warnings = _build_real_routes(
         selected_places=selected_places,

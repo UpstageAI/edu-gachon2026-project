@@ -1139,7 +1139,7 @@ def test_search_day_partitioned_candidates_uses_override_style_per_day(monkeypat
 
     time_slots = [("Day 1", "오전"), ("Day 1", "오후"), ("Day 2", "오전")]
 
-    candidates, data_source = route_planner._search_day_partitioned_candidates(
+    candidates, data_source, _ = route_planner._search_day_partitioned_candidates(
         city="강릉",
         time_slots=time_slots,
         travel_style=["바다"],
@@ -1181,7 +1181,7 @@ def test_search_day_partitioned_candidates_pads_shortfall_with_global_fallback(m
     # Day 1: 1슬롯(전체 공통), Day 2: 2슬롯(오버라이드, 근데 후보가 1개뿐)
     time_slots = [("Day 1", "오전"), ("Day 2", "오전"), ("Day 2", "오후")]
 
-    candidates, _ = route_planner._search_day_partitioned_candidates(
+    candidates, _, _ = route_planner._search_day_partitioned_candidates(
         city="강릉",
         time_slots=time_slots,
         travel_style=["바다"],
@@ -1286,7 +1286,7 @@ def test_search_day_partitioned_candidates_places_must_include_on_specified_day(
 
     time_slots = [("Day 1", "오전"), ("Day 1", "오후"), ("Day 2", "오전"), ("Day 2", "오후")]
 
-    candidates, _ = route_planner._search_day_partitioned_candidates(
+    candidates, _, _ = route_planner._search_day_partitioned_candidates(
         city="경주",
         time_slots=time_slots,
         travel_style=["문화"],
@@ -1305,6 +1305,10 @@ def test_search_day_partitioned_candidates_places_must_include_on_specified_day(
 
 
 def test_build_route_plan_places_must_include_on_daily_preferences_day(monkeypatch):
+    # 실사용에서 실제로 재현된 버그: 식당 후보(restaurant_places)가 하나라도 있으면
+    # 기존 candidate_count 절삭 방식이 뒤쪽 날짜(Day 2)의 후보를 통째로 잘라내서
+    # must-include 장소가 사라졌다. 그 조건을 그대로 재현하려고 RAG는 "관광지"만 주고
+    # (기존처럼) search_keyword가 음식점 contentTypeId 조회에는 실제로 결과를 주도록 한다.
     def fake_retrieve(taste_text, match_count, city):
         return [
             {
@@ -1315,14 +1319,24 @@ def test_build_route_plan_places_must_include_on_daily_preferences_day(monkeypat
         ]
 
     def fake_search_keyword(keyword=None, content_type_id=None, num_of_rows=20, page_no=1):
-        # _resolve_must_include_place가 "경주 오죽헌테스트전용" 같은 조합으로 조회할 때만
-        # 결과를 준다. 그 외(음식점/숙박 폴백 등)는 빈 리스트로 막아둔다.
+        # _resolve_must_include_place가 "강릉 오죽헌테스트전용" 같은 조합으로 조회할 때만
+        # 결과를 준다.
         if keyword and "오죽헌테스트전용" in keyword:
             return [
                 {
                     "contentid": "888", "title": "오죽헌테스트전용", "addr1": "강원특별자치도 강릉시",
                     "mapx": "128.9", "mapy": "37.7", "contenttypeid": "12",
                 }
+            ]
+        # _search_restaurant_places의 TourAPI 실시간 폴백 — 실사용에서 늘 채워지는
+        # 식당 후보를 흉내낸다.
+        if content_type_id == route_planner.RESTAURANT_CONTENT_TYPE_ID:
+            return [
+                {
+                    "contentid": f"7{i}", "title": f"식당{i}", "addr1": "강원특별자치도 강릉시",
+                    "mapx": "128.9", "mapy": "37.7", "contenttypeid": "39",
+                }
+                for i in range(1, 4)
             ]
         return []
 
@@ -1368,3 +1382,78 @@ def test_build_route_plan_places_must_include_on_daily_preferences_day(monkeypat
     # Day 1에는 섞여 들어가지 않아야 한다.
     assert "오죽헌테스트전용" in day2_places
     assert "오죽헌테스트전용" not in day1_places
+
+
+def test_build_route_plan_does_not_force_off_theme_related_place_when_no_room(monkeypatch):
+    # related_places(같은 TourAPI 여행코스에 묶여 있다는 이유만으로 뽑힌 연관 관광지)는
+    # travel_style 적합성을 전혀 안 본다. 취향 검색만으로 필요한 슬롯을 이미 다 채울 수
+    # 있는데도 related_places를 위해 억지로 자리를 마련하면, 요청한 테마와 무관한 장소가
+    # "그냥 무작정" 일정에 끼어드는 문제가 생긴다. 자리가 남을 때만 채워져야 한다.
+    def fake_retrieve(taste_text, match_count, city):
+        return [
+            {
+                "content_id": str(i), "title": f"관광지{i}", "address": "강원특별자치도 강릉시",
+                "category": "관광지", "longitude": 128.90 + i * 0.001, "latitude": 37.70 + i * 0.001,
+            }
+            for i in range(1, 6)
+        ]
+
+    def fake_search_keyword(keyword=None, content_type_id=None, num_of_rows=20, page_no=1):
+        if content_type_id == route_planner.RESTAURANT_CONTENT_TYPE_ID:
+            return [
+                {
+                    "contentid": f"7{i}", "title": f"식당{i}", "addr1": "강원특별자치도 강릉시",
+                    "mapx": "128.9", "mapy": "37.7", "contenttypeid": "39",
+                }
+                for i in range(1, 4)
+            ]
+        return []
+
+    monkeypatch.setattr(route_planner, "retrieve_places_by_taste", fake_retrieve)
+    monkeypatch.setattr(route_planner, "search_keyword", fake_search_keyword)
+    monkeypatch.setattr(
+        route_planner,
+        "get_detail_common",
+        lambda content_id: {
+            "mapx": "128.9", "mapy": "37.7", "lDongRegnCd": "51", "lDongSignguCd": "150",
+            "addr1": "강원특별자치도 강릉시", "contenttypeid": "12",
+        },
+    )
+    monkeypatch.setattr(route_planner, "get_route", lambda origin, destination: {})
+    monkeypatch.setattr(
+        route_planner,
+        "summarize_route",
+        lambda route: {
+            "distance_km": 1.0, "duration_min": 10, "taxi_fare": 5000, "toll_fare": 0,
+        },
+    )
+    # "관광지1"이 코스 courseA에 포함돼 있고, 같은 코스에 "오프테마장소"도 있다고 흉내낸다.
+    monkeypatch.setattr(route_planner, "get_course_content_ids", lambda city, **kwargs: ["courseA"])
+    monkeypatch.setattr(
+        route_planner, "cached_call", lambda namespace, params, fetch_fn, ttl_seconds=None: fetch_fn()
+    )
+    monkeypatch.setattr(
+        route_planner,
+        "get_detail_info",
+        lambda content_id, content_type_id: [
+            {"subcontentid": "1", "subname": "관광지1"},
+            {"subcontentid": "999", "subname": "오프테마장소"},
+        ],
+    )
+
+    result = route_planner.build_route_plan(
+        parsed={
+            "city": "강릉",
+            "duration": "1박 2일",
+            "travel_style": ["역사답사"],
+            "prefer_local": False,
+            "schedule_intensity": "보통",
+        },
+        transport_mode="대중교통",
+        people_count=2,
+    )
+
+    all_place_names = {e["place_name"] for e in result["daily_schedule"]}
+    # 취향 검색(관광지1~5)과 식당(식당1~3)만으로 이미 슬롯이 다 차므로, 테마와 무관하게
+    # 코스로만 엮인 "오프테마장소"는 일정에 들어가면 안 된다.
+    assert "오프테마장소" not in all_place_names
