@@ -1,0 +1,39 @@
+# 원본 공공데이터 (용량 큼, 재현 가능 — data.seoul.go.kr 등에서 재다운로드 가능)
+dataset/
+dataset.zip
+space_info/
+
+# 페르소나 생성 스크립트용 중간 산출물 (런타임 미사용, scripts/에서 재생성 가능)
+data/personas/
+
+# 빌드 산출물 dong_metrics.csv, dong_boundaries.geojson은 예외로 커밋한다.
+# 원본(dataset/, space_info/)이 없어도 앱·지도가 바로 돌아가야 하고(HANDOFF.md 참고),
+# 파일 자체도 각각 32KB/4.9MB로 크지 않기 때문.
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# 가상환경
+.venv/
+.venv-py38-bak/
+venv/
+env/
+
+# 환경변수/시크릿 (UPSTAGE_API_KEY 등)
+.env
+.env.*
+!.env.example
+
+# 에디터/도구별 로컬 설정
+.claude/settings.json
+.claude/settings.local.json
+.vscode/
+.streamlit/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

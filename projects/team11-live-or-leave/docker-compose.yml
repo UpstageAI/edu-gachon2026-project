@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: .
+      target: runtime
+    image: live-or-leave:local
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Solar가 헬스장/카페 같은 임의 업종을 해석하려면 원본 상권 CSV가 필요하다.
+      - ./dataset:/app/dataset:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  ui:
+    image: live-or-leave:local
+    build:
+      context: .
+      target: runtime
+    command: streamlit run streamlit_app.py --server.address=0.0.0.0 --server.port=8501 --server.headless=true
+    env_file:
+      - .env
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dataset:/app/dataset:ro
+    depends_on:
+      api:
+        condition: service_started

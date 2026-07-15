@@ -1,0 +1,21 @@
+pydantic>=2.0
+scipy>=1.10
+numpy>=1.24
+pyproj>=3.5
+litellm>=1.0
+tenacity>=8.0  # litellm의 num_retries(재시도) 기능이 내부적으로 필요로 함
+langfuse>=2.0,<3.0  # LANGFUSE_* 환경변수가 있을 때 litellm 호출을 자동 추적.
+                    # litellm의 내장 콜백이 langfuse 3.x/4.x의 OTEL 기반 구조와
+                    # 호환되지 않아(langfuse.version 모듈 제거) 2.x로 고정한다.
+python-dotenv>=1.0
+httpx>=0.27  # Kakao Local API (kakao_facility_repository.py)
+fastapi>=0.110
+uvicorn>=0.27
+# build_dong_boundaries.py (지도 GeoJSON 생성) 전용 의존성:
+pyshp>=3.1
+pandas>=2.0
+openpyxl>=3.1
+shapely>=2.0
+# streamlit_app.py (UI) 전용 의존성:
+streamlit>=1.38
+plotly>=5.24

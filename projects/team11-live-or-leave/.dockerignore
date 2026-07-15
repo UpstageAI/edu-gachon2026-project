@@ -1,0 +1,26 @@
+.git/
+.github/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+.venv/
+.venv-py38-bak/
+venv/
+env/
+
+.env
+.env.*
+.claude/
+.vscode/
+.streamlit/
+.DS_Store
+
+# 원본 공공데이터는 gitignore 대상이다. GCE 배포에서는 docker-compose volume으로 별도 마운트한다.
+dataset/
+dataset.zip
+space_info/
+
+# 발표/분석용 페르소나 산출물은 git에는 포함하지만 런타임 이미지에는 필요 없다.
+data/personas/
