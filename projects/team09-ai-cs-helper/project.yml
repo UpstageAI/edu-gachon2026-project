@@ -1,0 +1,75 @@
+schema_version: 1
+
+team:
+  number: 9
+  folder_name: team09-ai-cs-helper
+  name: AI CS Helper
+  members:
+    - name: 장세창
+      role: Frontend, Backend
+      github: scjang01
+    - name: 이경원
+      role: Server, DB, AI
+      github: leegyeongwon
+
+project:
+  title: AI CS Helper
+  summary: AI의 효율성과 인간 상담원의 신뢰성을 결합한 LLM·RAG 기반 사업체 맞춤형 CS 자동화 솔루션
+  category: AI 서비스
+  keywords:
+    - AI
+    - RAG
+    - LLM
+    - CS자동화
+    - 고객상담
+
+problem:
+  summary: 제한된 인력과 반복적인 단순 문의로 고객 응대가 지연되고 운영비용이 높으며, 상담원별 규정 숙지 편차로 답변 품질이 불균형하다
+  target_users:
+    - CS 운영이 필요한 사업체
+
+solution:
+  summary: 문의를 카테고리 분류·지능형 라우팅한 뒤 RAG 기반으로 답변을 생성하고, 인간 상담원의 최종 검토·수정을 거쳐 등록하는 검증 중심 워크플로우
+  main_features:
+    - AI가 문의를 자동 카테고리 분류하고 답변 초안을 자동 생성
+    - RAG 기반 답변 생성으로 사업체 규정에 부합하는 일관된 응대
+    - 문의 성격에 따라 AI 또는 인간 상담원으로 지능형 라우팅
+    - 인간 상담원의 최종 검토·수정을 필수화한 검증 중심 워크플로우
+    - RAGAS로 RAG 답변·검색 성능을 정량 평가
+
+tech_stack:
+  frontend:
+    - HTML
+    - CSS
+    - JavaScript
+  backend:
+    - Python (FastAPI)
+    - LangGraph
+  ai:
+    - Solar Pro 3
+    - Gemini 3 Flash preview (fallback)
+    - Solar Embedding2 (query/passage)
+    - LiteLLM (LLM Gateway)
+    - RAGAS (RAG 평가)
+  database:
+    - Supabase (PostgreSQL + pgvector)
+  infra:
+    - Docker / Docker Compose
+    - GitHub Actions (CI/CD)
+    - GCP
+
+links:
+  demo_video_url: https://drive.google.com/file/d/1smDUeS0oFrEnRqQrn9ds1xbpiFo2lvy_/view?usp=drive_link
+  # 추가 영상: https://drive.google.com/file/d/1KyB3Ps9qB5K-Lg8PnVFga8JDgpG-ua0N/view?usp=drive_link
+  deployed_url: http://34.50.51.111:8080/inquiry.html
+  # 관리자 페이지: http://34.50.51.111:8080/admin.html
+  presentation_url: https://docs.google.com/presentation/d/1gLsK6bT_yS9RhEEw4teksb7UXO9qvFEE7rpX_SdPxmA/edit?usp=sharing
+  repository_url: https://github.com/leegyeongwon/ai-cs-helper
+
+blog:
+  slug: ai-cs-helper
+  tags:
+    - AI
+    - RAG
+    - CS자동화
+  cover_image: assets/cover.png

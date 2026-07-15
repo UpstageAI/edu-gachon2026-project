@@ -1,0 +1,11 @@
+.env
+.env.local
+.env.gce
+.env.production
+.git
+.venv
+.uv-cache
+__pycache__
+*.py[cod]
+docs
+data

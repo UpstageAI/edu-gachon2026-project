@@ -1,0 +1,49 @@
+name: CD
+
+# ci.yml(워크플로우 이름: "AI CS Helper CI")이 완료된 뒤에 실행
+# → push/PR 상관없이 "AI CS Helper CI"라는 이름의 워크플로우가 끝날 때마다 일단 트리거됨
+#   (아래 job의 if 조건에서 main 브랜치 + push 이벤트 + 성공(success) 여부를 다시 필터링함)
+on:
+  workflow_run:
+    workflows: ["AI CS Helper CI"]   # ci.yml의 name 값과 정확히 일치해야 함
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # 1) CI가 성공(success)했고
+    # 2) 그 워크플로우가 main 브랜치에서 실행된 경우에만 배포
+    #    (직접 push든, PR 머지로 인한 push든 상관없이 head_branch가 'main'이면
+    #     결국 main이 실제로 업데이트된 것 → 둘 다 자동으로 커버됨)
+    #    반대로 PR이 "열리기만" 해서 pull_request 이벤트로 CI가 돈 경우엔
+    #    head_branch가 PR의 소스 브랜치로 찍히므로 여기서 자동으로 걸러짐
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+
+    steps:
+      - name: GCP VM에 SSH 접속 후 배포
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_VM_HOST }}
+          username: ${{ secrets.GCP_VM_USER }}
+          key: ${{ secrets.GCP_VM_SSH_KEY }}
+          # 방화벽 등으로 포트가 다르면 아래 port도 secrets로 관리 가능
+          # port: ${{ secrets.GCP_VM_PORT }}
+          script: |
+            set -e
+            cd ${{ secrets.GCP_VM_PROJECT_PATH }}
+
+            echo ">>> 최신 코드 pull"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo ">>> Docker Compose 재빌드 및 재시작"
+            docker compose build
+            docker compose up -d
+
+            echo ">>> 사용하지 않는 이미지 정리 (선택)"
+            docker image prune -f
+
+            echo ">>> 배포 완료"

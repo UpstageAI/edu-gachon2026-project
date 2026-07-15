@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자 · AI CS Helper</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>AI CS Helper <span class="brand-sub">· 관리자</span></h1>
+    </div>
+    <nav>
+      <a href="inquiry.html">문의 등록 →</a>
+    </nav>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="all">전체 처리내역</button>
+    <button class="tab" data-tab="pending">처리대기 <span class="count" id="pending-count">0</span></button>
+    <button class="tab" data-tab="stats">통계</button>
+  </nav>
+
+  <main class="container">
+    <!-- 전체 처리내역 -->
+    <section class="panel active" id="panel-all">
+      <div class="list-toolbar" id="toolbar-all"></div>
+      <div class="split">
+        <div class="card list" id="list-all"></div>
+        <div class="card detail" id="detail-all">
+          <div class="detail-empty">왼쪽 목록에서 문의를 선택하세요.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 처리대기 -->
+    <section class="panel" id="panel-pending">
+      <div class="list-toolbar" id="toolbar-pending"></div>
+      <div class="split">
+        <div class="card list" id="list-pending"></div>
+        <div class="card detail" id="detail-pending">
+          <div class="detail-empty">왼쪽 목록에서 문의를 선택하세요.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 통계 -->
+    <section class="panel" id="panel-stats">
+      <div class="kpi-row" id="kpi-row"></div>
+      <div class="charts-grid" id="charts-grid"></div>
+    </section>
+  </main>
+
+  <script src="js/log.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

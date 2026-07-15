@@ -1,0 +1,42 @@
+[project]
+name = "ai-cs-helper"
+version = "0.1.0"
+description = "AI customer support helper MVP"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.116.0",
+    "langchain-core>=1.4.9",
+    "langchain-openai>=1.3.5",
+    "langgraph>=1.2.9",
+    "pandas>=3.0.3",
+    "python-dotenv>=1.1.0",
+    "ragas<0.4",
+    "uvicorn>=0.35.0",
+]
+
+[tool.uv]
+package = false
+
+# ── 개발 의존성: CI/로컬 개발에서만 필요 (배포 시엔 불필요) ──────────
+# `uv sync --group dev` (또는 --all-groups) 로 이 목록까지 함께 설치됨
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",   # fastapi.testclient.TestClient가 내부적으로 사용
+    "pytest>=9.1.1",
+    "ruff>=0.7.0",      # ci.yml의 lint Job에서 사용
+]
+
+# ── Ruff 설정: lint/format 규칙 너무긴 줄 오류 E501은 그냥 무시 ───
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]   # E/F = pycodestyle·pyflakes 기본 규칙, I = import 정렬
+ignore = ["E501"]
+
+# ── pytest 설정 ──────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py", "*_test.py"]

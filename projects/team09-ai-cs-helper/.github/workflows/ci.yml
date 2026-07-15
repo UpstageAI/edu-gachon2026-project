@@ -1,0 +1,194 @@
+# AI CS Helper CI 워크플로우
+#
+# 이 파일이 하는 일: 코드가 push되거나 PR이 생성될 때 GitHub이 자동으로
+# "코드 품질 검사(lint) → 단위 테스트(test) → PR 결과 코멘트"를 실행합니다.
+# 즉, 불량 코드가 main에 합쳐지기 전에 기계가 먼저 검사해 주는 "자동 수문장"입니다.
+#
+# 위치 규칙: 저장소의 `.github/workflows/` 폴더 안에 있는 .yml 파일을
+#            GitHub Actions가 자동으로 인식해서 실행합니다. (파일명은 자유)
+#
+# 주요 Job (각 Job은 독립된 가상머신에서 실행됨):
+#   1. lint:    Ruff를 사용한 코드 품질 검사
+#   2. test:    pytest를 사용한 단위 테스트 (lint 성공 시에만 실행)
+#   3. comment: PR에 테스트 결과 코멘트 (성공/실패와 무관하게 항상 실행)
+#
+# 필요한 GitHub Secrets (repo → Settings → Secrets and variables → Actions 에 등록):
+#   - SUPABASE_URL:                    Supabase 프로젝트 URL
+#   - SUPABASE_KEY:                    Supabase API 키
+#   - UPSTAGE_API_KEY:                 Upstage 임베딩 API 키
+#   - UPSTAGE_BASE_URL:                Upstage API base URL
+#   - UPSTAGE_EMBEDDING_QUERY_MODEL:   쿼리용 임베딩 모델명
+#   - UPSTAGE_EMBEDDING_PASSAGE_MODEL: 문서용 임베딩 모델명
+#   - LITELLM_BASE_URL:                LiteLLM 프록시 base URL
+#   - LITELLM_MASTER_KEY:              LiteLLM 마스터 키
+#   - LITELLM_CHAT_MODEL:              채팅용 LLM 모델명
+#   ※ .env는 커밋하지 않으므로 GitHub 서버는 키를 모름 → Secrets에 등록해야 함
+#
+#   ※ AI 코드 리뷰(ai-review) Job은 포함하지 않았습니다.
+
+
+# 워크플로우 이름 (Actions 탭에 표시됨)
+name: AI CS Helper CI
+
+# ── 트리거: 시작 시점──────────────────────────
+on:
+  # main 브랜치로 push 될 때 실행
+  push:
+    branches: [main]
+    # paths: 아래 파일이 변경됐을 때만 실행 (문서만 고쳤을 땐 CI를 돌리지 않아 시간 절약)
+    paths:
+      - 'app/**'
+      - 'tests/**'
+      - 'main.py'
+      - 'test_*.py'
+      - '*_test.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/**'
+      - '!**/*.md'          # ! = 제외.
+
+  # main 을 대상으로 PR이 열리거나 업데이트될 때 실행
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'tests/**'
+      - 'main.py'
+      - 'test_*.py'
+      - '*_test.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/**'
+      - '!**/*.md'
+  # Actions 탭에서 "Run workflow" 버튼으로 수동 실행도 가능하게 함
+  workflow_dispatch:
+
+# ── 동시 실행 제어 ───────────────────────────────
+# 같은 브랜치에 연달아 push하면, 아직 돌고 있던 이전 CI는 취소하고 최신 것만 실행
+# (러너 시간 낭비 방지)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ── 공통 환경변수 (모든 Job에서 ${{ env.PYTHON_VERSION }} 으로 사용) ──
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # Job 1: Lint (코드 품질 검사)
+  # 로컬에서 미리 돌려보기:
+  #   uv run ruff check .
+  #   uv run ruff format . --check
+  # ═══════════════════════════════════════════════════════════════
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest        # GitHub이 제공하는 우분투 가상머신에서 실행
+    steps:
+      # uses: 다른 사람이 만들어 둔 "액션"을 재사용하는 문법
+      - uses: actions/checkout@v4          # 1) 저장소 코드를 가상머신으로 내려받기
+      - uses: actions/setup-python@v5      # 2) 파이썬 설치
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: astral-sh/setup-uv@v4        # 3) uv 설치
+        with:
+          version: "latest"
+
+      # run: 셸 명령을 직접 실행하는 문법 (로컬 터미널에서 치는 것과 동일)
+      - name: Install dependencies
+        run: uv sync --group dev           # pytest·ruff 등 개발 도구 포함 설치
+
+      - name: Run Ruff (lint)
+        # 린트: 안 쓰는 import·문법 실수 등을 잡음
+        # --output-format=github → 문제 위치가 PR 코드 라인에 표시됨
+        run: uv run ruff check . --output-format=github
+
+      - name: Run Ruff (format)
+        # 포맷 검사: --check 는 "고치지 말고 규칙에 맞는지 확인만" (다르면 실패)
+        run: uv run ruff format . --check
+
+        # uv run ruff check . --fix      : 오류 자동 해결
+        # uv run ruff format .           : 포맷팅 자동 정리
+  # ═══════════════════════════════════════════════════════════════
+  # Job 2: Test (단위 테스트) "CD 테스트용 임시 문구"
+  # 로컬에서 미리 돌려보기: uv run pytest -v
+  # ═══════════════════════════════════════════════════════════════
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint                   # lint Job이 성공해야 실행 (실행 순서 보장)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Run tests
+        # env: 이 스텝에서만 쓰는 환경변수.
+        # ${{ secrets.XXX }} = repo Settings에 등록해 둔 Secrets 값을 꺼내 씀
+        # (로그에는 *** 로 가려져서 안전)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          UPSTAGE_BASE_URL: ${{ secrets.UPSTAGE_BASE_URL }}
+          UPSTAGE_EMBEDDING_QUERY_MODEL: ${{ secrets.UPSTAGE_EMBEDDING_QUERY_MODEL }}
+          UPSTAGE_EMBEDDING_PASSAGE_MODEL: ${{ secrets.UPSTAGE_EMBEDDING_PASSAGE_MODEL }}
+          LITELLM_BASE_URL: ${{ secrets.LITELLM_BASE_URL }}
+          LITELLM_MASTER_KEY: ${{ secrets.LITELLM_MASTER_KEY }}
+          LITELLM_CHAT_MODEL: ${{ secrets.LITELLM_CHAT_MODEL }}
+        run: uv run pytest -v --tb=short
+
+  # ═══════════════════════════════════════════════════════════════
+  # Job 3: Comment (PR에 결과 리포트 코멘트 달기)
+  # ═══════════════════════════════════════════════════════════════
+  comment:
+    name: Report Status
+    runs-on: ubuntu-latest
+    # if: always() → 앞의 Job이 실패했어도 실행 (실패 결과도 리포트해야 하므로)
+    # && PR 이벤트일 때만 (push에는 코멘트 달 곳이 없음)
+    if: always() && github.event_name == 'pull_request'
+    needs: [lint, test]           # 두 Job의 결과(needs.*.result)를 참조하기 위해 명시
+    permissions:
+      pull-requests: write        # PR에 코멘트를 달 수 있는 권한 부여
+    steps:
+      - name: Post Comment
+        env:
+          # GITHUB_TOKEN: GitHub이 워크플로우마다 자동 발급하는 임시 토큰 (직접 등록 X)
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINT_RESULT: ${{ needs.lint.result }}    # success / failure / skipped
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          # 이모지 설정
+          if [ "$LINT_RESULT" == "success" ]; then LINT_ICON="✅"; else LINT_ICON="❌"; fi
+          if [ "$TEST_RESULT" == "success" ]; then TEST_ICON="✅"; else TEST_ICON="❌"; fi
+          if [ "$TEST_RESULT" == "skipped" ]; then TEST_ICON="⚪"; fi
+
+          # 코멘트 내용(마크다운 표) 작성
+          echo "### 🛡️ AI CS Helper CI Report" > status_report.md
+          echo "" >> status_report.md
+          echo "| Category | Status |" >> status_report.md
+          echo "|----------|--------|" >> status_report.md
+          echo "| **Lint** | $LINT_ICON $LINT_RESULT |" >> status_report.md
+          echo "| **Test** | $TEST_ICON $TEST_RESULT |" >> status_report.md
+          echo "" >> status_report.md
+
+          if [ "$LINT_RESULT" != "success" ] || [ "$TEST_RESULT" == "failure" ]; then
+             echo "⚠️ **테스트가 실패했습니다.** 로그를 확인해주세요." >> status_report.md
+             EXIT_CODE=1
+          else
+             echo "🎉 **모든 테스트를 통과했습니다!**" >> status_report.md
+             EXIT_CODE=0
+          fi
+
+          # gh CLI로 PR에 코멘트 전송
+          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body-file status_report.md
+
+          # 실패 시 이 Job도 실패 처리 (PR에 빨간불 표시)
+          exit $EXIT_CODE

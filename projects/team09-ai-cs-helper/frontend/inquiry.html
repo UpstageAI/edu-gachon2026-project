@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>문의 등록 · AI CS Helper</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>AI CS Helper <span class="brand-sub">· 문의 등록</span></h1>
+    </div>
+    <nav>
+      <a href="admin.html">관리자 페이지 →</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="card compose">
+      <h2>문의하기</h2>
+      <p class="hint">궁금하신 내용을 남겨주시면 확인 후 답변드리겠습니다.</p>
+
+      <label for="question">문의 내용</label>
+      <textarea id="question" placeholder="예) 항공편을 취소하려면 어떻게 해야하나요?"></textarea>
+
+      <div class="actions">
+        <button type="button" class="btn" id="submit-btn">등록</button>
+      </div>
+
+      <div class="toast" id="toast">문의가 등록되었습니다. (데모)</div>
+    </section>
+  </main>
+
+  <script src="js/log.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/inquiry.js"></script>
+</body>
+</html>
