@@ -8,7 +8,9 @@ RUN npm ci
 COPY frontend/ ./
 
 ARG VITE_API_BASE=/api/v1
+ARG VITE_AGENT_MODE=full_react
 ENV VITE_API_BASE=${VITE_API_BASE}
+ENV VITE_AGENT_MODE=${VITE_AGENT_MODE}
 
 RUN npm run build
 

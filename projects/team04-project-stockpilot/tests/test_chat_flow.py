@@ -56,7 +56,7 @@ def mock_tools(monkeypatch):
 def test_chat_e2e_returns_stock_answer(mock_tools):
     r = client.post(
         "/api/v1/chat/",
-        json={"message": "삼성전자 요즘 어때?", "session_id": "e2e-1"},
+        json={"agent_mode": "router", "message": "삼성전자 요즘 어때?", "session_id": "e2e-1"},
     )
     assert r.status_code == 200
     body = r.json()
@@ -66,7 +66,7 @@ def test_chat_e2e_returns_stock_answer(mock_tools):
 def test_chat_stream_event_sequence(mock_tools):
     r = client.post(
         "/api/v1/chat/stream",
-        json={"message": "삼성전자 어때?", "session_id": "e2e-2"},
+        json={"agent_mode": "router", "message": "삼성전자 어때?", "session_id": "e2e-2"},
     )
     assert r.status_code == 200
     assert r.headers["content-type"].startswith("text/event-stream")
@@ -81,7 +81,7 @@ def test_chat_stream_event_sequence(mock_tools):
 def test_chat_stream_blocks_out_of_scope_without_tool():
     r = client.post(
         "/api/v1/chat/stream",
-        json={"message": "배고프다", "session_id": "out-of-scope-1"},
+        json={"agent_mode": "router", "message": "배고프다", "session_id": "out-of-scope-1"},
     )
 
     assert r.status_code == 200
@@ -120,7 +120,7 @@ def test_chat_stream_disclosure_request_uses_disclosure_only(monkeypatch):
 
     r = client.post(
         "/api/v1/chat/stream",
-        json={"message": "삼성전자 공시 알려줘", "session_id": "disclosure-1"},
+        json={"agent_mode": "router", "message": "삼성전자 공시 알려줘", "session_id": "disclosure-1"},
     )
 
     assert r.status_code == 200
@@ -138,7 +138,7 @@ def test_chat_stream_disclosure_request_uses_disclosure_only(monkeypatch):
 def test_chat_stream_blocks_buy_sell_advice_request():
     r = client.post(
         "/api/v1/chat/stream",
-        json={"message": "삼성전자 매수할까?", "session_id": "guardrail-buy-1"},
+        json={"agent_mode": "router", "message": "삼성전자 매수할까?", "session_id": "guardrail-buy-1"},
     )
 
     assert r.status_code == 200
@@ -153,7 +153,7 @@ def test_blocked_recommendation_does_not_create_followup_ticker_context():
     session_id = "guardrail-no-context-after-block"
     blocked = client.post(
         "/api/v1/chat/stream",
-        json={"message": "무조건 삼성전자 매수 추천해줘", "session_id": session_id},
+        json={"agent_mode": "router", "message": "무조건 삼성전자 매수 추천해줘", "session_id": session_id},
     )
     assert blocked.status_code == 200
     blocked_events = _parse_sse(blocked.text)
@@ -162,7 +162,7 @@ def test_blocked_recommendation_does_not_create_followup_ticker_context():
 
     followup = client.post(
         "/api/v1/chat/stream",
-        json={"message": "왜 올랐어?", "session_id": session_id},
+        json={"agent_mode": "router", "message": "왜 올랐어?", "session_id": session_id},
     )
     assert followup.status_code == 200
     followup_events = _parse_sse(followup.text)
@@ -175,14 +175,14 @@ def test_blocked_recommendation_preserves_existing_valid_ticker_context(mock_too
     session_id = "guardrail-preserve-context-after-block"
     initial = client.post(
         "/api/v1/chat/stream",
-        json={"message": "삼성전자 어때", "session_id": session_id},
+        json={"agent_mode": "router", "message": "삼성전자 어때", "session_id": session_id},
     )
     assert initial.status_code == 200
     assert any(event["type"] == "tool" for event in _parse_sse(initial.text))
 
     blocked = client.post(
         "/api/v1/chat/stream",
-        json={"message": "삼성전자 매수 추천해줘", "session_id": session_id},
+        json={"agent_mode": "router", "message": "삼성전자 매수 추천해줘", "session_id": session_id},
     )
     assert blocked.status_code == 200
     blocked_events = _parse_sse(blocked.text)
@@ -191,7 +191,7 @@ def test_blocked_recommendation_preserves_existing_valid_ticker_context(mock_too
 
     followup = client.post(
         "/api/v1/chat/stream",
-        json={"message": "왜 올랐어?", "session_id": session_id},
+        json={"agent_mode": "router", "message": "왜 올랐어?", "session_id": session_id},
     )
     assert followup.status_code == 200
     followup_events = _parse_sse(followup.text)
@@ -204,14 +204,14 @@ def test_generic_recommendation_uses_screener_not_previous_ticker(mock_tools):
     session_id = "generic-recommend-screener-after-stock"
     initial = client.post(
         "/api/v1/chat/stream",
-        json={"message": "카카오 요즘 어때", "session_id": session_id},
+        json={"agent_mode": "router", "message": "카카오 요즘 어때", "session_id": session_id},
     )
     assert initial.status_code == 200
     assert any(event["type"] == "tool" for event in _parse_sse(initial.text))
 
     recommend = client.post(
         "/api/v1/chat/stream",
-        json={"message": "추천해줘", "session_id": session_id},
+        json={"agent_mode": "router", "message": "추천해줘", "session_id": session_id},
     )
     assert recommend.status_code == 200
     recommend_events = _parse_sse(recommend.text)
@@ -220,7 +220,7 @@ def test_generic_recommendation_uses_screener_not_previous_ticker(mock_tools):
 
     followup = client.post(
         "/api/v1/chat/stream",
-        json={"message": "왜 올랐어?", "session_id": session_id},
+        json={"agent_mode": "router", "message": "왜 올랐어?", "session_id": session_id},
     )
     assert followup.status_code == 200
     followup_events = _parse_sse(followup.text)
@@ -276,7 +276,7 @@ def test_chat_stream_suppresses_raw_tokens_when_direction_notice_exists(monkeypa
 
     r = client.post(
         "/api/v1/chat/stream",
-        json={"message": "삼성전자 왜 떨어져?", "session_id": "direction-notice-stream"},
+        json={"agent_mode": "router", "message": "삼성전자 왜 떨어져?", "session_id": "direction-notice-stream"},
     )
 
     assert r.status_code == 200
@@ -290,7 +290,7 @@ def test_chat_stream_suppresses_raw_tokens_when_direction_notice_exists(monkeypa
 def test_chat_api_blocks_buy_sell_advice_request():
     r = client.post(
         "/api/v1/chat/",
-        json={"message": "삼성전자 살까?", "session_id": "guardrail-buy-2"},
+        json={"agent_mode": "router", "message": "삼성전자 살까?", "session_id": "guardrail-buy-2"},
     )
 
     assert r.status_code == 400
@@ -310,7 +310,7 @@ def test_chat_stream_handles_graph_failure(monkeypatch):
     )
     r = client.post(
         "/api/v1/chat/stream",
-        json={"message": "삼성전자", "session_id": "fail-1"},
+        json={"agent_mode": "router", "message": "삼성전자", "session_id": "fail-1"},
     )
     assert r.status_code == 200
     types = [e["type"] for e in _parse_sse(r.text)]

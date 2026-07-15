@@ -47,6 +47,7 @@ function GlossaryAnswer({ text, terms }) {
   let seq = 0
 
   function toggle(e, key, term) {
+    e.preventDefault()
     e.stopPropagation()
     if (tip && tip.key === key) {
       setTip(null)
@@ -93,6 +94,10 @@ function GlossaryAnswer({ text, terms }) {
         <button
           key={key}
           type="button"
+          onPointerDown={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
           onClick={(e) => toggle(e, key, best.term)}
           className="cursor-pointer text-emerald-300 underline decoration-dotted decoration-emerald-400/50 underline-offset-4 transition-colors hover:text-emerald-200"
         >
@@ -128,11 +133,25 @@ function GlossaryAnswer({ text, terms }) {
     h1: ({ children }) => <h1 className="mb-2 mt-4 text-lg font-semibold text-white first:mt-0">{decorate(children, 'h1')}</h1>,
     h2: ({ children }) => <h2 className="mb-2 mt-4 text-base font-semibold text-white first:mt-0">{decorate(children, 'h2')}</h2>,
     h3: ({ children }) => <h3 className="mb-1 mt-3 text-sm font-semibold text-neutral-100 first:mt-0">{decorate(children, 'h3')}</h3>,
-    a: ({ href, children }) => (
-      <a href={href} target="_blank" rel="noreferrer" className="text-emerald-300 underline decoration-emerald-400/40 underline-offset-2 hover:text-emerald-200">
-        {decorate(children, 'a')}
-      </a>
-    ),
+    a: ({ href, children }) => {
+      const safeHref = typeof href === 'string' ? href.trim() : ''
+      if (!safeHref || safeHref === '#') {
+        return <span className="text-emerald-300 underline decoration-emerald-400/40 underline-offset-2">{decorate(children, 'a')}</span>
+      }
+      return (
+        <a
+          href={safeHref}
+          target={safeHref.startsWith('#') ? undefined : '_blank'}
+          rel={safeHref.startsWith('#') ? undefined : 'noreferrer'}
+          onClick={(e) => {
+            if (safeHref.startsWith('#')) e.preventDefault()
+          }}
+          className="text-emerald-300 underline decoration-emerald-400/40 underline-offset-2 hover:text-emerald-200"
+        >
+          {decorate(children, 'a')}
+        </a>
+      )
+    },
     blockquote: ({ children }) => <blockquote className="mb-3 border-l-2 border-white/20 pl-3 text-neutral-300 last:mb-0">{children}</blockquote>,
     code: ({ children }) => <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-[0.85em] text-emerald-200">{children}</code>,
     pre: ({ children }) => <pre className="mb-3 overflow-x-auto rounded-lg bg-black/40 p-3 font-mono text-xs text-neutral-200 last:mb-0">{children}</pre>,

@@ -13,6 +13,7 @@ const MODEL_LABELS = {
 function modelFamily(value) {
   const v = String(value || '').toLowerCase()
   if (!v) return ''
+  if (v === 'scope-guard' || v === 'tool-router' || v === 'glossary-list') return 'internal'
   if (v === 'template-fallback') return 'template-fallback'
   if (v.startsWith('template-')) return 'template-intentional'
   if (v.includes('solar')) return 'solar'
@@ -43,6 +44,7 @@ function fallbackNotice(requestedModel, usedModel) {
   if (!requestedModel || !usedModel) return ''
   const requestedFamily = modelFamily(requestedModel)
   const usedFamily = modelFamily(usedModel)
+  if (usedFamily === 'internal') return ''
   if (!requestedFamily || !usedFamily || requestedFamily === usedFamily) return ''
   if (usedFamily === 'template-intentional') return ''
   if (usedFamily === 'template' || usedFamily === 'template-fallback') {
@@ -114,67 +116,89 @@ function ChatPanel({ sessionId, initialMessages, seed, hint, onMessagesChange, o
         errorMsg: '',
       },
     ])
-    try {
-      await streamChat(query, {
-        sessionId,
-        model: requestedModel,
-        onEvent: (e) => {
-          if (e.type === 'thinking') {
-            patchLastAssistant({ thinking: e.content || '', status: 'loading' })
-          } else if (e.type === 'tool') {
-            const tr = e.tool_result || {}
-            const news = Array.isArray(tr.news) ? tr.news.filter((n) => n && n.url) : []
-            const disclosures = Array.isArray(tr.disclosures) ? tr.disclosures : []
-            const shouldUpdatePanel = tr.panel_update !== false
-            patchLastAssistant({
-              price: tr.price || null,
-              sources: news,
-              status: 'streaming',
+    let receivedAnyEvent = false
+    const handleEvent = (e) => {
+      receivedAnyEvent = true
+      if (e.type === 'thinking') {
+        patchLastAssistant({ thinking: e.content || '', status: 'loading' })
+      } else if (e.type === 'tool') {
+        const tr = e.tool_result || {}
+        const news = Array.isArray(tr.news) ? tr.news.filter((n) => n && n.url) : []
+        const disclosures = Array.isArray(tr.disclosures) ? tr.disclosures : []
+        const shouldUpdatePanel = tr.panel_update !== false
+        patchLastAssistant({
+          price: tr.price || null,
+          sources: news,
+          status: 'streaming',
+        })
+        if (shouldUpdatePanel && Array.isArray(tr.stocks) && tr.stocks.length) {
+          // 급등 스크리너: 종목별 차트·뉴스·공시를 순서대로 가운데에 쌓는다.
+          tr.stocks.forEach((s) => {
+            if (!s || !s.price) return
+            const sNews = Array.isArray(s.news) ? s.news.filter((n) => n && n.url) : []
+            onInsight?.({
+              price: s.price,
+              news: sNews,
+              disclosures: s.disclosures || [],
+              disclosureError: s.disclosure_error || '',
             })
-            if (shouldUpdatePanel && Array.isArray(tr.stocks) && tr.stocks.length) {
-              // 급등 스크리너: 종목별 차트·뉴스·공시를 순서대로 가운데에 쌓는다.
-              tr.stocks.forEach((s) => {
-                if (!s || !s.price) return
-                const sNews = Array.isArray(s.news) ? s.news.filter((n) => n && n.url) : []
-                onInsight?.({
-                  price: s.price,
-                  news: sNews,
-                  disclosures: s.disclosures || [],
-                  disclosureError: s.disclosure_error || '',
-                })
-              })
-            } else if (shouldUpdatePanel && tr.price) {
-              onInsight?.({
-                price: tr.price,
-                news,
-                disclosures,
-                disclosureError: tr.disclosure_error || '',
-              })
-            }
-          } else if (e.type === 'token') {
-            patchLastAssistant((m) => ({ status: 'streaming', answer: (m.answer || '') + (e.content || '') }))
-          } else if (e.type === 'response') {
-            const patch = {}
-            if (e.content) patch.answer = e.content
-            if (e.model) {
-              patch.usedModel = e.model
-              patch.modelNotice = fallbackNotice(requestedModel, e.model)
-            }
-            if (Object.keys(patch).length) patchLastAssistant(patch)
-          } else if (e.type === 'glossary') {
-            patchLastAssistant({ terms: e.terms || [] })
-          } else if (e.type === 'error') {
-            patchLastAssistant({ status: 'error', errorMsg: e.error || '오류가 발생했어요.' })
-          } else if (e.type === 'done') {
-            patchLastAssistant((m) => ({ status: m.status === 'error' ? 'error' : 'done' }))
-          }
-        },
-      })
+          })
+        } else if (shouldUpdatePanel && tr.price) {
+          onInsight?.({
+            price: tr.price,
+            news,
+            disclosures,
+            disclosureError: tr.disclosure_error || '',
+          })
+        }
+      } else if (e.type === 'token') {
+        patchLastAssistant((m) => ({ status: 'streaming', answer: (m.answer || '') + (e.content || '') }))
+      } else if (e.type === 'response') {
+        const patch = {}
+        if (e.content) patch.answer = e.content
+        if (e.model) {
+          patch.usedModel = e.model
+          patch.modelNotice = fallbackNotice(requestedModel, e.model)
+        }
+        if (Object.keys(patch).length) patchLastAssistant(patch)
+      } else if (e.type === 'glossary') {
+        patchLastAssistant({ terms: e.terms || [] })
+      } else if (e.type === 'error') {
+        patchLastAssistant({ status: 'error', errorMsg: e.error || '오류가 발생했어요.' })
+      } else if (e.type === 'done') {
+        patchLastAssistant((m) => ({ status: m.status === 'error' ? 'error' : 'done' }))
+      }
+    }
+    const runStream = (currentModel) => streamChat(query, {
+      sessionId,
+      model: currentModel,
+      onEvent: handleEvent,
+    })
+
+    try {
+      await runStream(requestedModel)
     } catch (err) {
-      patchLastAssistant({
-        status: 'error',
-        errorMsg: err?.message || '서버에 연결하지 못했어요. 백엔드 상태를 확인해주세요.',
-      })
+      if (requestedModel !== 'solar' && !receivedAnyEvent) {
+        patchLastAssistant({
+          status: 'loading',
+          thinking: `${modelLabel(requestedModel)} 연결이 불안정해서 Solar로 다시 시도합니다...`,
+          modelNotice: `${modelLabel(requestedModel)} 연결이 불안정해서 Solar로 다시 시도합니다.`,
+          errorMsg: '',
+        })
+        try {
+          await runStream('solar')
+        } catch (retryErr) {
+          patchLastAssistant({
+            status: 'error',
+            errorMsg: retryErr?.message || '서버에 연결하지 못했어요. 백엔드 상태를 확인해주세요.',
+          })
+        }
+      } else {
+        patchLastAssistant({
+          status: 'error',
+          errorMsg: err?.message || '서버에 연결하지 못했어요. 백엔드 상태를 확인해주세요.',
+        })
+      }
     } finally {
       busyRef.current = false
       setBusy(false)
@@ -220,7 +244,7 @@ function ChatPanel({ sessionId, initialMessages, seed, hint, onMessagesChange, o
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={busy}
-            placeholder="종목이나 궁금한 점을 입력하세요"
+            placeholder="국내 종목명이나 궁금한 점을 입력하세요"
             className="flex-1 bg-transparent px-4 py-2 text-white placeholder-neutral-400 outline-none disabled:opacity-50"
           />
           <select
@@ -246,6 +270,9 @@ function ChatPanel({ sessionId, initialMessages, seed, hint, onMessagesChange, o
             {busy ? '분석 중' : '전송'}
           </button>
         </div>
+        <p className="px-3 pt-2 text-xs text-neutral-500">
+          현재는 국내 상장 종목(KOSPI/KOSDAQ) 중심으로 제공돼요. 미국 주식은 아직 지원하지 않습니다.
+        </p>
       </form>
     </div>
   )

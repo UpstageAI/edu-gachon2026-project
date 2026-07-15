@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 from langchain_core.messages import AIMessageChunk, HumanMessage
 from loguru import logger
 
+from app.agents.full_react_agent import run_full_react_agent, stream_full_react_agent
 from app.agents.react_agent import run_react_agent, stream_react_agent
 from app.core.guardrails import GuardrailViolation, ensure_safe_user_input
 from app.graph.graph import get_stockpilot_graph
@@ -143,6 +144,25 @@ async def _match_glossary_terms(answer_text: str) -> list[dict]:
 @router.post("/", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
     """단건(비스트리밍) 응답. 그래프를 끝까지 실행해 최종 답변을 반환한다."""
+    if request.agent_mode == "full_react":
+        try:
+            ensure_safe_user_input(request.message)
+            result = await run_full_react_agent(
+                message=request.message,
+                session_id=request.session_id,
+                user_id=request.user_id,
+                model_id=request.model,
+            )
+        except GuardrailViolation as exc:
+            raise HTTPException(status_code=400, detail=exc.decision.safe_message)
+        except Exception:
+            logger.exception(f"Full ReAct chat failed: session={request.session_id}")
+            raise HTTPException(
+                status_code=500,
+                detail="Full ReAct 응답을 생성하는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+            )
+        return ChatResponse(message=result.answer, tool_used=result.tool_used)
+
     if request.agent_mode == "react":
         try:
             ensure_safe_user_input(request.message)
@@ -182,6 +202,37 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
 async def _stream_events(request: ChatRequest) -> AsyncIterator[str]:
     """그래프를 흘리며 진행상황(updates)과 Solar 토큰(messages)을 SSE로 내보낸다."""
+    if request.agent_mode == "full_react":
+        answer_text = ""
+        try:
+            ensure_safe_user_input(request.message)
+            async for event in stream_full_react_agent(
+                message=request.message,
+                session_id=request.session_id,
+                user_id=request.user_id,
+                model_id=request.model,
+            ):
+                if event.get("type") == "response":
+                    answer_text = event.get("content") or answer_text
+                yield StreamEvent(**event).to_sse()
+
+            terms = await _match_glossary_terms(answer_text)
+            if terms:
+                yield StreamEvent(type="glossary", node="response", terms=terms).to_sse()
+            yield StreamEvent(type="done").to_sse()
+        except GuardrailViolation as exc:
+            logger.warning(f"Guardrail blocked Full ReAct request: session={request.session_id}")
+            yield StreamEvent(type="error", error=exc.decision.safe_message).to_sse()
+            yield StreamEvent(type="done").to_sse()
+        except Exception:
+            logger.exception(f"Full ReAct stream failed: session={request.session_id}")
+            yield StreamEvent(
+                type="error",
+                error="Full ReAct 응답을 생성하는 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.",
+            ).to_sse()
+            yield StreamEvent(type="done").to_sse()
+        return
+
     if request.agent_mode == "react":
         answer_text = ""
         try:

@@ -20,6 +20,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         VITE_API_BASE: /api/v1
+        VITE_AGENT_MODE: ${VITE_AGENT_MODE:-full_react}
     depends_on:
       backend:
         condition: service_healthy

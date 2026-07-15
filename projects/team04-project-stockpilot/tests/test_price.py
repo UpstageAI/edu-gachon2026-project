@@ -14,6 +14,8 @@ async def test_resolve_known_company_without_krx_credentials(monkeypatch):
 
     assert await price.resolve_ticker("삼성전자") == "005930"
     assert await price.resolve_ticker("005930") == "005930"
+    assert await price.resolve_ticker("심텍") == "222800"
+    assert await price.resolve_ticker("삼성전자우") == "005935"
 
 
 async def test_get_ohlcv_normalizes_pykrx_frame(monkeypatch):

@@ -11,7 +11,7 @@ from loguru import logger
 from app.core.guardrails import sanitize_llm_output
 from app.core.llm import ainvoke_with_fallback
 from app.core.market_time import tag_session
-from app.repositories.price import resolve_ticker
+from app.repositories.price import KNOWN_TICKER_NAMES, resolve_ticker
 from app.core.prompts import (
     DISCLOSURE_RISK_RESPONSE_PROMPT,
     RAG_GROUNDING,
@@ -118,16 +118,20 @@ CAUSE_HINTS = (
     "왜", "이유", "원인", "배경", "무슨 일", "뭔 일", "무슨일", "뭔일",
 )
 
-# 종목명 사전(ticker 추출용). 실제 종목 매핑은 이후 확장.
-KNOWN_STOCKS = [
-    "삼성전자", "SK하이닉스", "LG에너지솔루션", "삼성바이오로직스", "현대차",
-    "기아", "NAVER", "카카오", "POSCO홀딩스", "셀트리온",
-]
+# 종목명 사전(ticker 추출용).
+# price.py의 기본 유니버스를 그대로 공유해 라우터가 모르는 종목을
+# 범위 밖 질문으로 오분류하기 전에 빠르게 종목 질문으로 잡는다.
+KNOWN_STOCKS = list(KNOWN_TICKER_NAMES)
 
 # 자주 쓰는 별칭·다른 표기 → 정식 종목명 매핑 (공백/대소문자는 _norm 이 흡수)
 STOCK_ALIASES = {
     "삼전": "삼성전자",
+    "삼전우": "삼성전자우",
+    "삼성전자 우": "삼성전자우",
+    "삼성전자우선주": "삼성전자우",
     "하이닉스": "SK하이닉스",
+    "하닉": "SK하이닉스",
+    "SK하닉": "SK하이닉스",
     "엘지에너지솔루션": "LG에너지솔루션",
     "LG엔솔": "LG에너지솔루션",
     "엘지엔솔": "LG에너지솔루션",
@@ -135,7 +139,18 @@ STOCK_ALIASES = {
     "네이버": "NAVER",
     "포스코": "POSCO홀딩스",
     "포스코홀딩스": "POSCO홀딩스",
+    "포퓨": "포스코퓨처엠",
+    "포스코퓨처엠": "포스코퓨처엠",
     "현대자동차": "현대차",
+    "삼성엔지니어링": "삼성E&A",
+    "제왑": "JYP Ent.",
+    "JYP": "JYP Ent.",
+    "JYP엔터": "JYP Ent.",
+    "와이지": "와이지엔터테인먼트",
+    "YG": "와이지엔터테인먼트",
+    "에스엠엔터": "에스엠",
+    "SM": "에스엠",
+    "레고켐바이오": "리가켐바이오",
 }
 
 
@@ -147,7 +162,9 @@ def _last_user_text(state: StockPilotState) -> str:
 # 종목명 뒤에 흔히 붙는 군더더기 (종목명만 남기려고 제거)
 _TICKER_FILLERS = (
     "어때", "어떄", "어떄?", "알려줘", "분석", "분석해줘", "전망", "주가", "주식",
-    "어떻게", "어떤가", "정보", "보여줘", "?", "!",
+    "어떻게", "어떤가", "정보", "보여줘", "관련", "검색", "조회", "알아봐",
+    "알려", "봐줘", "봐", "이란", "라는", "란",
+    "요즘", "최근", "현재", "?", "!",
 )
 
 
@@ -437,7 +454,7 @@ async def router_node(state: StockPilotState) -> dict:
     # 공백/대소문자를 무시하고 매칭(별칭 포함) → "sk 하이닉스", "네이버", "삼전" 등도 인식
     norm_text = _norm(text)
     # (검사할 표기, 정식 종목명) 목록 — 긴 표기부터 검사해 부분 매칭 오인을 줄인다.
-    _candidates = [(name, name) for name in KNOWN_STOCKS] + list(STOCK_ALIASES.items())
+    _candidates = list(STOCK_ALIASES.items()) + [(name, name) for name in KNOWN_STOCKS]
     _candidates.sort(key=lambda pair: len(pair[0]), reverse=True)
     matched_stock = next(
         (canonical for surface, canonical in _candidates if _norm(surface) in norm_text),

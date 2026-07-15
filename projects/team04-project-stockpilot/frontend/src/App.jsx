@@ -21,7 +21,7 @@ import {
 } from './lib/api'
 
 const AURORA_COLORS = ['#052e21', '#34d399', '#065f46']
-const ANALYSIS_HINT = '종목명을 입력하면 등락의 원인을 분석해드려요. (예: 삼성전자)'
+const ANALYSIS_HINT = '국내 상장 종목명(KOSPI/KOSDAQ)을 입력하면 등락 흐름과 근거를 분석해드려요. (예: 삼성전자)'
 const SESSION_DOMAIN_HINTS = [
   '주식', '종목', '주가', '시세', '등락', '상승', '하락', '급등', '급락',
   '뉴스', '공시', 'dart', '재무', '실적', '매출', '영업이익', '순이익',
@@ -380,6 +380,9 @@ function App() {
             <p className="mb-10 max-w-lg text-balance text-neutral-300 drop-shadow">
               <span className="block">종목을 검색하면 뉴스와 공시를 분석해</span>
               <span className="block">주가 변동의 원인을 근거와 함께 설명합니다.</span>
+              <span className="mt-3 block text-sm text-emerald-100/80">
+                현재는 국내 상장 종목(KOSPI/KOSDAQ)만 지원하며, 미국 주식은 아직 제공하지 않습니다.
+              </span>
             </p>
             <button
               type="button"

@@ -239,7 +239,14 @@ def sanitize_llm_output(text: str) -> str:
     if not guardrails_enabled():
         return text
 
-    safe = mask_sensitive_text(text.strip())
+    safe = re.sub(r"</?\|[^|]+\|>", "", text.strip()).strip()
+    safe = re.sub(
+        r"가장\s*높은\s*상승\s*가능성을\s*보이고\s*있습니다",
+        "상승 근거가 비교적 뚜렷하게 확인됩니다",
+        safe,
+    )
+    safe = re.sub(r"(상승|하락)\s*가능성", r"\1 근거", safe)
+    safe = mask_sensitive_text(safe)
     if contains_buy_sell_recommendation(safe):
         safe = NO_INVESTMENT_RECOMMENDATION_MESSAGE
     if contains_price_prediction(safe):

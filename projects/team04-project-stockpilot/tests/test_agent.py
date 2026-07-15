@@ -345,6 +345,28 @@ async def test_router_node_generic_recommendation_without_context_uses_screener(
     assert result["is_followup"] is False
 
 
+async def test_router_node_extended_universe_stock_uses_market_tool():
+    state = create_initial_state("extended-universe-simtech")
+    state["messages"] = [HumanMessage(content="심텍 요즘 어때")]
+    result = await router_node(state)
+
+    assert result["intent"] == "tool"
+    assert result["screen"] is False
+    assert result["ticker"] == "심텍"
+    assert result["tool_mode"] == "market"
+
+
+async def test_router_node_common_alias_uses_market_tool():
+    state = create_initial_state("extended-universe-alias")
+    state["messages"] = [HumanMessage(content="삼전우 요즘 어때")]
+    result = await router_node(state)
+
+    assert result["intent"] == "tool"
+    assert result["screen"] is False
+    assert result["ticker"] == "삼성전자우"
+    assert result["tool_mode"] == "market"
+
+
 async def test_router_node_missing_ticker_followup_asks_for_ticker():
     state = create_initial_state("missing-ticker-followup")
     state["messages"] = [HumanMessage(content="왜 올랐어?")]

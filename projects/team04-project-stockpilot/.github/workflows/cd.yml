@@ -2,6 +2,19 @@ name: CD
 
 on:
   workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: "Git ref/branch/tag to deploy"
+        required: false
+        default: "main"
+      agent_mode:
+        description: "Frontend agent mode"
+        required: false
+        default: "full_react"
+        type: choice
+        options:
+          - router
+          - full_react
   push:
     branches: [main]
 
@@ -12,6 +25,8 @@ env:
   GCP_PROJECT_ID: project-1573ab59-3ab6-44db-b26
   GCE_INSTANCE: stockpilot-server
   GCE_ZONE: us-central1-f
+  DEPLOY_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_ref || 'main' }}
+  FRONTEND_AGENT_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.agent_mode || 'full_react' }}
 
 jobs:
   deploy:
@@ -62,6 +77,8 @@ jobs:
             --ssh-key-expire-after=10m \
             --command="bash -s" <<'REMOTE_SCRIPT'
           set -e
+          DEPLOY_REF="${{ env.DEPLOY_REF }}"
+          FRONTEND_AGENT_MODE="${{ env.FRONTEND_AGENT_MODE }}"
 
           DEPLOY_DIR="/home/${USER}/stockpilot"
 
@@ -71,9 +88,10 @@ jobs:
           fi
 
           cd "${DEPLOY_DIR}"
-          git fetch origin main
-          git checkout main
-          git pull --ff-only origin main
+          echo "Deploying ref: ${DEPLOY_REF}"
+          echo "Frontend agent mode: ${FRONTEND_AGENT_MODE}"
+          git fetch origin "${DEPLOY_REF}"
+          git checkout -B deploy-target FETCH_HEAD
 
           cat > .env <<'ENV_EOF'
           ENVIRONMENT=production
@@ -105,6 +123,7 @@ jobs:
           RAG_EMBEDDING_BATCH_SIZE=${{ secrets.RAG_EMBEDDING_BATCH_SIZE }}
           FRONTEND_PORT=${{ secrets.FRONTEND_PORT }}
           BACKEND_PORT=${{ secrets.BACKEND_PORT }}
+          VITE_AGENT_MODE=${{ env.FRONTEND_AGENT_MODE }}
           ENV_EOF
 
           if docker compose version >/dev/null 2>&1; then

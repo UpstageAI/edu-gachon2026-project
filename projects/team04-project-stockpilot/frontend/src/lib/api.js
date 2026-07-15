@@ -1,5 +1,6 @@
 // 백엔드 API 클라이언트 + 로컬 저장
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api/v1";
+const AGENT_MODE = import.meta.env.VITE_AGENT_MODE ?? "full_react";
 const TOKEN_KEY = "stockpilot_token";
 const USER_KEY = "stockpilot_user";
 const CONV_KEY = "stockpilot_conversations";
@@ -88,7 +89,7 @@ export async function streamChat(message, { sessionId = "web", model, onEvent, s
   const res = await fetch(`${API_BASE}/chat/stream`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, session_id: sessionId, model }),
+    body: JSON.stringify({ message, session_id: sessionId, model, agent_mode: AGENT_MODE }),
     signal,
   });
   if (!res.ok || !res.body) throw new Error(`서버 오류 (${res.status})`);

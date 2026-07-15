@@ -3,8 +3,10 @@ import GlossaryAnswer from './GlossaryAnswer'
 function responseMetaLabel(m) {
   if (!m) return ''
   let s = String(m)
+  const normalized = s.toLowerCase()
+  if (['scope-guard', 'tool-router', 'glossary-list'].includes(normalized)) return ''
   if (s.includes('/')) s = s.split('/').pop()   // gemini/gemini-2.0-flash → gemini-2.0-flash
-  if (s.toLowerCase().includes('template')) return ''
+  if (normalized.includes('template')) return ''
   return s
 }
 
