@@ -1,0 +1,63 @@
+name: React CI/CD to GCP Storage
+
+on:
+  push:
+    branches:
+      - main # main 브랜치에 코드가 push되면 자동으로 배포가 시작됩니다.
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHub 저장소의 소스코드를 가상 컴퓨터로 체크아웃
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. Node.js 환경 세팅
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 현재 프로젝트에서 사용하는 Node 버전으로 적어주세요.
+
+      # 3. 라이브러리 설치 및 React 빌드
+      # VITE_API_URL=/api 로 빌드해서, Load Balancer의 /api/* 라우팅을 통해
+      # 프론트엔드와 같은 도메인/HTTPS로 백엔드를 호출하도록 함
+      - name: Install dependencies & Build React
+        run: |
+          npm ci
+          npm run build
+        env:
+          VITE_API_URL: /api
+          VITE_GOOGLE_STT_API_KEY: ${{ secrets.VITE_GOOGLE_STT_API_KEY }}
+          VITE_TUI_ASK_ENDPOINT: /api/cooking/voice-query
+
+      # 4. 구글 클라우드 인증 (아까 GitHub에 숨겨둔 만능 열쇠 사용)
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # 5. 빌드된 결과물을 프론트엔드 전용 버킷으로 업로드 (Load Balancer의 backend bucket이 이 버킷을 서빙함)
+      # index.html 등은 no-cache로 올려서 배포하자마자 바로 반영되게 하고,
+      # 파일명에 해시가 붙는 dist/assets(JS/CSS)만 나중에 장기 캐시로 덮어써서
+      # CDN/브라우저가 옛날 index.html을 계속 들고 있는 문제를 막는다.
+      - name: Upload to GCP Storage Bucket
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: './dist' # 👈 기존 './build'에서 './dist'로 변경! (Vite 기준)
+          destination: 'ratbox-frontend-bucket'
+          parent: false
+          gzip: true
+          headers: |-
+            cache-control: no-cache
+
+      - name: Set long-lived cache on hashed assets
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: './dist/assets'
+          destination: 'ratbox-frontend-bucket/assets'
+          parent: false
+          gzip: true
+          headers: |-
+            cache-control: public, max-age=31536000, immutable

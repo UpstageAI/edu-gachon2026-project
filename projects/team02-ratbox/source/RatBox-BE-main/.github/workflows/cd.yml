@@ -1,0 +1,104 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION }}
+      ZONE: ${{ vars.GCP_ZONE }}
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ratbox-be/api
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push image
+        run: |
+          docker build -t "$IMAGE:${{ github.sha }}" .
+          docker push "$IMAGE:${{ github.sha }}"
+
+      - name: Render app env file from secrets
+        run: |
+          cat > app-env.txt <<EOF
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}
+          DATABASE_URL_READONLY=${{ secrets.DATABASE_URL_READONLY }}
+          UPSTAGE_API_KEY=${{ secrets.UPSTAGE_API_KEY }}
+          UPSTAGE_MODEL=${{ secrets.UPSTAGE_MODEL }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          REDIS_URL=redis://ratbox-redis:6379/0
+          CORS_ORIGINS=${{ secrets.CORS_ORIGINS }}
+          LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_BASE_URL=${{ secrets.LANGFUSE_BASE_URL }}
+          EOF
+
+      - name: Create instance template revision
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          TEMPLATE_NAME="ratbox-backend-template-$SHORT_SHA"
+          echo "TEMPLATE_NAME=$TEMPLATE_NAME" >> "$GITHUB_ENV"
+          gcloud compute instance-templates create "$TEMPLATE_NAME" \
+            --project="$PROJECT_ID" \
+            --region="$REGION" \
+            --machine-type=e2-medium \
+            --image-family=cos-stable \
+            --image-project=cos-cloud \
+            --boot-disk-size=10GB \
+            --boot-disk-type=pd-balanced \
+            --network=ratbox-vpc \
+            --subnet=ratbox-private-subnet \
+            --no-address \
+            --service-account="${{ vars.GCP_SERVICE_ACCOUNT }}" \
+            --scopes=cloud-platform \
+            --shielded-vtpm --shielded-integrity-monitoring --no-shielded-secure-boot \
+            --metadata-from-file startup-script=deploy/startup-script.sh,app-env=app-env.txt \
+            --metadata=app-image="$IMAGE:${{ github.sha }}"
+
+      - name: Roll out to the managed instance group
+        run: |
+          gcloud compute instance-groups managed rolling-action start-update ratbox-backend-group \
+            --project="$PROJECT_ID" \
+            --zone="$ZONE" \
+            --version=template="projects/$PROJECT_ID/global/instanceTemplates/$TEMPLATE_NAME"
+
+          gcloud compute instance-groups managed wait-until ratbox-backend-group \
+            --project="$PROJECT_ID" \
+            --zone="$ZONE" \
+            --version-target-reached \
+            --timeout=600
+
+      - name: Clean up old instance template revisions
+        if: always()
+        run: |
+          gcloud compute instance-templates list \
+            --project="$PROJECT_ID" \
+            --filter="name~^ratbox-backend-template-[0-9a-f]{7}$" \
+            --sort-by=~creationTimestamp \
+            --format="value(name)" | tail -n +6 | \
+            xargs -r -n1 gcloud compute instance-templates delete --project="$PROJECT_ID" --quiet

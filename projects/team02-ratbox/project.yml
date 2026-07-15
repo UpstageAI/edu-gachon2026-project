@@ -1,0 +1,74 @@
+schema_version: 1
+
+team:
+  number: 2
+  folder_name: team02-ratbox
+  name: RatBox
+  members:
+    - name: 김다인
+      role: Backend, AI
+      github: kallin1
+    - name: 김철수
+      role: Backend, infra, Frontend
+      github: seoyunch
+
+project:
+  title: RatBox
+  summary: 냉장고 속 재료로 알레르기까지 고려한 레시피와 대체재를 추천하고, 요리 중 음성 질문에도 실시간으로 답해주는 AI 요리 비서
+  category: AI 서비스
+  keywords:
+    - AI
+    - LangGraph
+    - STT
+    - Recipe
+
+problem:
+  summary: 자취생·1인 가구는 소량·비정형으로 재료를 보유해 지금 가진 재료로 뭘 만들 수 있는지 확인하기 어렵고, 요리 중 재료가 부족해도 손이 젖어 있어 검색조차 번거로우며, 알레르기가 있는 경우 추천 레시피와 대체재의 안전 여부까지 매번 직접 확인해야 함
+  target_users:
+    - 자취생·1인 가구
+    - 특정 재료가 없어도 되는지를 스스로 판단하기 어려운 초보 자취러
+
+solution:
+  summary: LangGraph 기반 요리비서 Agent '뚜이'가 알레르기 유발 재료를 사전 필터링해 보유 재료로 레시피 후보를 추천하고, 부족 재료의 생략·대체 가능 여부를 대체재-알레르기 재검증까지 거쳐 조리 중 음성 질의로도 실시간 안내함
+  main_features:
+    - 재료 매칭 기반 결정론적 레시피 후보 검색 + LLM 관련성 검증
+    - 알레르기 유발 재료 포함 레시피 사전 필터링
+    - 부족 재료 필수/생략 분류 및 대체재 제안
+    - 대체재-알레르기 충돌 재검증 및 최종 응답 하드 필터링(이중 안전장치)
+    - SSE 기반 실시간 스트리밍 응답
+    - 조리 중 음성 질의 처리 (Google Cloud STT + ReAct 에이전트 기반 실시간 재료 대체·생략 판단)
+
+tech_stack:
+  frontend:
+    - React
+    - TypeScript
+    - Vite
+  backend:
+    - Python
+    - FastAPI
+    - LangGraph
+  ai:
+    - Upstage Solar Pro
+    - Google Cloud STT
+    - Langfuse
+  database:
+    - PostgreSQL
+    - Supabase
+    - Redis
+  infra:
+    - Docker
+    - GCP
+
+links:
+  demo_video_url:
+  deployed_url: https://ratbox.cloud/
+  presentation_url:
+  repository_url: 
+
+blog:
+  slug: ratbox
+  tags:
+    - AI
+    - LangGraph
+    - SW Maestro
+  cover_image: assets/cover.png

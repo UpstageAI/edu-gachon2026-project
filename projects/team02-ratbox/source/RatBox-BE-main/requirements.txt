@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+supabase
+pydantic-settings
+python-dotenv
+pandas
+langgraph
+langchain-core
+langchain-upstage
+sqlglot
+psycopg2-binary
+bcrypt
+PyJWT
+redis
+langfuse
