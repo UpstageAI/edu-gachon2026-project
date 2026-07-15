@@ -54,7 +54,7 @@
 
 ## 5. 데모 영상
 
-- 데모 영상: _제작 중_
+- 데모 영상: https://youtu.be/hwoSwc-66dE
 - 배포 URL: http://34.50.27.156:8000/
 - 추가 시연 자료: 주요 시연 시나리오 3종은 [`README.original.md`](./README.original.md)의 "주요 사용자 시나리오" 참고
 
@@ -71,7 +71,7 @@
 
 ## 7. 참고자료 / 발표자료
 
-- 발표자료: _준비 중_
+- 발표자료: [발표 슬라이드 (Google Slides)](https://docs.google.com/presentation/d/1Lhi1kv14Vd70QQHEBFBJoS1JcVYBChm4bUZ2VwwTYAs/edit?usp=sharing)
 - 기획서 / 상세 설계: [`README.original.md`](./README.original.md)
 - 아키텍처 설계 문서: [`docs/architecture.md`](./docs/architecture.md)
 - 의사결정 기록(ADR): [`docs/ADR.md`](./docs/ADR.md)

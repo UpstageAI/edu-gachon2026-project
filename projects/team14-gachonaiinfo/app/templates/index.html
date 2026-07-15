@@ -38,7 +38,7 @@
             </div>
 
             <div class="mascot-card glass-card">
-                <h2>안녕하세요! 저는 <span>가천이</span>예요 💙</h2>
+                <h2>안녕하세요! 저는 <span>가천이</span>에요 💙</h2>
                 <p>가천대학교 인공지능학과에 대해 무엇이든 물어보세요!</p>
             </div>
 
@@ -83,23 +83,23 @@
                     <strong>가천이와 대화하기</strong>
                     <p>업로드된 공식 자료를 기반으로 답변해요.</p>
                 </div>
-                <span class="status-pill">● RAG 연결됨</span>
+                <span class="status-pill"><span class="status-dot" aria-hidden="true"></span>RAG 연결됨</span>
             </div>
 
             <div class="quick-row">
                 <button class="quick-question" data-question="2학기 수강신청 기간 알려줘">2학기 수강신청</button>
                 <button class="quick-question" data-question="외국어 졸업인증은 언제까지 해야 해?">외국어 졸업인증</button>
                 <button class="quick-question" data-question="인공지능학과 전공필수 알려줘">전공필수</button>
-                <button class="quick-question" data-question="기숙사 벌점 몇 점이면 퇴사야?">가드레일 테스트</button>
+                <button class="quick-question" data-question="수강신청 일정을 myid@gachon.ac.kr 로 리마인드 메일 보내줘" data-prefill="true">리마인드 예약</button>
             </div>
 
-            <div id="chat-box" class="chat-box">
+            <div id="chat-box" class="chat-box" role="log" aria-live="polite" aria-atomic="false">
                 <div class="message bot-message">
                     <img src="/static/img/mascot.png" alt="가천이" class="avatar" />
                     <div class="bubble-wrap">
                         <div class="bubble">
                             안녕하세요! 🤗<br />
-                            저는 가천대학교 인공지능학과 길잡이 <strong>가천이</strong>예요.<br />
+                            저는 가천대학교 인공지능학과 길잡이 <strong>가천이</strong>에요.<br />
                             학사, 수업, 졸업요건, 사회봉사 등에 대해 편하게 물어보세요!
                         </div>
                         <span class="timestamp">방금 전</span>
@@ -113,6 +113,7 @@
                     rows="1"
                     placeholder="궁금한 내용을 입력해 주세요..."
                     autocomplete="off"
+                    aria-label="가천이에게 보낼 메시지"
                 ></textarea>
                 <button id="send-button" type="submit" aria-label="전송">➤</button>
             </form>

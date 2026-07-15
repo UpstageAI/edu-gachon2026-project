@@ -6,6 +6,7 @@ from typing import Any
 from app.repositories.academic import AcademicRepository
 from app.repositories.reminders import get_reminder_repository
 from app.services.reminder_time import parse_remind_at
+from app.tools.schema import validate_tool_args
 
 # 계열기초(None) 제외한 학점 계산 대상
 _CATS = ["전공필수", "전공선택", "공통필수", "공통선택"]
@@ -27,6 +28,10 @@ class ToolExecutor:
         self, tool_name: str, tool_args: dict, session_id: str | None = None
     ) -> dict[str, Any]:
         args = tool_args or {}
+        # dispatch 전에 스키마로 인자를 검증한다(미지 도구·필수·enum·범위 등).
+        err = validate_tool_args(tool_name, args)
+        if err is not None:
+            return {"success": False, "error": err}
         try:
             match tool_name:
                 case "calc_graduation_progress":

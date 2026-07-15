@@ -60,9 +60,9 @@ tech_stack:
     - Resend Email API
 
 links:
-  demo_video_url:
-  deployed_url:
-  presentation_url:
+  demo_video_url: https://youtu.be/hwoSwc-66dE
+  deployed_url: http://34.50.27.156:8000/
+  presentation_url: https://docs.google.com/presentation/d/1Lhi1kv14Vd70QQHEBFBJoS1JcVYBChm4bUZ2VwwTYAs/edit?usp=sharing
   repository_url: https://github.com/woojinwoojin/AI_Agent_Project
 
 blog:

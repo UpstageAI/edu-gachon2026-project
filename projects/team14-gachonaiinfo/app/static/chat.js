@@ -7,6 +7,12 @@ const quickQuestions = document.querySelectorAll(".quick-question");
 let loadingMessage = null;
 let isSending = false;
 
+// 서버에서 이 시간 동안 아무 데이터(status/delta 등)도 오지 않으면 "멈춘 것"으로
+// 간주하고 요청을 중단한다. 백엔드가 첫 status를 즉시 보내므로, 이 값은 이후
+// 노드 전환(라우팅→검색→응답 LLM 첫 토큰) 사이 최대 무응답 허용 시간이다.
+// (LLM timeout=30s + 재시도를 고려해 넉넉히 잡음. 백엔드 하트비트 도입 시 낮출 수 있다.)
+const STALL_TIMEOUT_MS = 60000;
+
 // 체크포인터가 session_id(=thread_id) 별로 대화를 기억하므로, 브라우저 탭마다
 // 고유한 값을 하나 만들어 재사용한다. 안 보내면 서버 기본값("default")을
 // 모든 사용자가 공유하게 되어 대화가 서로 섞인다.
@@ -86,6 +92,72 @@ function createBotAvatar() {
     return avatar;
 }
 
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+// 봇 답변을 안전하게 HTML로 변환한다. XSS를 막기 위해 먼저 전부 escape 하고,
+// URL 부분만 <a>로 되살린다(scheme을 http/https로 한정 → javascript: 차단).
+// **굵게** 는 링크를 만든 뒤에 치환한다(URL 안의 * 오검출 방지).
+function renderRichText(text) {
+    const urlRe = /(https?:\/\/[^\s<]+[^\s<.,)])/g;
+    let html = "";
+    let last = 0;
+    let match;
+
+    while ((match = urlRe.exec(text)) !== null) {
+        html += escapeHtml(text.slice(last, match.index));
+        const url = match[0];
+        html +=
+            `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">` +
+            `${escapeHtml(url)}</a>`;
+        last = urlRe.lastIndex;
+    }
+    html += escapeHtml(text.slice(last));
+
+    return html.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+}
+
+// 답변 전(분석/검색 중) 진행 표시: 타이핑 점 애니메이션 + 상태 문구.
+function pendingHtml(message) {
+    return (
+        '<span class="typing-dot"></span>' +
+        '<span class="typing-dot"></span>' +
+        '<span class="typing-dot"></span> ' +
+        escapeHtml(message)
+    );
+}
+
+// 오류/타임아웃 시 안내 문구와 "다시 시도" 버튼을 버블에 표시한다.
+// 재시도는 실패한 봇 메시지를 지우고 같은 질문을 다시 보낸다(사용자 말풍선은
+// 중복 추가하지 않도록 isRetry=true로 호출).
+function showRetry(messageDiv, wrap, bubble, message, originalMessage) {
+    bubble.textContent = message;
+
+    const retry = document.createElement("button");
+    retry.type = "button";
+    retry.classList.add("retry-button");
+    retry.textContent = "다시 시도";
+    retry.addEventListener(
+        "click",
+        () => {
+            if (isSending) {
+                return;
+            }
+            messageDiv.remove();
+            sendMessage(originalMessage, true);
+        },
+        { once: true }
+    );
+
+    wrap.appendChild(retry);
+    scrollToBottom();
+}
+
 function addUserMessage(text) {
     const messageDiv = createMessageElement("user");
 
@@ -116,7 +188,7 @@ function addBotMessage(text, options = {}) {
 
     const bubble = document.createElement("div");
     bubble.classList.add("bubble");
-    bubble.textContent = text;
+    bubble.innerHTML = renderRichText(text);
 
     wrap.appendChild(bubble);
 
@@ -145,7 +217,7 @@ function createStreamingBotMessage() {
 
     const bubble = document.createElement("div");
     bubble.classList.add("bubble");
-    bubble.textContent = "질문을 분석하는 중이에요.";
+    bubble.innerHTML = pendingHtml("질문을 분석하는 중이에요.");
 
     wrap.appendChild(bubble);
     messageDiv.appendChild(wrap);
@@ -181,7 +253,7 @@ function hideLoading() {
     }
 }
 
-async function sendMessage(message) {
+async function sendMessage(message, isRetry = false) {
     const trimmed = message.trim();
 
     if (!trimmed || isSending) {
@@ -191,24 +263,53 @@ async function sendMessage(message) {
     isSending = true;
     setControlsDisabled(true);
 
-    addUserMessage(trimmed);
-    messageInput.value = "";
-    messageInput.style.height = "auto"; // 전송 후 한 줄 높이로 복귀
+    // 재시도는 기존 사용자 말풍선/입력값을 그대로 두고 봇 응답만 다시 받는다.
+    if (!isRetry) {
+        addUserMessage(trimmed);
+        messageInput.value = "";
+        messageInput.style.height = "auto"; // 전송 후 한 줄 높이로 복귀
+    }
 
-    const { wrap, bubble } = createStreamingBotMessage();
+    const { messageDiv, wrap, bubble } = createStreamingBotMessage();
 
     let meta = null;
     let buffer = "";
+    let answerText = "";
     let hasStartedAnswer = false;
     let hasFinished = false;
 
+    // 스톨(무응답) 감지: 일정 시간 데이터가 안 오면 요청을 중단해 무한 대기를
+    // 명확한 오류로 전환한다. 데이터를 받을 때마다 타이머를 리셋한다.
+    const controller = new AbortController();
+    let stalled = false;
+    let stallTimer = null;
+
+    const armStall = () => {
+        if (stallTimer) {
+            clearTimeout(stallTimer);
+        }
+        stallTimer = setTimeout(() => {
+            stalled = true;
+            controller.abort();
+        }, STALL_TIMEOUT_MS);
+    };
+    const clearStall = () => {
+        if (stallTimer) {
+            clearTimeout(stallTimer);
+            stallTimer = null;
+        }
+    };
+
     try {
+        armStall(); // fetch 응답 자체가 안 와도 중단되도록 먼저 무장
+
         const response = await fetch("/api/chat/stream", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ message: trimmed, session_id: sessionId }),
+            signal: controller.signal,
         });
 
         if (!response.ok || !response.body) {
@@ -225,6 +326,8 @@ async function sendMessage(message) {
                 break;
             }
 
+            armStall(); // 데이터 수신 → 타이머 리셋
+
             buffer += decoder.decode(value, { stream: true });
 
             const events = buffer.split("\n\n");
@@ -239,13 +342,13 @@ async function sendMessage(message) {
 
                 if (parsed.event === "status") {
                     if (!hasStartedAnswer) {
-                        bubble.textContent = parsed.data.message || "처리 중이에요.";
+                        bubble.innerHTML = pendingHtml(parsed.data.message || "처리 중이에요.");
                     }
                 }
 
                 if (parsed.event === "meta") {
+                    // 진행 표시(타이핑 점)는 첫 delta에서 지운다. 여기선 유지.
                     meta = parsed.data;
-                    bubble.textContent = "";
                 }
 
                 if (parsed.event === "delta") {
@@ -254,35 +357,50 @@ async function sendMessage(message) {
                         hasStartedAnswer = true;
                     }
 
-                    bubble.textContent += parsed.data.text || "";
+                    // 스트리밍 중에는 평문으로 누적(부분 URL/**가 깨져 보이지 않게).
+                    // 최종 렌더링(링크·굵게)은 done에서 한 번에 처리한다.
+                    answerText += parsed.data.text || "";
+                    bubble.textContent = answerText;
                     scrollToBottom();
                 }
 
                 if (parsed.event === "error") {
                     bubble.textContent = parsed.data.message || "스트리밍 중 오류가 발생했어요.";
                     hasFinished = true;
+                    clearStall(); // 종료 신호 수신 → 잔여 대기로 인한 오탐 방지
                 }
 
                 if (parsed.event === "done") {
+                    if (answerText) {
+                        bubble.innerHTML = renderRichText(answerText);
+                    }
+
                     if (meta && meta.sources && meta.sources.length > 0) {
                         appendSources(wrap, meta.sources);
                     }
 
                     appendTimestampOnce(wrap);
                     hasFinished = true;
+                    clearStall(); // 종료 신호 수신 → 잔여 대기로 인한 오탐 방지
                     scrollToBottom();
                 }
             }
         }
 
+        clearStall();
+
         if (!hasFinished) {
             appendTimestampOnce(wrap);
         }
     } catch (error) {
-        bubble.textContent = "오류가 발생했어요. 서버 상태, DB 연결, API Key를 확인해주세요.";
-        appendTimestampOnce(wrap);
+        clearStall();
+        const errorMessage = stalled
+            ? "응답이 지연되어 요청을 중단했어요. 잠시 후 다시 시도해 주세요."
+            : "오류가 발생했어요. 서버 상태, DB 연결, API Key를 확인해주세요.";
+        showRetry(messageDiv, wrap, bubble, errorMessage, trimmed);
         console.error(error);
     } finally {
+        clearStall();
         isSending = false;
         setControlsDisabled(false);
         messageInput.focus();
@@ -348,7 +466,7 @@ function appendSources(wrap, sources) {
         const sourceName = source.source || source.title || "출처 없음";
         const page = source.page || source.source_page || "";
         const score = source.score !== undefined
-            ? ` · 관련도 ${Number(source.score).toFixed(3)}`
+            ? ` · 관련도 ${(Number(source.score) * 100).toFixed(1)}%`
             : "";
 
         item.textContent = `${index + 1}. ${sourceName}${page ? ` / ${page}` : ""}${score}`;
@@ -397,6 +515,18 @@ messageInput.addEventListener("keydown", (event) => {
 quickQuestions.forEach((button) => {
     button.addEventListener("click", async () => {
         const question = button.dataset.question || button.textContent;
+
+        // data-prefill 버튼(예: 리마인드 예약)은 개인정보(이메일)를 사용자가 직접
+        // 채워야 하므로 바로 전송하지 않고 입력창에 예시를 넣어 편집하게 한다.
+        if (button.dataset.prefill === "true") {
+            messageInput.value = question;
+            autoGrowInput();
+            messageInput.focus();
+            const end = messageInput.value.length;
+            messageInput.setSelectionRange(end, end);
+            return;
+        }
+
         await sendMessage(question);
     });
 });

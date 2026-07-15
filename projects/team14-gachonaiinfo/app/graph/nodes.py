@@ -905,6 +905,74 @@ _REMINDER_REASK_EMAIL = (
 )
 _REMINDER_CANCELED = "알겠어요, 리마인드는 취소했어요. 필요하면 언제든 다시 말씀해 주세요! 🙂"
 _REMINDER_REGISTER_FAILED = "죄송해요, 예약 등록 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요."
+_REMINDER_NO_SCHEDULE = (
+    "앗, 그 일정은 제 자료에서 확인이 어려워 리마인드 메일로 보내드리기 어려워요. 😥\n"
+    "공식 학사공지에서 최종 확인해 주세요."
+)
+
+# 리마인드 요청 문장에서 '일정 주제'만 남긴다. 이메일 주소와 "리마인드/메일/보내줘"
+# 같은 보일러플레이트는 임베딩 검색을 흐리므로 토큰 단위로 제거한다(부분 문자열이
+# 아니라 독립 토큰만 지워 "일정을" 같은 조사 붙은 명사는 보존).
+_REMINDER_STOPWORDS = {
+    "리마인드",
+    "리마인더",
+    "메일",
+    "이메일",
+    "메일로",
+    "이메일로",
+    "알림",
+    "알림으로",
+    "보내줘",
+    "보내",
+    "보내주세요",
+    "보내줄래",
+    "발송",
+    "발송해줘",
+    "알려줘",
+    "알려",
+    "알려주세요",
+    "예약",
+    "예약해줘",
+    "해줘",
+    "해",
+    "줘",
+    "좀",
+    "로",
+    "으로",
+    "주소로",
+}
+
+
+def _reminder_topic_query(text: str) -> str:
+    """리마인드 요청에서 RAG 검색에 쓸 주제 질의를 뽑는다."""
+    no_email = re.sub(_EMAIL_PATTERN, " ", text)
+    tokens = [w for w in re.split(r"\s+", no_email) if w and w not in _REMINDER_STOPWORDS]
+    topic = " ".join(tokens).strip()
+    # 주제어가 다 지워졌으면(예: "리마인드 해줘") 이메일만 제거한 원문으로 폴백
+    return topic if len(topic) >= 2 else re.sub(r"\s+", " ", no_email).strip()
+
+
+async def _fetch_schedule_for_reminder(topic_query: str) -> str | None:
+    """리마인드 주제로 RAG 검색 후 근거 기반 일정 답변을 생성해 반환한다.
+    관련 자료가 없거나(가드레일) 범위 밖 주제면 None → 리마인드 내용 구성 불가."""
+    categories = classify_categories(topic_query)
+    try:
+        docs = await get_rag_repository().search_similar(topic_query, k=5, category_l1=categories)
+    except Exception:
+        docs = []
+    top_score = docs[0]["score"] if docs else 0.0
+    if not docs or top_score < config.GUARDRAIL_MIN_SCORE or _is_out_of_scope(topic_query):
+        return None
+    context = "\n\n".join(f"[자료{i + 1}] {d['content']}" for i, d in enumerate(docs))
+    system_prompt = f"{RESPONSE_PROMPT}\n\n{RAG_GROUNDING.format(context=context)}"
+    try:
+        answer = await get_llm().ainvoke(
+            [SystemMessage(content=system_prompt), HumanMessage(content=topic_query)]
+        )
+    except Exception:
+        return None
+    content = (answer.content or "").strip()
+    return content or None
 
 
 def _reminder_reply(text: str, pending: dict | None) -> dict:
@@ -989,6 +1057,12 @@ async def reminder_node(state: AgentState) -> dict:
             return await _register_reminder(pending, session_id)
 
     # ── 새 리마인드 요청 시작 ───────────────────────────────
+    # 메일 본문은 요청 문장이 아니라 RAG로 찾은 실제 일정(LLM 정리 답변)을 담는다.
+    # 자료에서 일정을 찾지 못하면 예약하지 않고 안내만 한다(엉뚱한 요청 문장 발송 방지).
+    content = await _fetch_schedule_for_reminder(_reminder_topic_query(user_input))
+    if content is None:
+        return _reminder_reply(_REMINDER_NO_SCHEDULE, None)
+
     now = now_kst()
     remind_at = parse_remind_at(user_input, now=now)
     # parse_remind_at은 날짜 표현이 없으면 now를 그대로 반환 → '즉시 발송'으로 본다.
@@ -997,7 +1071,7 @@ async def reminder_node(state: AgentState) -> dict:
 
     base = {
         "type": "reminder",
-        "content": user_input,
+        "content": content,
         "remind_at": remind_at.isoformat(),
         "remind_label": label,
         "email": _extract_email(user_input),
