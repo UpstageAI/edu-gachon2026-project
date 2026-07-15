@@ -1,0 +1,14 @@
+.env
+.venv/
+.venv-win/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.streamlit/
+policy_compass.egg-info/
+_merge_backup_before_team_structure/
+_compare_policy_compass_agent_main/
+.DS_Store
+*.log

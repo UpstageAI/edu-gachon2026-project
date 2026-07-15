@@ -1,0 +1,86 @@
+schema_version: 1
+
+
+team:
+  number: 3
+  folder_name: team03-policy-compass
+  name: policy-compass
+  members:
+    - name: 황성민
+      role: AI/Agent, Backend, Data/API
+      github: sbma0122
+    - name: 김성은
+      role: Frontend, Database, QA, Infra/Docs
+      github: k-seun
+
+
+project:
+  title: 정책나침반 (Policy Compass)
+  summary: 청년 사용자의 조건에 맞는 공식 청년정책·훈련·채용 정보를 추천하는 AI Agent입니다.
+  category: AI 서비스
+  keywords:
+    - AI Agent
+    - Youth Policy
+    - Training
+    - Recruitment
+    - Public Data
+
+
+problem:
+  summary: 여러 공공 서비스에 흩어진 청년정책과 훈련, 고용 정보를 사용자가 직접 일일이 검색하고 자격 조건을 비교하는 것이 번거롭다는 문제가 있습니다.
+  target_users:
+    - 취업을 준비하는 청년
+    - 국비 직업훈련을 찾는 사용자
+    - 지역과 연령에 맞는 청년정책을 찾는 사용자
+
+
+solution:
+  summary: 사용자가 나이, 거주 지역, 취업 상태, 관심 분야와 희망 직무 등을 입력하면 정책 API를 통해 사용자에게 적합한 추천 내역을 출처와 세부 항목이 담긴 카드로 제공합니다.
+  main_features:
+    - Solar와 LangGraph 기반 멀티턴 상담
+    - 온통청년·고용24 공식 데이터 검색 및 수집
+    - React 기반 추천 정책을 담은 카드, 대화 복원·피드백
+    - 오류/예외 대비 Retry 및 fallback
+
+
+
+tech_stack:
+  frontend:
+    - React 19
+    - TypeScript
+    - Vite 8
+  backend:
+    - Python 3.11
+    - FastAPI
+    - Pydantic
+  ai:
+    - LangGraph
+    - Upstage Solar
+  database:
+    - Supabase
+  infra:
+    - Docker
+    - GitHub Actions
+    - GHCR
+    - Google Compute Engine
+  observability:
+    - Langfuse
+
+
+links:
+  demo_video_url: https://drive.google.com/file/d/1WB9bzwtO9LI4hhYyWyLLloAGLea-0HYt/view?usp=sharing
+  deployed_url: http://34.158.199.140:8000/
+  presentation_url: https://docs.google.com/presentation/d/1dSRvbk0fQzh0zQnrM8aLPncPOmHfPJ3lnxeccGB4SzA/edit?usp=sharing
+  repository_url: https://github.com/upstage-team3/policy-compass-agent
+
+
+blog:
+  slug: policy-compass
+  tags:
+    - AI Agent
+    - Youth Policy
+    - Training
+    - Recruitment
+    - Public Data
+
+  cover_image:
