@@ -1,0 +1,6 @@
+*.md
+.env
+__pycache__/
+*.py[cod]
+chroma_db/
+eval_raw_results_*.json
