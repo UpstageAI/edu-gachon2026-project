@@ -1,0 +1,6 @@
+# data/scripts/build_problem_bank.py 실행용 추가 의존성.
+# datasets(+pyarrow/pandas 등)는 오프라인 데이터 준비에만 쓰이고 배포 이미지엔 불필요해서
+# 메인 requirements.txt에서 분리했다. 이 스크립트를 로컬에서 돌릴 때만 설치:
+#   pip install -r data/scripts/requirements.txt
+-r ../../requirements.txt
+datasets
