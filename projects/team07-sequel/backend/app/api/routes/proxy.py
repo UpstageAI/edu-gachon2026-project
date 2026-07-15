@@ -34,6 +34,10 @@ logger = logging.getLogger(__name__)
 _STREAM_TIMEOUT = httpx.Timeout(connect=10.0, write=30.0, read=None, pool=10.0)
 _JSON_TIMEOUT = httpx.Timeout(30.0)
 _GENERIC_ERROR = "잠시 후 다시 시도해 주세요."
+# guardrail/DB 재실행/결과검증 실패를 _MAX_RETRIES회 재시도해도 못 넘기면 이 메시지로 마감한다.
+# agent 쪽 formatter.py(검증 소진 분기)와 동일한 문구로 맞춰서, 사용자에게는 내부 guardrail
+# 정규식 에러 원문("SELECT(또는 WITH로...)") 대신 이 사용자 친화적 문구만 노출한다.
+_VALIDATION_FAILED_ERROR = "질문을 조금 다르게 표현해 주시겠어요? 안전한 SQL 을 만들지 못했어요."
 
 # 최초 시도 포함 총 (_MAX_RETRIES + 1)번까지 agent에게 SQL 생성을 재요청한다.
 # 너무 크게 잡으면 실패하는 질문에 대해 사용자가 오래 기다리게 되므로 작게 유지.
@@ -231,10 +235,12 @@ async def query_stream(req: QueryRequest):
                     # kind == "retry" — 실패 사유를 다음 attempt의 질문에 실어 재시도
                     previous_failure = payload
                     if attempt == _MAX_RETRIES:
-                        yield _sse_error(
-                            f"{_MAX_RETRIES + 1}번 시도했지만 유효한 결과를 만들지 못했습니다. "
-                            f"마지막 실패 이유: {previous_failure}"
+                        # 사용자에게는 guardrail 원문 대신 사용자 친화적 문구만 보여주고,
+                        # 실제 실패 사유는 로그로만 남긴다(디버깅/Langfuse 교차 확인용).
+                        logger.info(
+                            "재시도 %d회 소진 — 마지막 실패 사유: %s", _MAX_RETRIES + 1, previous_failure
                         )
+                        yield _sse_error(_VALIDATION_FAILED_ERROR)
                         return
         except Exception:  # noqa: BLE001 — agent 도달 실패도 스트림을 error 로 정상 종료
             logger.exception("agent 스트림 relay 실패")
