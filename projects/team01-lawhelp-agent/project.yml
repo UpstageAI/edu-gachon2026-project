@@ -1,0 +1,78 @@
+schema_version: 1
+
+team:
+  number: "1조"
+  folder_name: "team01-lawhelp-agent"
+  name: "생활백답"
+  members:
+    - name: "강경현"
+      github: "letscodedirty"
+      roles:
+        - "Data Processing"
+        - "RAG Evaluation"
+        - "Frontend"
+    - name: "이정대"
+      github: "JJungDae"
+      roles:
+        - "Backend"
+        - "AI Agent"
+        - "DevOps/Infra"
+
+project:
+  title: "LawHelp: 생활법령 기반 생활법률 RAG 에이전트"
+  summary: "법제처 생활법령 데이터를 검색하고 신뢰도에 따라 답변 방식을 구분하는 생활법률 RAG 에이전트"
+  category: "AI 서비스"
+  keywords:
+    - "RAG"
+    - "Legal AI"
+    - "AI Agent"
+    - "Upstage Solar"
+    - "LangGraph"
+    - "ChromaDB"
+
+problem:
+  summary: "일반 사용자가 자신의 상황에 맞는 생활법률 정보를 찾고 이해하기 어렵다는 문제를 해결합니다."
+  target_users:
+    - "법률·행정 용어에 익숙하지 않은 일반 사용자"
+    - "부동산·임대차 및 복지 제도를 쉽게 확인하려는 사용자"
+
+solution:
+  summary: "생활법령 백문백답을 검색하고 관련도와 지원 범위에 따라 답변 방식을 구분합니다."
+  main_features:
+    - "생활법령 백문백답 기반 RAG"
+    - "cosine distance 기반 답변 route 분기"
+    - "도메인 및 입출력 가드레일"
+    - "Solar 모델 Retry/Fallback"
+    - "Langfuse Trace와 sync/stream API"
+
+tech_stack:
+  frontend:
+    - "Streamlit"
+  backend:
+    - "FastAPI"
+    - "LangGraph"
+  ai:
+    - "Upstage Solar Pro 3"
+    - "Upstage Solar Pro 2"
+    - "LiteLLM"
+  database:
+    - "ChromaDB"
+  infra:
+    - "Docker"
+    - "Docker Compose"
+    - "Google Compute Engine"
+    - "GitHub Actions"
+
+links:
+  demo_video_url: "https://drive.google.com/file/d/1GgplS6b5uRy2WHCrbORkf0x9PsKjxV4V/view?usp=drive_link"
+  deployed_url: "http://8.230.11.213:8501/"
+  presentation_url: "https://docs.google.com/presentation/d/1TID68N6BgGHnVK51T1M22EpA2Z54zDUtnRWnZlHSbHs/edit?usp=sharing"
+  repository_url: "https://github.com/JJungDae/lawHelp-agent"
+
+blog:
+  slug: "lawhelp-agent"
+  tags:
+    - "RAG"
+    - "Legal-AI"
+    - "AI-Agent"
+  cover_image: "docs/assets/cover.png"

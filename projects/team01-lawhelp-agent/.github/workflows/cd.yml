@@ -1,0 +1,66 @@
+name: Deploy to GCE
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCE_HOST }}
+          username: ${{ secrets.GCE_USER }}
+          key: ${{ secrets.GCE_SSH_KEY }}
+          script: |
+            set -e
+
+            cd /home/appuser/lawHelp-agent
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+
+            df -h /
+            df -i /
+            docker system df || true
+
+            docker compose down || true
+            docker container prune -f || true
+            docker builder prune -af || true
+            docker image prune -af || true
+
+            AVAILABLE_KB=$(df --output=avail / | tail -n1 | tr -d ' ')
+            MIN_KB=$((5 * 1024 * 1024))
+            if [ "$AVAILABLE_KB" -lt "$MIN_KB" ]; then
+              echo "Still low on disk after prune:"
+              df -h /
+              df -i /
+              docker system df || true
+              echo "Increase VM disk size or clean up the deployment instance manually."
+              exit 1
+            fi
+
+            docker compose build api frontend
+
+            CHROMA_COUNT=$(
+              docker compose run --rm api python -c "import chromadb; print(chromadb.PersistentClient(path='chroma_db').get_collection('law_qa').count())" 2>/dev/null || echo 0
+            )
+            case "$CHROMA_COUNT" in
+              ''|*[!0-9]*) CHROMA_COUNT=0 ;;
+            esac
+
+            if [ "$CHROMA_COUNT" -lt 1 ]; then
+              docker compose --profile tools run --rm ingest
+            else
+              echo "ChromaDB already initialized: ${CHROMA_COUNT} documents"
+            fi
+
+            docker compose down
+            docker compose up -d
+            docker compose ps
+            curl -f http://localhost:8000/health

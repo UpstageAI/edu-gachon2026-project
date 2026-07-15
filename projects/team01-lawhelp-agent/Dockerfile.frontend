@@ -1,0 +1,28 @@
+FROM python:3.11-slim AS builder
+
+ENV PIP_NO_CACHE_DIR=1
+WORKDIR /app
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY requirements.txt .
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
+
+
+FROM python:3.11-slim AS runtime
+
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    API_BASE_URL=http://api:8000
+
+WORKDIR /app
+
+COPY --from=builder /opt/venv /opt/venv
+COPY frontend/ ./frontend/
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "frontend/app.py", "--server.address=0.0.0.0", "--server.port=8501"]
