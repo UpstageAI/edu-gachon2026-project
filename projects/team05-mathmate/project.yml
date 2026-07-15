@@ -1,41 +1,40 @@
 schema_version: 1
 
 team:
-  number: 5
+  number: 5                      
   folder_name: team05-mathmate
   name: mathmate
   members:
-    - name: 이나영
-      role: Frontend, Infra, LLMOps
-      github: leena-0
     - name: 권지운
       role: Backend, Agent
       github: jiwoon084
+    - name: 이나영
+      role: Frontend, Infra, LLMOps
+      github: leena-0
 
 project:
   title: MathMate
   summary: 정답을 알려주지 않고 힌트로만 유도하는 초등 수학 소크라테스식 튜터
-  category: AI 교육 서비스
+  category: AI 서비스
   keywords:
     - AI
     - Education
-    - LLMOps
+    - LLM
+    - Agent
+    - Math
 
 problem:
-  summary: 시중 AI 튜터가 정답을 바로 알려줘 초등 고학년 학생의 수학적 사고력 형성을 방해한다.
+  summary: 즉답형 AI 튜터가 '빠른 정답'만 제공해, 초등 고학년이 스스로 사고할 기회를 잃는다.
   target_users:
     - 초등학교 4~6학년 학생
-    - 수포자(수학 포기자) 예방이 필요한 학부모·교사
+    - 자녀의 학습 진척도를 확인하는 학부모
 
 solution:
-  summary: LangGraph 에이전트가 학생의 풀이를 진단해 정답 대신 단계적 힌트와 되질문으로만 스스로 답에 도달하도록 유도한다.
+  summary: 정답 대신 단계별 힌트와 되질문으로 스스로 답에 도달하게 하고, 답 유출을 이중·삼중 가드레일로 차단한다.
   main_features:
-    - 소크라테스식 대화(정답 미노출, 단계적 힌트 1~3단계)
-    - 답 유출 방지 가드레일(입력 의도분류 + 출력 직전 재검증, 이중화)
-    - 오답 진단 이중검증 및 학생 맞춤형 힌트/해설 생성
-    - 힌트 사용량·난이도별 정답률 기반 단원별 진척도 리포트
-    - 실시간 SSE 스트리밍 채팅 UI(Streamlit)
-    - Solar API 장애 시 Gemini 폴백 + Mock 규칙 자동 복구(LLMOps)
+    - 소크라테스식 단계 힌트(1~3단계)와 정답 유출 방지 가드레일
+    - LangGraph 에이전트 기반 의도 분류·풀이 진단·힌트 생성
+    - 힌트 사용량 기반 진척도와 단원별 숙련도·난이도별 정답률 피드백
 
 tech_stack:
   frontend:
