@@ -1,0 +1,507 @@
+{
+  "created_at": "2026-07-15T04:47:54.707890+00:00",
+  "base_url": "http://34.172.154.165",
+  "range": {
+    "start": 0,
+    "limit": 20
+  },
+  "summary": {
+    "total_passed": 20,
+    "total": 20,
+    "score_pct": 100.0,
+    "category_summary": {
+      "툴 라우팅/종목현황": {
+        "passed": 20,
+        "total": 20
+      }
+    },
+    "first_event_avg_ms": 1048.5,
+    "first_event_median_ms": 1412.6,
+    "total_avg_ms": 1467.2,
+    "total_median_ms": 1773.3,
+    "total_max_ms": 3091.2,
+    "failures": []
+  },
+  "results": [
+    {
+      "id": "M001",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "삼성전자 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1589.6510000002309,
+      "total_ms": 1948.4800999998697,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "삼성전자는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:42\n현재가: 283,250원\n전 거래일 대비: ▲ 7.70% 상승\n최근 흐름 변화폭: -18.25%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M002",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "삼성전자 요즘 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1640.8547999999428,
+      "total_ms": 3091.1658000004536,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "삼성전자는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:42\n현재가: 283,250원\n전 거래일 대비: ▲ 7.70% 상승\n최근 흐름 변화폭: -18.25%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M003",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "SK하이닉스 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1612.4307999998564,
+      "total_ms": 1968.4949000002234,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "SK하이닉스는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 2,151,000원\n전 거래일 대비: ▲ 12.44% 상승\n최근 흐름 변화폭: -14.68%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M004",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "한화오션 요즘 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 195.5892000005406,
+      "total_ms": 529.5956000009028,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "한화오션은 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 80,900원\n전 거래일 대비: ▲ 5.34% 상승\n최근 흐름 변화폭: -39.22%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M005",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "셀트리온 최근 흐름 알려줘",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1485.413200000039,
+      "total_ms": 1854.1631999996753,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "셀트리온은 일봉 기준 최근 64거래일 차트에서는 최근에는 큰 방향성 없이 오르내리는 흐름입니다. 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:47\n현재가: 176,600원\n전 거래일 대비: ▲ 2.20% 상승\n최근 흐름 변화폭: +1.15%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M006",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "현대차 어떰",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1872.9421999996703,
+      "total_ms": 2237.3055999996723,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "현대차는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 435,000원\n전 거래일 대비: ▲ 2.47% 상승\n최근 흐름 변화폭: -29.61%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M007",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "기아 요즘 흐름",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1551.37570000079,
+      "total_ms": 1922.16499999995,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "기아는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 143,800원\n전 거래일 대비: ▲ 3.01% 상승\n최근 흐름 변화폭: -13.53%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M008",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "네이버 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1426.650299999892,
+      "total_ms": 1778.3722000003763,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "NAVER은 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 190,000원\n전 거래일 대비: ▲ 3.71% 상승\n최근 흐름 변화폭: -21.97%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M009",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "카카오 요즘 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1597.2031000001152,
+      "total_ms": 1962.601100000029,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "카카오는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:47\n현재가: 35,200원\n전 거래일 대비: ▲ 3.99% 상승\n최근 흐름 변화폭: -13.19%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M010",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "LG에너지솔루션 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1969.1378999996232,
+      "total_ms": 2326.854299999468,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "LG에너지솔루션은 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 333,000원\n전 거래일 대비: ▲ 3.42% 상승\n최근 흐름 변화폭: -19.95%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M011",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "삼성SDI 최근 주가 흐름",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1398.5530999998446,
+      "total_ms": 1768.1575999995403,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "삼성SDI은 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 453,000원\n전 거래일 대비: ▲ 5.96% 상승\n최근 흐름 변화폭: -17.64%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M012",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "KB금융 요즘 어떠냐",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 194.1017000008287,
+      "total_ms": 583.7753000014345,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "KB금융은 일봉 기준으로 보면 최근 64거래일 흐름과 기준일 하루 움직임 모두 상승 쪽입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 183,300원\n전 거래일 대비: ▲ 1.83% 상승\n최근 흐름 변화폭: +11.77%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M013",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "두산에너빌리티 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 200.34110000051442,
+      "total_ms": 535.1945000002161,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "두산에너빌리티는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 73,000원\n전 거래일 대비: ▲ 2.96% 상승\n최근 흐름 변화폭: -29.26%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M014",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "한화에어로스페이스 최근 흐름",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 459.01340000091295,
+      "total_ms": 912.9443000001629,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "한화에어로스페이스는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 948,000원\n전 거래일 대비: ▲ 8.72% 상승\n최근 흐름 변화폭: -22.55%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M015",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "HD현대중공업 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 197.0058999995672,
+      "total_ms": 538.8800000000629,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "HD현대중공업은 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 471,000원\n전 거래일 대비: ▲ 1.07% 상승\n최근 흐름 변화폭: -33.38%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M016",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "현대로템 요즘 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 195.47249999959604,
+      "total_ms": 546.5551999986928,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "현대로템은 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 168,700원\n전 거래일 대비: ▲ 2.00% 상승\n최근 흐름 변화폭: -22.97%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M017",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "POSCO홀딩스 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1335.4501000012533,
+      "total_ms": 1658.5290000002715,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "POSCO홀딩스는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 312,500원\n전 거래일 대비: ▲ 2.97% 상승\n최근 흐름 변화폭: -18.73%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M018",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "LG전자 최근 흐름",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 205.72050000009767,
+      "total_ms": 607.3866999995516,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "LG전자는 일봉 기준으로 보면 최근 64거래일 흐름은 하락 추세지만, 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:47\n현재가: 194,400원\n전 거래일 대비: ▲ 4.85% 상승\n최근 흐름 변화폭: -17.10%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M019",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "SK이노베이션 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 195.53459999951883,
+      "total_ms": 551.8300999992789,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "SK이노베이션은 일봉 기준으로 보면 최근 64거래일 흐름과 기준일 하루 움직임 모두 상승 쪽입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 115,800원\n전 거래일 대비: ▲ 10.39% 상승\n최근 흐름 변화폭: +6.24%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    },
+    {
+      "id": "M020",
+      "category": "툴 라우팅/종목현황",
+      "prompt": "삼성바이오로직스 요즘 어때",
+      "expected": "market",
+      "passed": true,
+      "reason": "market tools used",
+      "status_code": 200,
+      "first_event_ms": 1647.0979000005173,
+      "total_ms": 2021.9520999999077,
+      "event_types": [
+        "thinking",
+        "thinking",
+        "tool",
+        "response",
+        "glossary",
+        "done"
+      ],
+      "tool_names": [
+        "get_stock_price,get_news,get_disclosure"
+      ],
+      "response_preview": "삼성바이오로직스는 일봉 기준 최근 64거래일 차트에서는 최근에는 큰 방향성 없이 오르내리는 흐름입니다. 기준일 하루 움직임은 전 거래일 대비 상승입니다.\n\n기준일: 2026.07.15 · 조회시각: 2026.07.15 13:46\n현재가: 1,394,000원\n전 거래일 대비: ▲ 1.90% 상승\n최근 흐름 변화폭: +1.75%\n\n이 움직임의 배경이 궁금하시다면 “왜 올랐어?”라고 물어보시면 뉴스와 공시 근거로 더 자세히 설명해드릴게요.\n\n※ 투자 자문이 아닌 참고 정보입니다.",
+      "error": null
+    }
+  ]
+}

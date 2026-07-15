@@ -1,0 +1,149 @@
+name: CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: "Git ref/branch/tag to deploy"
+        required: false
+        default: "main"
+      agent_mode:
+        description: "Frontend agent mode"
+        required: false
+        default: "full_react"
+        type: choice
+        options:
+          - router
+          - full_react
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  GCP_PROJECT_ID: project-1573ab59-3ab6-44db-b26
+  GCE_INSTANCE: stockpilot-server
+  GCE_ZONE: us-central1-f
+  DEPLOY_REF: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_ref || 'main' }}
+  FRONTEND_AGENT_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.agent_mode || 'full_react' }}
+
+jobs:
+  deploy:
+    name: Deploy to GCE over IAP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        shell: bash
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+          GCE_USERNAME: ${{ secrets.GCE_USERNAME }}
+        run: |
+          set -e
+
+          missing=0
+          for name in GCP_SA_KEY GCE_USERNAME; do
+            if [ -z "${!name}" ]; then
+              echo "Missing secret: ${name}"
+              missing=1
+            fi
+          done
+
+          exit "${missing}"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Deploy on GCE over IAP
+        shell: bash
+        run: |
+          set -e
+
+          gcloud compute ssh "${{ secrets.GCE_USERNAME }}@${GCE_INSTANCE}" \
+            --project="${GCP_PROJECT_ID}" \
+            --zone="${GCE_ZONE}" \
+            --tunnel-through-iap \
+            --quiet \
+            --ssh-key-expire-after=10m \
+            --command="bash -s" <<'REMOTE_SCRIPT'
+          set -e
+          DEPLOY_REF="${{ env.DEPLOY_REF }}"
+          FRONTEND_AGENT_MODE="${{ env.FRONTEND_AGENT_MODE }}"
+
+          DEPLOY_DIR="/home/${USER}/stockpilot"
+
+          if [ ! -d "${DEPLOY_DIR}/.git" ]; then
+            rm -rf "${DEPLOY_DIR}"
+            git clone https://github.com/jjh0813/StockPilot.git "${DEPLOY_DIR}"
+          fi
+
+          cd "${DEPLOY_DIR}"
+          echo "Deploying ref: ${DEPLOY_REF}"
+          echo "Frontend agent mode: ${FRONTEND_AGENT_MODE}"
+          git fetch origin "${DEPLOY_REF}"
+          git checkout -B deploy-target FETCH_HEAD
+
+          cat > .env <<'ENV_EOF'
+          ENVIRONMENT=production
+          DEBUG=false
+          HOST=0.0.0.0
+          PORT=8000
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_EXPIRE_MINUTES=${{ secrets.JWT_EXPIRE_MINUTES }}
+          UPSTAGE_API_KEY=${{ secrets.UPSTAGE_API_KEY }}
+          LLM_MODEL=${{ secrets.LLM_MODEL }}
+          EMBEDDING_MODEL=${{ secrets.EMBEDDING_MODEL }}
+          EMBEDDING_DIMENSION=${{ secrets.EMBEDDING_DIMENSION }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          LLM_GUARDRAILS_ENABLED=true
+          LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_HOST=${{ secrets.LANGFUSE_HOST }}
+          NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+          DART_API_KEY=${{ secrets.DART_API_KEY }}
+          KRX_ID=${{ secrets.KRX_ID }}
+          KRX_PW=${{ secrets.KRX_PW }}
+          SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}
+          RAG_CHUNK_SIZE=${{ secrets.RAG_CHUNK_SIZE }}
+          RAG_CHUNK_OVERLAP=${{ secrets.RAG_CHUNK_OVERLAP }}
+          RAG_EMBEDDING_BATCH_SIZE=${{ secrets.RAG_EMBEDDING_BATCH_SIZE }}
+          FRONTEND_PORT=${{ secrets.FRONTEND_PORT }}
+          BACKEND_PORT=${{ secrets.BACKEND_PORT }}
+          VITE_AGENT_MODE=${{ env.FRONTEND_AGENT_MODE }}
+          ENV_EOF
+
+          if docker compose version >/dev/null 2>&1; then
+            DOCKER_COMPOSE="docker compose"
+          else
+            DOCKER_COMPOSE="docker-compose"
+          fi
+
+          ${DOCKER_COMPOSE} down || true
+          ${DOCKER_COMPOSE} up -d --build --remove-orphans
+
+          for i in $(seq 1 12); do
+            if curl -fsS http://localhost:8000/api/v1/health/ >/dev/null; then
+              echo "Backend health check passed"
+              exit 0
+            fi
+            echo "Waiting for backend health check (${i}/12)"
+            sleep 5
+          done
+
+          ${DOCKER_COMPOSE} logs --tail=100
+          exit 1
+          REMOTE_SCRIPT

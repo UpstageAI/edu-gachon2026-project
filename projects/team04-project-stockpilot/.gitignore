@@ -1,0 +1,45 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# ===== 가상환경 / uv =====
+.venv/
+venv/
+env/
+
+# ===== 환경변수 · 시크릿 (절대 커밋 금지) =====
+.env
+.env.*
+!.env.example
+
+# ===== 캐시 / 툴 =====
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ===== 프론트엔드 (React) =====
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# ===== 데이터 캐시 / 임시 산출물 =====
+*.log
+data/cache/
+data/rag/
+*.snapshot.json
+
+# ===== OS / 에디터 =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 로컬 전용 — 발표 준비 노트(깃 제외)
+docs/발표노트.md

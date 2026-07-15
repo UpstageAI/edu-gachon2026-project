@@ -1,0 +1,82 @@
+schema_version: 1
+
+team:
+  number: 4
+  folder_name: team04-project-stockpilot
+  name: StockPilot
+  members:
+    - name: jaesang02
+      role: Data, Backend, RAG, Infra
+      github: jaesang02
+    - name: jjh0813
+      role: Frontend, Backend, Agent
+      github: jjh0813
+
+project:
+  title: StockPilot
+  summary: Solar ReAct Agent가 시세·뉴스·공시·용어 도구를 직접 선택해 주가 흐름의 이유를 설명하는 AI 주식 리서치 서비스입니다.
+  category: AI 투자 리서치 서비스
+  keywords:
+    - AI Agent
+    - Stock Research
+    - RAG
+    - FastAPI
+    - LangGraph
+
+problem:
+  summary: 개인 투자자는 시세, 뉴스, 공시, 투자용어가 흩어져 있어 종목 흐름의 이유를 빠르게 이해하기 어렵습니다.
+  target_users:
+    - 주식 초보자
+    - 공시와 뉴스 해석이 어려운 개인 투자자
+    - 근거 기반 종목 리서치가 필요한 사용자
+
+solution:
+  summary: Solar ReAct Agent가 Thought-Action-Observation 루프로 외부 API와 RAG 도구를 호출하고 출처 기반으로 종목 흐름을 설명합니다.
+  main_features:
+    - 종목 현재가와 최근 흐름 요약
+    - 뉴스와 공시 근거 기반 상승·하락 원인 설명
+    - 투자용어와 공시 문서 RAG 검색
+    - Solar ReAct 기반 Pydantic Tool Schema 실행
+    - 매수·매도 추천 차단 가드레일
+    - Docker와 GitHub Actions 기반 배포 자동화
+
+tech_stack:
+  frontend:
+    - React
+    - Vite
+    - JavaScript
+    - lightweight-charts
+  backend:
+    - FastAPI
+    - LangGraph
+    - Pydantic
+    - uv
+  ai:
+    - Upstage Solar
+    - Solar Embedding
+    - LiteLLM
+    - Langfuse
+  database:
+    - Supabase
+    - PostgreSQL
+    - pgvector
+  infra:
+    - Docker
+    - Docker Compose
+    - Google Compute Engine
+    - GitHub Actions
+
+links:
+  demo_video_url:
+  deployed_url: http://34.172.154.165
+  presentation_url:
+  repository_url: https://github.com/jjh0813/StockPilot
+
+blog:
+  slug: stockpilot
+  tags:
+    - AI
+    - Stock
+    - RAG
+    - Agent
+  cover_image: assets/cover.png
