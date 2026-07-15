@@ -1,0 +1,59 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+      - chore/docker-gce-deploy
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GCE VM
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          # 앱 시크릿 — 러너 환경변수로 받아 envs로 원격 세션에 전달한다.
+          # (.env는 .gitignore/.dockerignore라 git·이미지에 없으므로 배포 때 여기서 생성)
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          # Langfuse 관측성 — key는 secrets, region/env 같은 비밀 아닌 값은 아래 .env에서 직접 지정
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+        with:
+          host: ${{ secrets.GCE_HOST }}
+          username: ${{ secrets.GCE_USER }}
+          key: ${{ secrets.GCE_SSH_KEY }}
+          envs: UPSTAGE_API_KEY,RESEND_API_KEY,RESEND_FROM_EMAIL,LANGFUSE_PUBLIC_KEY,LANGFUSE_SECRET_KEY
+          script: |
+            set -e
+
+            cd ${{ secrets.GCE_APP_DIR }}
+
+            git fetch origin
+            git checkout ${{ github.ref_name }}
+            git reset --hard origin/${{ github.ref_name }}
+
+            # docker-compose api 서비스가 env_file로 읽는 .env를 GitHub Secrets 기반으로 생성.
+            # DATABASE_URL은 docker-compose.yml의 environment에서 db 서비스로 덮으므로 여기 불필요.
+            umask 077
+            cat > .env <<EOF
+            ENVIRONMENT=production
+            DEBUG=false
+            UPSTAGE_API_KEY=${UPSTAGE_API_KEY}
+            LLM_MODEL=solar-pro3
+            RESEND_API_KEY=${RESEND_API_KEY}
+            RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-onboarding@resend.dev}
+            LANGFUSE_ENABLED=true
+            LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+            LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+            LANGFUSE_BASE_URL=https://jp.cloud.langfuse.com
+            LANGFUSE_ENV=prod
+            EOF
+
+            sudo docker compose down
+            sudo docker compose up -d --build
+            sudo docker compose ps
