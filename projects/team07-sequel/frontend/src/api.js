@@ -121,3 +121,18 @@ export async function fetchMetrics() {
     return { kpis: [], as_of: "", available: false };
   }
 }
+
+// GET /schema — 스키마 브라우저용 {tables:[{name, columns:[{name,type}]}]}.
+// 스키마는 거의 안 변하니 성공 응답만 페이지 로드당 1회 캐시.
+let _schemaCache = null;
+export async function fetchSchema() {
+  if (_schemaCache) return _schemaCache;
+  try {
+    const res = await fetch(`${V1}/schema`);
+    if (!res.ok) return { tables: [] };
+    _schemaCache = await res.json();
+    return _schemaCache;
+  } catch {
+    return { tables: [] };
+  }
+}

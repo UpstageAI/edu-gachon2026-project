@@ -1,6 +1,7 @@
 """Sequel 에이전트 LangGraph 워크플로우 빌더.
 
 흐름: schema_link → route → generate → validate → execute → format
+- schema_link 에서 값 매칭 애매(top-2 후보 실재) → 곧바로 format(되묻기, 생성 스킵)
 - route 에서 안전성 실패(injection/위험) → 곧바로 format(거절)
 - validate 실패 & 재시도 여력 → generate 로 되돌림(재생성 루프, 최대 settings.agent_max_retries)
 - validate 실패 & 여력 소진 → format(오류 안내)
@@ -24,6 +25,19 @@ from app.graph.state import AgentState
 
 # SSE 에서 진행 상황을 흘려보낼 노드 이름들
 NODE_NAMES = ("normalize", "schema_link", "route", "generate", "validate", "execute", "format")
+
+
+def _after_schema_link(state: AgentState) -> str:
+    """값 매칭이 애매하면(top-2 후보가 DB 에 실재) 생성 대신 되묻기로.
+
+    불확실 힌트로 SQL 을 만들면 생성을 오도한다(실험 −17.8pp). normalize 의
+    ambiguous 플래그(LLM 판정, 정확도 미측정)는 트리거로 안 쓰고, "DB 에 근접 값이
+    둘 이상 실재"라는 구체적 근거가 있는 값 레벨 ambiguity 만 되묻는다.
+    """
+    for h in state.get("value_hints", []):
+        if h.get("how") == "ambiguous" and h.get("candidates"):
+            return "format"
+    return "route"
 
 
 def _after_route(state: AgentState) -> str:
@@ -60,7 +74,7 @@ def build_graph():
 
     g.add_edge(START, "normalize")
     g.add_edge("normalize", "schema_link")
-    g.add_edge("schema_link", "route")
+    g.add_conditional_edges("schema_link", _after_schema_link, {"route": "route", "format": "format"})
     g.add_conditional_edges("route", _after_route, {"generate": "generate", "format": "format"})
     g.add_edge("generate", "validate")
     g.add_conditional_edges(

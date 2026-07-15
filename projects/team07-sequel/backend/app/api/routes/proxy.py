@@ -1,7 +1,7 @@
 """AI agent(app/) 의 /api/v1 엔드포인트를 프론트로 흘려주는 프록시.
 
 프론트는 backend(이 서비스, LB 뒤)만 호출하지만, 스트리밍 진행상황·후속질문·비용/토큰
-KPI 같은 기능은 agent(app/)에만 있다. 그래서 이 세 경로를 agent 로 넘긴다.
+KPI·스키마 같은 기능은 agent(app/)에만 있다. 그래서 이 경로들을 agent 로 넘긴다.
 
     POST /api/v1/query/stream   → agent 스트림(SSE)을 이벤트 단위로 파싱해서 relay.
                                    단, "done" 이벤트만은 그냥 흘려보내지 않고 백엔드가
@@ -22,6 +22,7 @@ KPI 같은 기능은 agent(app/)에만 있다. 그래서 이 세 경로를 agent
                                    없는 실패는 재시도하지 않고 바로 error로 종료한다.
     POST /api/v1/suggestions    → agent 로 전달, JSON 반환 (재검증 대상 아님 — 텍스트 제안일 뿐)
     GET  /api/v1/metrics        → agent 로 전달, JSON 반환 (재검증 대상 아님 — 집계 KPI일 뿐)
+    GET  /api/v1/schema         → agent 로 전달, JSON 반환 (재검증 대상 아님 — 스키마 메타일 뿐)
 """
 
 import json
@@ -276,3 +277,15 @@ async def metrics():
             return JSONResponse(resp.json())
     except Exception:  # noqa: BLE001
         return JSONResponse({"kpis": [], "as_of": "", "available": False})
+
+
+@router.get("/api/v1/schema")
+async def schema():
+    """agent 스키마 카탈로그(테이블·컬럼)를 전달. 실패 시 빈 목록(프론트가 안내 처리)."""
+    try:
+        async with httpx.AsyncClient(base_url=settings.AI_AGENT_BASE_URL, timeout=_JSON_TIMEOUT) as client:
+            resp = await client.get("/api/v1/schema")
+            resp.raise_for_status()
+            return JSONResponse(resp.json())
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"tables": []})

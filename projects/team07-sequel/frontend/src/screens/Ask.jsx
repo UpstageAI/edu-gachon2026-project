@@ -4,6 +4,7 @@ import ResultTable from "../components/ResultTable.jsx";
 import ResultChart from "../components/ResultChart.jsx";
 import Markdown from "../components/Markdown.jsx";
 import { downloadCsv, fmtInt, fmtCost, fmtLatency, isSaved, toggleSaved } from "../store.js";
+import { fetchSchema } from "../api.js";
 
 function AssistantBlock({ turn, onSetView, onToggleSave, saved }) {
   const table = turn.table;
@@ -118,12 +119,21 @@ export default function Ask({
 }) {
   const [input, setInput] = useState("");
   const [savedTick, setSavedTick] = useState(0); // 저장 토글 후 재렌더 트리거
+  const [schemaTables, setSchemaTables] = useState(null); // null=로딩전/중, []=실패, [...]=로드됨
+  const [openTable, setOpenTable] = useState(null);
   const scrollRef = useRef(null);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [turns]);
+
+  // 스키마 패널을 처음 열 때 한 번만 로드 (api.js 에서 페이지당 캐시)
+  useEffect(() => {
+    if (schemaOpen && schemaTables === null) {
+      fetchSchema().then((s) => setSchemaTables(s.tables || []));
+    }
+  }, [schemaOpen, schemaTables]);
 
   function submit() {
     const q = input.trim();
@@ -218,11 +228,38 @@ export default function Ask({
             </span>
             <span className="rail-tag">Retail DB</span>
           </div>
-          <div className="empty" style={{ padding: "40px 18px", lineHeight: 1.6 }}>
-            스키마 브라우저는 아직 연결되지 않았어요.
-            <br />
-            질문하면 관련 테이블을 자동으로 찾아 SQL을 만들어 드립니다.
-          </div>
+          {schemaTables === null ? (
+            <div className="empty" style={{ padding: "40px 18px" }}>불러오는 중…</div>
+          ) : schemaTables.length === 0 ? (
+            <div className="empty" style={{ padding: "40px 18px", lineHeight: 1.6 }}>
+              스키마를 불러오지 못했어요.
+            </div>
+          ) : (
+            <div className="schema-list">
+              {schemaTables.map((t) => {
+                const open = openTable === t.name;
+                return (
+                  <div key={t.name} className="schema-tbl">
+                    <button className="schema-th" onClick={() => setOpenTable(open ? null : t.name)}>
+                      <span className="tw">{open ? "▾" : "▸"}</span>
+                      <span className="tn">{t.name}</span>
+                      <span className="tc">{t.columns.length}</span>
+                    </button>
+                    {open ? (
+                      <ul className="schema-cols">
+                        {t.columns.map((c) => (
+                          <li key={c.name}>
+                            <span className="cn">{c.name}</span>
+                            <span className="ct">{c.type}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </aside>
       ) : null}
     </div>

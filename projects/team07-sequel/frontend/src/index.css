@@ -915,6 +915,68 @@ th.num {
   border-radius: 6px;
 }
 
+/* ── schema browser (rail) ── */
+.schema-list {
+  padding: 6px 8px;
+}
+.schema-tbl {
+  border-bottom: 1px solid var(--bd-row);
+}
+.schema-th {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text);
+  text-align: left;
+}
+.schema-th:hover {
+  background: var(--subtle);
+}
+.schema-th .tw {
+  width: 10px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.schema-th .tn {
+  flex: 1;
+  font-weight: 600;
+  font-family: var(--mono, ui-monospace, monospace);
+}
+.schema-th .tc {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bd-row);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+.schema-cols {
+  list-style: none;
+  margin: 0;
+  padding: 2px 8px 8px 26px;
+}
+.schema-cols li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+.schema-cols .cn {
+  flex: 1;
+  color: var(--t2);
+  font-family: var(--mono, ui-monospace, monospace);
+}
+.schema-cols .ct {
+  color: var(--muted);
+  font-size: 11px;
+}
+
 /* ── history / saved ── */
 .hist-row {
   display: flex;
