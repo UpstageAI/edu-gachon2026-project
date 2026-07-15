@@ -1,0 +1,26 @@
+[project]
+name = "sequel"
+version = "0.1.0"
+description = "Sequel — 자연어 질의(Text-to-SQL) 사내 데이터 분석 에이전트"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # 백엔드 (FastAPI + SSE 스트리밍)
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.0.0",
+    "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
+    # AI / Agent
+    "litellm>=1.50.0",        # 난이도별 solar 모델 라우팅 게이트웨이 + injection 가드레일
+    "langgraph>=0.2.0",       # schema_linker→router→생성→validator→executor 그래프
+    "sqlglot>=25.0.0",        # SQL 문법·컬럼 파싱, 화이트리스트/금지 키워드 검증
+    "langfuse>=2.0.0,<3",     # 트레이싱·비용/품질 로깅. <3 고정: litellm 네이티브 "langfuse" 콜백이 2.x SDK 기대(3/4.x는 OTEL 필요)
+    # DB (PostgreSQL, 읽기 전용 실행) + 데이터 적재
+    "psycopg[binary]>=3.2.0",
+    "sqlalchemy>=2.0.0",
+    "pandas>=2.2.0",
+    "pydantic-settings>=2.0.0",
+    "rapidfuzz>=3.14.5",
+    "numpy>=2.4.4",
+]

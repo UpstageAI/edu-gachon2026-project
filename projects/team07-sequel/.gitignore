@@ -1,0 +1,13 @@
+.DS_Store
+.env
+__pycache__/
+.venv/
+chroma_data/
+dist/
+build/
+
+# 기획서 등 저작권 표기 문서는 로컬 보관 (공개 repo 미커밋)
+docs/*.pdf
+
+# 로컬 durable 트레이스 로그 (마스킹돼도 커밋 금지)
+logs/

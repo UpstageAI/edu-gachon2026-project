@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# CodeRabbit 설정 — https://docs.coderabbit.ai/reference/configuration
+language: "ko-KR"                    # 리뷰를 한국어로
+reviews:
+  profile: "chill"                   # chill | assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:                      # 리뷰 제외 (생성물·대용량·문서)
+    - "!**/uv.lock"
+    - "!**/*.pdf"
+    - "!projects/**/bench/dbs/**"
+  path_instructions:
+    - path: "projects/team07-sequel/app/**"
+      instructions: >-
+        FastAPI + LangGraph 기반 Text-to-SQL 에이전트. 읽기전용 SQL 실행,
+        프롬프트 인젝션 가드, sqlglot 검증의 안전성에 특히 유의해서 리뷰할 것.
+chat:
+  auto_reply: true

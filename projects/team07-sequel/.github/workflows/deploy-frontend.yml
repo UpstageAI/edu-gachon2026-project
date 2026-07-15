@@ -1,0 +1,50 @@
+name: Deploy Frontend to Cloud Run
+
+# 2026-07-12: 백엔드가 Cloud Run에서 GCE VM(+External HTTPS LB)으로 이전되면서,
+# "백엔드 URL 조회" 스텝(gcloud run services describe text2sql-backend)이 더 이상
+# 유효하지 않게 됨 -> LB의 고정 HTTPS 주소(nip.io 기반)로 하드코딩.
+# LB IP(34.96.92.28)는 고정 예약 IP라 재배포해도 바뀌지 않으므로 안전하게 고정 가능.
+# (나중에 실제 도메인이 생기면 이 한 줄만 바꾸면 됨.)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/team07-sequel/frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Docker 인증
+        run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev
+
+      - name: 이미지 빌드 & push
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL=https://34-96-92-28.nip.io \
+            -t asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/frontend:${{ github.sha }} \
+            projects/team07-sequel/frontend
+          docker push asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/frontend:${{ github.sha }}
+
+      - name: Cloud Run 배포
+        run: |
+          gcloud run deploy text2sql-frontend \
+            --image=asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/text2sql-repo/frontend:${{ github.sha }} \
+            --region=asia-northeast3 \
+            --allow-unauthenticated

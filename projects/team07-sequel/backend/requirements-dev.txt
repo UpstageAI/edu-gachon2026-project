@@ -1,0 +1,3 @@
+# 테스트 전용 의존성. 프로덕션 이미지(Dockerfile)에는 설치하지 않는다.
+-r requirements.txt
+pytest==8.3.3

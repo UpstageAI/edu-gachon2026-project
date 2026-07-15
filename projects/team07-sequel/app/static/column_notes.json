@@ -1,0 +1,654 @@
+{
+ "customer_support_tickets": {
+  "customer_name": {
+   "d": "고객명",
+   "ex": [
+    "Michael Garcia",
+    "James Smith"
+   ]
+  },
+  "customer_email": {
+   "d": "고객 이메일 주소",
+   "ex": [
+    "bsmith@example.com",
+    "asmith@example.com"
+   ]
+  },
+  "customer_age": {
+   "d": "고객 나이",
+   "ex": [
+    "52",
+    "56"
+   ]
+  },
+  "product_purchased": {
+   "d": "구매 제품 정보",
+   "ex": [
+    "Canon EOS",
+    "GoPro Hero"
+   ]
+  },
+  "date_of_purchase": {
+   "d": "구매일",
+   "ex": [
+    "2020-10-21",
+    "2021-11-05"
+   ]
+  },
+  "ticket_type": {
+   "d": "지원 요청 유형",
+   "ex": [
+    "Refund request",
+    "Technical issue"
+   ]
+  },
+  "customer_gender": {
+   "d": "고객 성별 코드(Male/Female/Other)",
+   "ex": [
+    "Male",
+    "Female"
+   ]
+  },
+  "ticket_status": {
+   "d": "티켓 처리 상태",
+   "ex": [
+    "Pending Customer Response",
+    "Open"
+   ]
+  },
+  "ticket_id": {
+   "d": "고객 지원 티켓 고유 식별자",
+   "ex": [
+    "4790",
+    "273"
+   ]
+  },
+  "ticket_description": {
+   "d": "고객 문의 내용",
+   "ex": [
+    "I'm having an issue with the {product_purchased}. Please…",
+    "I'm having an issue with the {product_purchased}. Please…"
+   ]
+  },
+  "ticket_subject": {
+   "d": "지원 요청 주제",
+   "ex": [
+    "Refund request",
+    "Software bug"
+   ]
+  },
+  "ticket_priority": {
+   "d": "티켓 우선순위(중요도)",
+   "ex": [
+    "Medium",
+    "Critical"
+   ]
+  },
+  "ticket_channel": {
+   "d": "문의 채널",
+   "ex": [
+    "Email",
+    "Phone"
+   ]
+  },
+  "first_response_time": {
+   "d": "첫 응답 시각",
+   "ex": [
+    "2023-06-01 15:21:42",
+    "2023-06-01 01:21:19"
+   ]
+  },
+  "resolution": {
+   "d": "문제 해결 내용 요약",
+   "ex": [
+    "Spend listen its.",
+    "Rate already common least discuss long never."
+   ]
+  },
+  "customer_satisfaction_rating": {
+   "d": "고객 만족도 평점",
+   "ex": [
+    "3.0",
+    "1.0"
+   ]
+  },
+  "time_to_resolution": {
+   "d": "해결 소요 시간",
+   "ex": [
+    "2023-06-01 17:14:42",
+    "2023-06-01 16:44:47"
+   ]
+  }
+ },
+ "olist_customers": {
+  "customer_id": {
+   "d": "고유 고객 식별번호",
+   "ex": [
+    "000161a058600d5901f007fab4c27140",
+    "0001fd6190edaaf884bcaf3d49edf079"
+   ]
+  },
+  "customer_state": {
+   "d": "고객 거주 주",
+   "ex": [
+    "SP",
+    "RJ"
+   ]
+  },
+  "customer_zip_code_prefix": {
+   "d": "고객 우편번호 앞 5자리 코드",
+   "ex": [
+    "22790",
+    "24220"
+   ]
+  },
+  "customer_unique_id": {
+   "d": "고유 고객 식별 코드",
+   "ex": [
+    "8d50f5eadf50201ccdcedfb9e2ac8455",
+    "3e43e6105506432c953e165fb2acf44c"
+   ]
+  },
+  "customer_city": {
+   "d": "고객 거주 도시",
+   "ex": [
+    "sao paulo",
+    "rio de janeiro"
+   ]
+  }
+ },
+ "olist_geolocation": {
+  "geolocation_lat": {
+   "d": "위도 정보",
+   "ex": [
+    "-27.1020989999999",
+    "-23.4959014699087"
+   ]
+  },
+  "geolocation_zip_code_prefix": {
+   "d": "우편번호 접두사",
+   "ex": [
+    "24220",
+    "24230"
+   ]
+  },
+  "geolocation_lng": {
+   "d": "올리스트 지리적 위치 경도",
+   "ex": [
+    "-48.6296134999999",
+    "-46.8746866963592"
+   ]
+  },
+  "geolocation_state": {
+   "d": "주(州) 코드",
+   "ex": [
+    "SP",
+    "MG"
+   ]
+  },
+  "geolocation_city": {
+   "d": "도시명(지리 위치 도시)",
+   "ex": [
+    "sao paulo",
+    "rio de janeiro"
+   ]
+  }
+ },
+ "olist_order_items": {
+  "product_id": {
+   "d": "제품 고유 식별자",
+   "ex": [
+    "aca2eb7d00ea1a7b8ebd4e68314663af",
+    "99a4788cb24856965c36a24e339b6058"
+   ]
+  },
+  "order_item_id": {
+   "d": "주문 상품 고유 식별자",
+   "ex": [
+    "1",
+    "2"
+   ]
+  },
+  "shipping_limit_date": {
+   "d": "배송 기한 날짜",
+   "ex": [
+    "2017-07-21 18:25:23",
+    "2018-03-01 02:50:48"
+   ]
+  },
+  "seller_id": {
+   "d": "판매자 고유 식별자",
+   "ex": [
+    "6560211a19b47992c3666cc44a7e94c0",
+    "4a3ca9315b744ce9f8e9374361493884"
+   ]
+  },
+  "price": {
+   "d": "올리스트 주문 상품 가격",
+   "ex": [
+    "59.9",
+    "69.9"
+   ]
+  },
+  "order_id": {
+   "d": "주문 고유 식별자",
+   "ex": [
+    "8272b63d03f5f79c56e9e4120aec44ef",
+    "ab14fdcfbe524636d65ee38360e22ce8"
+   ]
+  },
+  "freight_value": {
+   "d": "운송비 금액",
+   "ex": [
+    "15.1",
+    "7.78"
+   ]
+  }
+ },
+ "olist_order_payments": {
+  "order_id": {
+   "d": "주문 식별자",
+   "ex": [
+    "fa65dad1b0e818e3ccc5cb0e39231352",
+    "ccf804e764ed5650cd8759557269dc13"
+   ]
+  },
+  "payment_sequential": {
+   "d": "결제 순서 번호",
+   "ex": [
+    "1",
+    "2"
+   ]
+  },
+  "payment_value": {
+   "d": "결제 금액",
+   "ex": [
+    "50.0",
+    "20.0"
+   ]
+  },
+  "payment_type": {
+   "d": "결제 수단 유형",
+   "ex": [
+    "credit_card",
+    "boleto"
+   ]
+  },
+  "payment_installments": {
+   "d": "결제 분할 횟수",
+   "ex": [
+    "1",
+    "2"
+   ]
+  }
+ },
+ "olist_order_reviews": {
+  "order_id": {
+   "d": "주문 식별자",
+   "ex": [
+    "df56136b8031ecd28e200bb18e6ddb2e",
+    "8e17072ec97ce29f0e1f111e598b0c85"
+   ]
+  },
+  "review_comment_title": {
+   "d": "리뷰 제목 (91.7% 공백)",
+   "ex": [
+    "Recomendo",
+    "recomendo"
+   ]
+  },
+  "review_creation_date": {
+   "d": "리뷰 작성 일자",
+   "ex": [
+    "2017-12-19 00:00:00",
+    "2018-08-28 00:00:00"
+   ]
+  },
+  "review_id": {
+   "d": "리뷰 고유 식별자",
+   "ex": [
+    "f4bb9d6dd4fb6dcc2298f0e7b17b8e1e",
+    "44e9f871226d8a130de3fc39dfbdf0c5"
+   ]
+  },
+  "review_comment_message": {
+   "d": "리뷰 내용 설명",
+   "ex": [
+    "Muito bom",
+    "Bom"
+   ]
+  },
+  "review_score": {
+   "d": "리뷰 점수(1~5)",
+   "ex": [
+    "5",
+    "4"
+   ]
+  },
+  "review_answer_timestamp": {
+   "d": "답변 작성 시각",
+   "ex": [
+    "2017-06-15 23:21:05",
+    "2018-02-26 15:53:18"
+   ]
+  }
+ },
+ "olist_orders": {
+  "order_id": {
+   "d": "고유 주문 식별자",
+   "ex": [
+    "00018f77f2f0320c557190d7a144bdd3",
+    "000229ec398224ef6ca0657da4fc703e"
+   ]
+  },
+  "customer_id": {
+   "d": "고객 고유 식별자",
+   "ex": [
+    "68d03ff74911622915ef4ec24e2919a9",
+    "01190354aed7ae9e31b5f523699cf01b"
+   ]
+  },
+  "order_status": {
+   "d": "주문 처리 상태",
+   "ex": [
+    "delivered",
+    "shipped"
+   ]
+  },
+  "order_approved_at": {
+   "d": "주문 승인 시각",
+   "ex": [
+    "2018-02-27 04:31:10",
+    "2018-07-05 16:33:01"
+   ]
+  },
+  "order_delivered_carrier_date": {
+   "d": "주문 배송일",
+   "ex": [
+    "2018-05-09 15:48:00",
+    "2018-05-10 18:29:00"
+   ]
+  },
+  "order_purchase_timestamp": {
+   "d": "구매 시각(YYYY-MM-DD HH:MM:SS)",
+   "ex": [
+    "2017-11-20 10:59:08",
+    "2018-08-02 12:05:26"
+   ]
+  },
+  "order_estimated_delivery_date": {
+   "d": "주문 예상 배송일",
+   "ex": [
+    "2017-12-20 00:00:00",
+    "2018-03-12 00:00:00"
+   ]
+  },
+  "order_delivered_customer_date": {
+   "d": "주문 고객 전달일",
+   "ex": [
+    "2018-05-14 20:02:44",
+    "2016-10-27 17:32:07"
+   ]
+  }
+ },
+ "olist_product_category_translation": {
+  "product_category_name": {
+   "d": "제품 카테고리 명칭",
+   "ex": [
+    "livros_importados",
+    "artigos_de_natal"
+   ]
+  },
+  "product_category_name_english": {
+   "d": "제품 카테고리 영문명",
+   "ex": [
+    "diapers_and_hygiene",
+    "home_appliances"
+   ]
+  }
+ },
+ "olist_products": {
+  "product_id": {
+   "d": "제품 고유 식별자",
+   "ex": [
+    "00088930e925c41fd95ebfe695fd2655",
+    "0009406fd7479715e4bef61dd91f2462"
+   ]
+  },
+  "product_name_lenght": {
+   "d": "제품명 길이",
+   "ex": [
+    "60.0",
+    "59.0"
+   ]
+  },
+  "product_category_name": {
+   "d": "제품 카테고리명",
+   "ex": [
+    "cama_mesa_banho",
+    "esporte_lazer"
+   ]
+  },
+  "product_description_lenght": {
+   "d": "제품 설명 길이",
+   "ex": [
+    "404.0",
+    "729.0"
+   ]
+  },
+  "product_height_cm": {
+   "d": "제품 높이(cm)",
+   "ex": [
+    "10.0",
+    "15.0"
+   ]
+  },
+  "product_photos_qty": {
+   "d": "제품 사진 개수",
+   "ex": [
+    "1.0",
+    "2.0"
+   ]
+  },
+  "product_width_cm": {
+   "d": "제품 너비(cm)",
+   "ex": [
+    "11.0",
+    "20.0"
+   ]
+  },
+  "product_length_cm": {
+   "d": "제품 길이(cm)",
+   "ex": [
+    "16.0",
+    "20.0"
+   ]
+  },
+  "product_weight_g": {
+   "d": "제품 무게(g)",
+   "ex": [
+    "200.0",
+    "300.0"
+   ]
+  }
+ },
+ "olist_sellers": {
+  "seller_id": {
+   "d": "판매자 고유 식별자",
+   "ex": [
+    "6d2f2e3b539480db1e0842b3a4e32e6e",
+    "c53bcd3be457a342a97e39e5a9f0be22"
+   ]
+  },
+  "seller_city": {
+   "d": "판매자 도시 코드",
+   "ex": [
+    "sao paulo",
+    "curitiba"
+   ]
+  },
+  "seller_state": {
+   "d": "판매자 주(state) 코드",
+   "ex": [
+    "SP",
+    "PR"
+   ]
+  },
+  "seller_zip_code_prefix": {
+   "d": "판매자 우편번호 앞 5자리 코드",
+   "ex": [
+    "14940",
+    "13660"
+   ]
+  }
+ },
+ "telco_customer_churn": {
+  "customerid": {
+   "d": "고유 고객 식별 번호",
+   "ex": [
+    "2876-VBBBL",
+    "3865-YIOTT"
+   ]
+  },
+  "gender": {
+   "d": "고객 성별 정보 (Male/Female)",
+   "ex": [
+    "Male",
+    "Female"
+   ]
+  },
+  "dependents": {
+   "d": "부양가족 여부(No/Yes)",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "partner": {
+   "d": "파트너 여부(No/Yes)",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "seniorcitizen": {
+   "d": "고객의 노인 여부 표시자",
+   "ex": [
+    "0",
+    "1"
+   ]
+  },
+  "phoneservice": {
+   "d": "전화 서비스 이용 여부",
+   "ex": [
+    "Yes",
+    "No"
+   ]
+  },
+  "multiplelines": {
+   "d": "서비스 다량 가입 여부",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "internetservice": {
+   "d": "인터넷 서비스 유형",
+   "ex": [
+    "Fiber optic",
+    "DSL"
+   ]
+  },
+  "onlinebackup": {
+   "d": "온라인 백업 서비스 이용 여부",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "techsupport": {
+   "d": "고객 기술지원 이용 여부",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "onlinesecurity": {
+   "d": "온라인 보안 이용 여부 (No/Yes/인터넷 서비스 미이용)",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "deviceprotection": {
+   "d": "기기 보호 서비스 가입 여부",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "contract": {
+   "d": "계약 기간 유형",
+   "ex": [
+    "Month-to-month",
+    "Two year"
+   ]
+  },
+  "streamingtv": {
+   "d": "고객의 스트리밍 TV 서비스 이용 여부",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "paymentmethod": {
+   "d": "결제 수단 유형",
+   "ex": [
+    "Electronic check",
+    "Mailed check"
+   ]
+  },
+  "streamingmovies": {
+   "d": "고객 스트리밍 영화 구독 여부",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "paperlessbilling": {
+   "d": "종이 없는 청구 동의 여부",
+   "ex": [
+    "Yes",
+    "No"
+   ]
+  },
+  "monthlycharges": {
+   "d": "월별 요금",
+   "ex": [
+    "20.05",
+    "19.85"
+   ]
+  },
+  "totalcharges": {
+   "d": "총 요금",
+   "ex": [
+    " ",
+    "20.2"
+   ]
+  },
+  "churn": {
+   "d": "고객 이탈 여부(No/Yes)",
+   "ex": [
+    "No",
+    "Yes"
+   ]
+  },
+  "tenure": {
+   "d": "고객 유지 기간(개월)",
+   "ex": [
+    "1",
+    "72"
+   ]
+  }
+ }
+}
