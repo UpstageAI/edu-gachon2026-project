@@ -1,0 +1,32 @@
+model_list:
+  - model_name: cs-chat
+    litellm_params:
+      model: openai/solar-pro3
+      api_base: os.environ/UPSTAGE_BASE_URL
+      api_key: os.environ/UPSTAGE_API_KEY
+      rpm: 100
+
+  - model_name: cs-chat-fallback
+    litellm_params:
+      model: gemini/gemini-3-flash-preview
+      api_key: os.environ/GEMINI_API_KEY
+      rpm: 100
+
+  - model_name: cs-embedding-query
+    litellm_params:
+      model: openai/embedding-query
+      api_base: os.environ/UPSTAGE_BASE_URL
+      api_key: os.environ/UPSTAGE_API_KEY
+      rpm: 100
+
+  - model_name: cs-embedding-passage
+    litellm_params:
+      model: openai/embedding-passage
+      api_base: os.environ/UPSTAGE_BASE_URL
+      api_key: os.environ/UPSTAGE_API_KEY
+      rpm: 100
+
+litellm_settings:
+  fallbacks:
+    - cs-chat:
+        - cs-chat-fallback
