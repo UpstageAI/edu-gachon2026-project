@@ -1,0 +1,72 @@
+schema_version: 1
+
+team:
+  number: 11
+  folder_name: team11-live-or-leave
+  name: 살래말래
+  members:
+    - name: 정영준
+      role: GCP(GCE) 인프라 구축 및 배포, CI/CD 파이프라인 운영, 페르소나 데이터 구축(Nemotron-Personas-Korea 기반 시나리오 설계·검증)
+      github: JeongYeongJun-eddie
+    - name: 이규석
+      role: 백엔드 로직(ReAct 흐름·스코어링·필터 아키텍처), Streamlit 지도 UI(Frontend) 개발
+      github: talaria-02
+
+project:
+  title: 살래말래 (Live or Leave)
+  summary: 서울 행정동 424개 단위로 사용자의 자연어 라이프스타일 선호를 받아, 결정론적 스코어링과 LLM 근거 설명으로 살기 좋은 동네를 추천하는 AI 서비스입니다.
+  category: AI 에이전트 / 지역 추천 서비스
+  keywords:
+    - AI
+    - LLM
+    - 지도 시각화
+    - 추천 시스템
+    - 공공데이터
+
+problem:
+  summary: 자치구 단위로만 제공되는 생활 정보로는 같은 구 안에서도 확연히 다른 동네를 구분할 수 없고, 라이프스타일 조건을 반영한 동네 비교는 기존 부동산/지역정보 서비스가 지원하지 않습니다.
+  target_users:
+    - 서울에서 새로 거주지를 구하는 1인 가구·직장인·학생
+    - 안전·편의·이동·환경 등 라이프스타일 조건으로 동네를 비교하고 싶은 사람
+
+solution:
+  summary: LLM은 자연어 해석과 근거 설명만 담당하고, 정규화·스코어링·순위 계산은 결정론적 백엔드가 수행해 재현 가능하고 신뢰할 수 있는 추천을 제공합니다.
+  main_features:
+    - 자연어 선호 입력 → 안전/편의/이동/환경 4개 카테고리 가중치 자동 산출
+    - 서울 424개 행정동 대상 결정론적 스코어링·z-score 기반 티어링
+    - 임의 업종(헬스장, 카페 등) 언급 시 실제 상권 데이터 기반 반영
+    - 자치구 포함/제외, 특정 장소 근처(반경 조절) 등 UI 기반 구조화 하드 필터
+    - 조건이 모호하면 자동으로 되묻는 대화형 흐름(clarify)
+    - 지도 기반 시각화 UI(Streamlit) 및 SSE 스트리밍 API(FastAPI)
+
+tech_stack:
+  frontend:
+    - Streamlit
+    - Plotly
+  backend:
+    - FastAPI
+    - Python
+  ai:
+    - Upstage Solar API (LiteLLM 경유)
+    - Kakao Local API
+  database:
+    - 없음 (정적 CSV/GeoJSON 파일 기반)
+  infra:
+    - Docker
+    - Docker Compose
+    - Google Cloud Platform (GCE)
+    - GitHub Actions (CI/CD)
+
+links:
+  demo_video_url:
+  deployed_url: http://34.47.104.133:8501
+  presentation_url:
+  repository_url: https://github.com/talaria-02/live-or-leave
+
+blog:
+  slug: live-or-leave
+  tags:
+    - AI
+    - LLM
+    - 가천대2026
+  cover_image:
