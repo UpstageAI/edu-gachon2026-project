@@ -1,0 +1,57 @@
+# Healthy Meal Agent — docker compose (API + UI 2개 컨테이너)
+# 로컬: docker compose up --build
+# 배포(GCE): CD가 ${IMAGE} 환경변수로 GHCR 이미지를 주입해 pull 실행
+#
+# 환경변수(UPSTAGE_API_KEY 등)는 .env에서 자동 로드된다.
+
+services:
+  # ── API 서버 (FastAPI) ──────────────────────────
+  api:
+    # 배포 시 GHCR 이미지, 로컬은 build로 생성
+    image: ${IMAGE:-healthy-meal-agent:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hma-api
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - UPSTAGE_API_KEY=${UPSTAGE_API_KEY}
+      - LLM_MODEL=${LLM_MODEL:-solar-pro3}
+      # Solar 실패 시 자동 전환할 보험 모델(OpenAI). 없으면 Solar 단독으로 동작.
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      # 관측(Langfuse). 키가 없으면 트레이싱만 비활성화되고 서비스는 정상 동작.
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - LANGFUSE_HOST=${LANGFUSE_HOST}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # ── UI (Streamlit) ──────────────────────────────
+  ui:
+    image: ${IMAGE:-healthy-meal-agent:latest}
+    container_name: hma-ui
+    # streamlit 실행. frontend는 app.py를 진입점으로.
+    command: streamlit run frontend/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+    ports:
+      - "8501:8501"
+    environment:
+      # UI 서버→API 서버 통신은 compose 네트워크 내부 이름 사용 (컨테이너명=호스트명)
+      - HEALTHY_MEAL_API_URL=http://api:8000
+      # 브라우저가 '직접' 로드하는 레시피 이미지 프록시는 공개 주소가 필요하다.
+      # (http://api:8000은 브라우저가 못 찾음). 배포 시 PUBLIC_API_URL로 서버 공개주소를 주입.
+      # 미설정 시 http://api:8000로 폴백되어 이미지가 안 뜨므로, 배포 환경에선 반드시 설정할 것.
+      - HEALTHY_MEAL_PUBLIC_API_URL=${PUBLIC_API_URL:-http://api:8000}
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

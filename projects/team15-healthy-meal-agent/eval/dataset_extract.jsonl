@@ -1,0 +1,15 @@
+{"id": "EXT-01", "input": "500kcal 이하로 든든한 밥 먹고 싶어", "check": "c.target_kcal == 500 and c.kcal_mode == 'upper'", "rationale": "명시 숫자 500 + '이하' → upper (명시값이 '든든'보다 우선)"}
+{"id": "EXT-02", "input": "600칼로리 정도의 한그릇 요리 추천해줘", "check": "c.target_kcal == 600 and c.kcal_mode == 'target'", "rationale": "'정도' → target 모드"}
+{"id": "EXT-03", "input": "가볍게 먹고 싶어", "check": "c.target_kcal == 450 and c.kcal_mode == 'upper'", "rationale": "'가볍게' → 450 upper 매핑"}
+{"id": "EXT-04", "input": "오늘 든든하게 먹을래", "check": "c.target_kcal == 750 and c.kcal_mode == 'target'", "rationale": "'든든하게' → 750 target 매핑"}
+{"id": "EXT-05", "input": "싱겁고 자극적이지 않게 해줘", "check": "'저염' in c.nutrition_goals", "rationale": "'싱겁' 간접 표현 → 저염 태그"}
+{"id": "EXT-06", "input": "운동하고 나서 먹을 거 추천해줘", "check": "'고단백' in c.nutrition_goals", "rationale": "'운동' → 고단백 태그"}
+{"id": "EXT-07", "input": "얼큰한 국물 요리 먹고 싶어", "check": "'국물' in c.preferences", "rationale": "국물 요청 → preferences에 '국물'"}
+{"id": "EXT-08", "input": "이번엔 밀가루만 빼줘 400kcal로", "check": "'밀가루' in c.exclude_foods and c.target_kcal == 400", "rationale": "해당 턴 기피 재료 + kcal 추출"}
+{"id": "EXT-09", "input": "점심에 라면 먹었어 저녁 추천해줘", "check": "c.previous_meal is not None and '저염' in c.nutrition_goals", "rationale": "무거운 이전식사(라면) → previous_meal + 저염 유도"}
+{"id": "EXT-10", "input": "300kcal 이하 단백질 많은 한 끼", "check": "c.target_kcal == 300 and c.kcal_mode == 'upper' and '고단백' in c.nutrition_goals", "rationale": "명시 숫자 + 이하 + 고단백 동시 추출"}
+{"id": "EXT-11", "input": "오백 칼로리 이하로 담백하게", "check": "c.target_kcal == 500 and c.kcal_mode == 'upper'", "rationale": "한글 숫자 '오백' → 500 인식"}
+{"id": "EXT-12", "input": "맵찔이라 안 매운 걸로 400 근처", "check": "c.target_kcal == 400 and c.kcal_mode == 'target'", "rationale": "'근처' → target, 부정 맛표현 혼선 없이 kcal 추출"}
+{"id": "EXT-13", "input": "노른자 알레르기 있어 추천해줘", "check": "'노른자' in c.exclude_foods or '노른자' in ' '.join(c.exclude_foods)", "rationale": "알레르기 언급 재료를 exclude_foods로"}
+{"id": "EXT-14", "input": "어제 삼겹살 먹었고 오늘은 저염으로", "check": "c.previous_meal is not None and '저염' in c.nutrition_goals", "rationale": "이전식사 + 저염 동시"}
+{"id": "EXT-15", "input": "부담없이 300 이하 한 끼", "check": "c.target_kcal == 300 and c.kcal_mode == 'upper'", "rationale": "'부담없이'+명시숫자 → 숫자 우선, 이하"}

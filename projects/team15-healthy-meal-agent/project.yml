@@ -1,0 +1,68 @@
+schema_version: 1
+
+team:
+  number: 15
+  folder_name: team15-healthy-meal-agent
+  name: healthy-meal-agent
+  members:
+    - name: 김준우
+      role: Backend, AI
+      github: kimjunu10
+    - name: 현경훈
+      role: Frontend, Data
+      github: HyeonGyeongHoon
+
+project:
+  title: Healthy Meal Agent
+  summary: 자연어 한 마디로 건강 기준을 통과한 한식 한 끼와 레시피를 추천하는 대화형 AI 에이전트입니다.
+  category: AI 서비스
+  keywords:
+    - AI Agent
+    - LangGraph
+    - Healthcare
+    - Nutrition
+
+problem:
+  summary: 건강한 한 끼를 원하지만, 매번 메뉴를 찾고 여러 음식의 영양을 비교·계산하는 과정이 너무 번거롭다.
+  target_users:
+    - 건강하게 먹고 싶은 20대
+    - 칼로리·나트륨 등 영양 조건을 신경 쓰는 직장인
+
+solution:
+  summary: 원하는 조건을 자연어로 입력하면 음식들을 조합해 KDRI(한국인 영양소 섭취기준)로 검증한 한 끼를 추천하고, 레시피와 조리 영상까지 제공한다.
+  main_features:
+    - 자연어 조건 입력 (예 "얼큰한 국물 500kcal 이하")
+    - 밥·국·반찬을 조합한 한 끼 구성
+    - KDRI 기준 영양 검증 (칼로리·나트륨·탄단지)
+    - 알레르기·기피 재료 자동 제외
+    - 레시피 및 조리 영상 연계
+
+tech_stack:
+  frontend:
+    - Streamlit
+  backend:
+    - FastAPI
+  ai:
+    - Upstage Solar
+    - LangGraph
+    - LiteLLM
+  database:
+    - Supabase (PostgreSQL)
+    - pgvector
+  infra:
+    - Docker
+    - GitHub Actions
+    - Google Compute Engine
+
+links:
+  demo_video_url: https://www.youtube.com/watch?v=68yZPn4G6Jk
+  deployed_url: http://34.64.237.235:8501/
+  presentation_url: https://docs.google.com/presentation/d/1jhx0YnTqViPN50LQeijhhB3I90iFI4b2Tlqu91vubBQ/edit?usp=sharing
+  repository_url: https://github.com/upstage-team15/healthy-meal-agent
+
+blog:
+  slug: healthy-meal-agent
+  tags:
+    - AI Agent
+    - LangGraph
+  cover_image: assets/cover.png

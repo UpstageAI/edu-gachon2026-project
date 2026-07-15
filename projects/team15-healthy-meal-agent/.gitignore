@@ -1,0 +1,36 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+HANDOFF.md
+
+.venv/
+venv/
+.tmp-home/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+.streamlit/secrets.toml
+.agents/
+
+dist/
+build/
+docs/
+database/
+
+# 데이터 정제 백업·중간산출
+app/data/*.bak*
+app/data/foods_classified.csv
+
+# 레시피 이미지 프록시 캐시
+.cache/
+
+# 평가 실행 로그·캐시 (재생성 가능). RESULT.md는 평가 결과라 추적한다.
+eval/run.log
+eval/__pycache__/

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "healthy-meal-agent"
+version = "0.1.0"
+description = "Healthy meal recommendation agent project scaffold"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.116.0",
+    "httpx>=0.28.0",
+    "langchain-core>=0.3.0",
+    "langchain-upstage>=0.7.0",
+    "langfuse>=2.0.0,<3.0.0",
+    "langgraph>=0.2.0",
+    "litellm>=1.0.0",
+    "pandas>=2.2.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "streamlit>=1.46.0",
+    "supabase>=2.31.0",
+    "uvicorn[standard]>=0.35.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.0",
+    "ruff>=0.12.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["app*", "backend*"]
+
+[tool.setuptools.package-data]
+app = ["data/*.csv"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

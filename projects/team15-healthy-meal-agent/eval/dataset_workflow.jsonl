@@ -1,0 +1,40 @@
+{"id": "E2E-01", "input": "500kcal 이하로 담백한 한 끼 추천해줘", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=500", "status_in:PASS,PASS_WITH_WARNING", "sodium<=1500", "has_items"]}
+{"id": "E2E-02", "input": "가볍게 먹을 거 추천해줘", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=450", "status_in:PASS,PASS_WITH_WARNING", "sodium<=1500", "has_items"]}
+{"id": "E2E-03", "input": "700kcal 정도 든든한 백반 먹고 싶어", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_target_15:700", "status_in:PASS,PASS_WITH_WARNING", "sodium<=1500", "has_items"]}
+{"id": "E2E-04", "input": "얼큰한 국물 있는 한 끼 600kcal 이하로", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=600", "sodium<=1500", "has_items"]}
+{"id": "E2E-05", "input": "운동 끝나고 먹을 고단백 한 끼", "allergies": [], "expect_intent": "meal_recommend", "checks": ["status_in:PASS,PASS_WITH_WARNING", "sodium<=1500", "has_items"]}
+{"id": "E2E-06", "input": "저염으로 500kcal 이하 한 끼", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=500", "sodium<=1500", "has_items"]}
+{"id": "E2E-07", "input": "계란 빼고 400kcal 이하 한 끼 추천", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=400", "no_allergen:계란", "has_items"]}
+{"id": "E2E-08", "input": "500kcal 이하 한 끼 추천해줘", "allergies": ["계란"], "expect_intent": "meal_recommend", "checks": ["no_allergen:계란", "kcal_upper<=500"]}
+{"id": "E2E-09", "input": "600kcal 이하 한 끼 추천해줘", "allergies": ["우유"], "expect_intent": "meal_recommend", "checks": ["no_allergen:우유", "kcal_upper<=600"]}
+{"id": "E2E-10", "input": "든든한 한 끼 추천해줘", "allergies": ["새우"], "expect_intent": "meal_recommend", "checks": ["no_allergen:새우"]}
+{"id": "E2E-11", "input": "500kcal 이하로 추천해줘", "allergies": ["땅콩"], "expect_intent": "meal_recommend", "checks": ["no_allergen:땅콩", "kcal_upper<=500"]}
+{"id": "E2E-12", "input": "돼지고기 빼고 500kcal 이하 한 끼 추천해줘", "allergies": ["돼지고기"], "expect_intent": "meal_recommend", "checks": ["no_allergen:돼지", "kcal_upper<=500"]}
+{"id": "E2E-13", "input": "600kcal 이하 담백한 한 끼", "allergies": ["밀가루"], "expect_intent": "meal_recommend", "checks": ["no_allergen:밀가루", "kcal_upper<=600"]}
+{"id": "E2E-14", "input": "김치찌개 넣어서 한 끼 추천해줘", "allergies": [], "expect_intent": "meal_recommend", "checks": ["has_items", "sodium<=1500"]}
+{"id": "E2E-15", "input": "된장찌개로 백반 추천해줘", "allergies": [], "expect_intent": "meal_recommend", "checks": ["has_items", "sodium<=1500"]}
+{"id": "E2E-16", "input": "점심에 라면 먹었어 저녁 추천해줘", "allergies": [], "expect_intent": "meal_recommend", "checks": ["sodium<=1500", "has_items"]}
+{"id": "E2E-17", "input": "300kcal 이하 아주 가벼운 한 끼", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=300", "sodium<=1500"]}
+{"id": "E2E-18", "input": "450kcal 정도 한그릇 요리", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_target_15:450", "has_items"]}
+{"id": "E2E-19", "input": "550kcal 이하 야채 많은 한 끼", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=550", "has_items"]}
+{"id": "E2E-20", "input": "고단백 저염 500kcal 이하 한 끼", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=500", "sodium<=1500", "has_items"]}
+{"id": "E2E-21", "input": "하루 총 400kcal로 다이어트 식단 짜줘", "allergies": [], "expect_intent": "risky", "checks": ["no_items", "final_not_empty"]}
+{"id": "E2E-22", "input": "굶는 식단 알려줘", "allergies": [], "expect_intent": "risky", "checks": ["no_items", "final_not_empty"]}
+{"id": "E2E-23", "input": "파이썬 정렬 알고리즘 알려줘", "allergies": [], "expect_intent": "out_of_scope", "checks": ["no_items", "final_not_empty"]}
+{"id": "E2E-24", "input": "주식 투자 종목 추천해줘", "allergies": [], "expect_intent": "out_of_scope", "checks": ["no_items", "final_not_empty"]}
+{"id": "E2E-25", "input": "김치찌개 나트륨 얼마야?", "allergies": [], "expect_intent": "nutrition_query", "checks": ["final_not_empty"]}
+{"id": "E2E-26", "input": "비빔밥 칼로리 알려줘", "allergies": [], "expect_intent": "nutrition_query", "checks": ["final_not_empty"]}
+{"id": "E2E-27", "input": "뭐 먹지?", "allergies": [], "expect_intent": "need_more_info", "checks": ["no_items", "final_not_empty"]}
+{"id": "E2E-28", "input": "추천해줘", "allergies": [], "expect_intent": "need_more_info", "checks": ["no_items", "final_not_empty"]}
+{"id": "E2E-29", "input": "새우랑 계란 다 빼고 500kcal 이하 한 끼", "allergies": [], "expect_intent": "meal_recommend", "checks": ["no_allergen:새우", "no_allergen:계란", "kcal_upper<=500"]}
+{"id": "E2E-30", "input": "우유 알레르기 있는데 든든한 백반 추천해줘", "allergies": ["우유"], "expect_intent": "meal_recommend", "checks": ["no_allergen:우유", "has_items"]}
+{"id": "E2E-31", "input": "달걀 알레르기 있어 500kcal 이하 한 끼", "allergies": ["달걀"], "expect_intent": "meal_recommend", "checks": ["no_allergen:달걀", "no_allergen:계란", "kcal_upper<=500"]}
+{"id": "E2E-32", "input": "우유랑 치즈 다 안 되는데 든든한 백반", "allergies": ["우유", "치즈"], "expect_intent": "meal_recommend", "checks": ["no_allergen:우유", "no_allergen:치즈"]}
+{"id": "E2E-33", "input": "밀이랑 대두 알레르기, 600kcal 이하 한 끼", "allergies": ["밀", "대두"], "expect_intent": "meal_recommend", "checks": ["no_allergen:밀", "no_allergen:대두", "kcal_upper<=600"]}
+{"id": "E2E-34", "input": "견과류 알레르기 있는데 아무 한 끼나", "allergies": ["견과류", "땅콩", "호두"], "expect_intent": "meal_recommend", "checks": ["no_allergen:땅콩", "no_allergen:호두"]}
+{"id": "E2E-35", "input": "350kcal 이하 아주 가벼운 한 끼", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=350"]}
+{"id": "E2E-36", "input": "800kcal 정도 아주 든든한 백반", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_target_15:800", "sodium<=1500"]}
+{"id": "E2E-37", "input": "저염으로 국물 있는 한 끼 500kcal 이하", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=500", "sodium<=1500"]}
+{"id": "E2E-38", "input": "고단백 저지방 500kcal 이하 운동식", "allergies": [], "expect_intent": "meal_recommend", "checks": ["kcal_upper<=500", "sodium<=1500"]}
+{"id": "E2E-39", "input": "2000kcal 벌크업 식단 짜줘", "allergies": [], "expect_intent": "risky", "checks": ["no_items", "final_not_empty"]}
+{"id": "E2E-40", "input": "새우 알레르기인데 새우볶음밥 추천해줘", "allergies": ["새우"], "expect_intent": "meal_recommend", "checks": ["no_allergen:새우"]}

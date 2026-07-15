@@ -1,0 +1,206 @@
+name: CD
+
+# CI(main) 성공 후 자동 배포. 수동 실행(롤백)도 허용. (강의 5강 흐름)
+on:
+  workflow_run:
+    workflows: ["CI"] # ci.yml의 name과 일치
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      rollback:
+        description: "이전 버전으로 롤백"
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }} # owner/repo → ghcr.io/owner/repo
+
+jobs:
+  # ── Job 1: Docker 이미지 빌드 & GHCR 푸시 ──────────
+  build-and-push:
+    name: Build & Push to GHCR
+    runs-on: ubuntu-latest
+    # CI 성공(workflow_run) 또는 수동 실행(롤백 아님)일 때만
+    if: >-
+      ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+      || (github.event_name == 'workflow_dispatch' && !inputs.rollback) }}
+    permissions:
+      contents: read
+      packages: write # GHCR 푸시 권한
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # GHCR은 소문자만 허용 → 이미지 이름 소문자로
+      - name: Lowercase image name
+        run: echo "IMAGE_NAME_LOWER=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LOWER }}
+          # 커밋 SHA + latest 두 태그
+          tags: |
+            type=sha
+            type=raw,value=latest
+
+      - name: Build and Push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Print image info
+        run: |
+          echo "🐳 이미지 빌드·푸시 완료"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+
+  # ── Job 2: GCE VM에 SSH 배포 ──────────────────────
+  deploy:
+    name: Deploy to Compute Engine
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    # 빌드 성공 후, 또는 수동 롤백 시
+    if: ${{ always() && (needs.build-and-push.result == 'success' || inputs.rollback) }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCE_HOST }}
+          username: ${{ secrets.GCE_USERNAME }}
+          key: ${{ secrets.GCE_SSH_KEY }}
+          script: |
+            set -e
+            echo "🚀 배포 시작: ${{ github.sha }}"
+
+            # ── 환경 준비 ──
+            REGISTRY="ghcr.io"
+            IMAGE_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+            # 짧은 SHA 태그 (build의 type=sha와 동일 형식: sha-xxxxxxx)
+            SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+            FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:sha-${SHORT_SHA}"
+            DEPLOY_DIR="/home/${{ secrets.GCE_USERNAME }}/healthy-meal-agent"
+
+            # 첫 배포 시 디렉토리·compose·.env 준비
+            mkdir -p "$DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+
+            # docker compose 파일이 없으면 최소 compose를 생성 (이미지 pull 방식)
+            # (compose 파일은 repo의 것을 쓰되, 서버엔 배포 전용 최소본을 둔다)
+            cat > docker-compose.yml <<'COMPOSE'
+            services:
+              api:
+                image: ${IMAGE}
+                container_name: hma-api
+                command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+                ports:
+                  - "8000:8000"
+                environment:
+                  - UPSTAGE_API_KEY=${UPSTAGE_API_KEY}
+                  - LLM_MODEL=${LLM_MODEL:-solar-pro3}
+                  # Solar 실패 시 자동 전환할 보험 모델(OpenAI). 없으면 Solar 단독으로 동작.
+                  - OPENAI_API_KEY=${OPENAI_API_KEY}
+                  - SUPABASE_URL=${SUPABASE_URL}
+                  - SUPABASE_KEY=${SUPABASE_KEY}
+                  # 관측(Langfuse). 키가 없으면 트레이싱만 비활성화되고 서비스는 정상 동작.
+                  - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+                  - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+                  - LANGFUSE_HOST=${LANGFUSE_HOST}
+                  - ENVIRONMENT=production
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 15s
+                restart: unless-stopped
+              ui:
+                image: ${IMAGE}
+                container_name: hma-ui
+                command: streamlit run frontend/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true
+                ports:
+                  - "8501:8501"
+                environment:
+                  - HEALTHY_MEAL_API_URL=http://api:8000
+                  # 브라우저가 직접 로드하는 레시피 이미지 프록시용 공개 주소 (http://api:8000은 브라우저가 못 찾음)
+                  - HEALTHY_MEAL_PUBLIC_API_URL=http://${{ secrets.GCE_HOST }}:8000
+                depends_on:
+                  api:
+                    condition: service_healthy
+                restart: unless-stopped
+            COMPOSE
+
+            # ── .env 작성 (GitHub Secrets → 서버 .env) ──
+            cat > .env <<ENV
+            IMAGE=${FULL_IMAGE}
+            UPSTAGE_API_KEY=${{ secrets.UPSTAGE_API_KEY }}
+            LLM_MODEL=solar-pro3
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+            SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}
+            LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}
+            LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}
+            LANGFUSE_HOST=${{ secrets.LANGFUSE_HOST }}
+            ENV
+
+            # ── docker compose 명령 확인 ──
+            if docker compose version &> /dev/null; then
+              DC="docker compose"
+            else
+              DC="docker-compose"
+            fi
+
+            # ── 디스크 정리: 이전 이미지/빌드 캐시가 쌓이면 pull 중 no space left가 난다 ──
+            # 실행 중인 컨테이너와 Docker volume은 보존한다.
+            echo "🧹 Docker 디스크 정리..."
+            docker system df || true
+            docker container prune -f || true
+            docker image prune -af || true
+            docker builder prune -af || true
+            docker system df || true
+
+            # ── GHCR 로그인 후 pull ──
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "📦 이미지 pull: ${FULL_IMAGE}"
+            docker pull "${FULL_IMAGE}"
+
+            # ── 컨테이너 재생성 ──
+            echo "🔄 컨테이너 교체..."
+            $DC up -d --force-recreate
+
+            # ── 헬스체크 (API가 200 뜰 때까지 최대 60초) ──
+            echo "🩺 헬스체크..."
+            for i in $(seq 1 12); do
+              if curl -fsS http://localhost:8000/api/v1/health > /dev/null; then
+                echo "✅ 배포 성공 — API 정상"
+                docker image prune -af || true
+                docker builder prune -af || true
+                exit 0
+              fi
+              echo "  대기 $i/12..."
+              sleep 5
+            done
+            echo "❌ 헬스체크 실패"
+            docker logs hma-api --tail 50
+            exit 1
