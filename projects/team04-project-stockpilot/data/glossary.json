@@ -1,0 +1,544 @@
+[
+  {
+    "term": "PER",
+    "aliases": [
+      "주가수익비율",
+      "Price Earnings Ratio"
+    ],
+    "definition": "현재 주가가 주당순이익(EPS)의 몇 배인지 보여주는 지표입니다. 같은 업종의 기업끼리 비교할 때 주로 참고하지만, PER이 낮다는 사실만으로 저평가라고 단정할 수는 없습니다.",
+    "example": "PER이 10배라면 현재 주가가 최근 주당순이익의 약 10배 수준이라는 뜻입니다.",
+    "source_url": "https://kind.krx.co.kr/external/dst/guidebook/investment_indicators.pdf"
+  },
+  {
+    "term": "PBR",
+    "aliases": [
+      "주가순자산비율",
+      "Price Book-value Ratio"
+    ],
+    "definition": "현재 주가가 주당순자산(BPS)의 몇 배인지 보여주는 지표입니다. 자산 구조가 다른 기업끼리는 단순 비교하기 어렵고, 1배 미만이라고 반드시 싸다는 뜻은 아닙니다.",
+    "example": "PBR이 1배라면 주가와 주당순자산이 비슷한 수준이라는 의미입니다.",
+    "source_url": "https://kind.krx.co.kr/external/dst/guidebook/investment_indicators.pdf"
+  },
+  {
+    "term": "ROE",
+    "aliases": [
+      "자기자본이익률",
+      "Return on Equity"
+    ],
+    "definition": "회사가 주주가 맡긴 자기자본을 이용해 어느 정도의 이익을 냈는지 보여주는 비율입니다. 일회성 이익이나 부채 규모의 영향을 함께 확인해야 합니다.",
+    "example": "ROE 10%는 자기자본 100원으로 일정 기간 약 10원의 이익을 냈다는 식으로 이해할 수 있습니다.",
+    "source_url": "https://kind.krx.co.kr/external/dst/guidebook/investment_indicators.pdf"
+  },
+  {
+    "term": "EPS",
+    "aliases": [
+      "주당순이익",
+      "Earnings Per Share"
+    ],
+    "definition": "기업의 순이익을 주식 수로 나눈 값으로, 주식 한 주가 벌어들인 이익을 나타냅니다. PER 계산에도 사용됩니다.",
+    "example": "EPS가 5,000원이면 계산상 한 주당 5,000원의 순이익을 냈다는 의미입니다.",
+    "source_url": "https://kind.krx.co.kr/external/dst/guidebook/investment_indicators.pdf"
+  },
+  {
+    "term": "BPS",
+    "aliases": [
+      "주당순자산",
+      "Book-value Per Share"
+    ],
+    "definition": "기업의 순자산을 주식 수로 나눈 값입니다. 회계상 자산가치를 한 주 기준으로 본 지표이며 PBR 계산에 사용됩니다.",
+    "example": "BPS가 50,000원이라는 것은 회계상 순자산을 주식 수로 나누면 한 주당 50,000원 수준이라는 뜻입니다.",
+    "source_url": "https://kind.krx.co.kr/external/dst/guidebook/investment_indicators.pdf"
+  },
+  {
+    "term": "배당수익률",
+    "aliases": [
+      "Dividend Yield"
+    ],
+    "definition": "주당배당금을 기준 주가로 나눈 비율입니다. 실제 배당금은 회사의 실적과 배당정책에 따라 달라질 수 있습니다.",
+    "example": "주가가 10만 원이고 연간 주당배당금이 3천 원이면 단순 배당수익률은 약 3%입니다.",
+    "source_url": "https://kind.krx.co.kr/external/dst/guidebook/investment_indicators.pdf"
+  },
+  {
+    "term": "시가총액",
+    "aliases": [
+      "시총",
+      "Market Capitalization"
+    ],
+    "definition": "현재 주가에 상장 주식 수를 곱한 값으로, 주식시장이 평가하는 회사 전체의 규모를 나타냅니다.",
+    "example": "주가 5만 원인 주식이 1억 주 발행되어 있다면 시가총액은 약 5조 원입니다.",
+    "source_url": "https://data.krx.co.kr/"
+  },
+  {
+    "term": "공시",
+    "aliases": [
+      "전자공시",
+      "DART",
+      "Disclosure"
+    ],
+    "definition": "회사가 투자자에게 중요한 정보를 공식적으로 공개하는 것을 말합니다. 실적, 계약, 증자, 소송, 경영진 변동처럼 주가 판단에 영향을 줄 수 있는 내용이 포함될 수 있어 뉴스보다 원문과 제출일을 함께 확인하는 것이 중요합니다.",
+    "example": "한 회사가 대규모 공급계약을 체결하면 '단일판매ㆍ공급계약체결' 같은 공시로 내용을 확인할 수 있습니다.",
+    "source_url": "https://opendart.fss.or.kr/guide/main.do?apiGrpCd=DS001"
+  },
+  {
+    "term": "사업보고서",
+    "aliases": [
+      "정기보고서",
+      "Annual Report"
+    ],
+    "definition": "회사가 사업 내용, 재무 상태, 주요 위험, 주주와 임원 정보 등을 정기적으로 공시하는 문서입니다. 투자 판단에서는 요약 기사보다 원문과 제출 시점을 함께 확인하는 것이 중요합니다.",
+    "example": "회사의 주요 제품이나 위험 요인을 확인할 때 최근 사업보고서의 '사업의 내용'과 '위험요인' 부분을 살펴볼 수 있습니다.",
+    "source_url": "https://opendart.fss.or.kr/guide/main.do?apiGrpCd=DS001"
+  },
+  {
+    "term": "유상증자",
+    "aliases": [
+      "Paid-in Capital Increase"
+    ],
+    "definition": "회사가 대가를 받고 새 주식을 발행해 자금을 조달하는 방식입니다. 회사는 자금을 확보하지만 발행 조건에 따라 기존 주주의 지분이 희석될 수 있으므로 자금 사용 목적과 발행 가격을 함께 봐야 합니다.",
+    "example": "공장 건설을 위한 유상증자와 빚 상환을 위한 유상증자는 시장이 받아들이는 의미가 다를 수 있습니다.",
+    "source_url": "https://opendart.fss.or.kr/guide/detail.do?apiGrpCd=DS005&apiId=2020023"
+  },
+  {
+    "term": "전환사채",
+    "aliases": [
+      "CB",
+      "Convertible Bond"
+    ],
+    "definition": "처음에는 채권이지만 정해진 조건에 따라 회사 주식으로 바꿀 수 있는 권리가 붙은 증권입니다. 전환이 이뤄지면 주식 수가 늘어 기존 주주의 지분이 희석될 수 있습니다.",
+    "example": "전환가격, 전환 가능 기간, 발행 목적을 확인해야 실제 영향을 이해할 수 있습니다.",
+    "source_url": "https://dart.fss.or.kr/info/main.do?menu=320"
+  },
+  {
+    "term": "주식 희석",
+    "aliases": [
+      "지분 희석",
+      "Dilution"
+    ],
+    "definition": "새 주식이 발행되면서 기존 주주가 가진 지분율이나 주당 가치가 낮아질 가능성을 말합니다. 유상증자나 전환사채의 주식 전환 때 발생할 수 있습니다.",
+    "example": "전체 주식 수가 100주에서 120주로 늘고 기존 주주가 그대로 10주를 보유한다면 지분율은 10%에서 약 8.3%로 낮아집니다.",
+    "source_url": "https://opendart.fss.or.kr/guide/main.do?apiGrpCd=DS001"
+  },
+  {
+    "term": "영업이익",
+    "aliases": [
+      "Operating Profit"
+    ],
+    "definition": "회사의 주된 영업활동에서 매출액과 영업비용을 반영하고 남은 이익입니다. 금융손익이나 법인세 등 영업 외 항목을 반영한 당기순이익과는 다릅니다.",
+    "example": "매출이 늘어도 원재료비나 인건비가 더 크게 증가하면 영업이익은 줄어들 수 있습니다.",
+    "source_url": "https://opendart.fss.or.kr/disclosureinfo/fnltt/cmpnyacnt/main.do"
+  },
+  {
+    "term": "DX부문",
+    "aliases": ["DX", "Device eXperience"],
+    "definition": "삼성전자에서 TV, 모니터, 생활가전, 스마트폰, 네트워크 장비 등 소비자와 직접 만나는 제품·서비스를 담당하는 사업 부문입니다.",
+    "example": "사업보고서에서 DX부문 실적은 스마트폰, TV, 가전 수요와 연결해서 볼 수 있습니다.",
+    "category": "samsung_business",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "DS부문",
+    "aliases": ["DS", "Device Solutions"],
+    "definition": "삼성전자에서 메모리 반도체, 시스템 반도체, 파운드리 등 반도체 사업을 담당하는 부문입니다.",
+    "example": "DS부문은 DRAM, NAND Flash, System LSI, Foundry 사업과 관련이 큽니다.",
+    "category": "samsung_business",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "DRAM",
+    "aliases": ["디램", "Dynamic Random Access Memory"],
+    "definition": "컴퓨터나 서버가 작업 중인 데이터를 임시로 저장하는 대표적인 메모리 반도체입니다. 서버, PC, 모바일 기기 수요와 반도체 가격 사이클의 영향을 크게 받습니다.",
+    "example": "AI 서버 수요가 늘면 고성능 DRAM 수요도 함께 늘 수 있습니다.",
+    "category": "semiconductor",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "NAND Flash",
+    "aliases": ["낸드플래시", "NAND"],
+    "definition": "전원이 꺼져도 데이터가 남는 저장용 메모리 반도체입니다. SSD, 스마트폰 저장장치, 데이터센터 저장장치 등에 쓰입니다.",
+    "example": "스마트폰과 SSD 수요가 약하면 NAND Flash 가격과 실적에 부담이 될 수 있습니다.",
+    "category": "semiconductor",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "System LSI",
+    "aliases": ["시스템 LSI", "시스템반도체"],
+    "definition": "메모리처럼 단순 저장이 아니라 연산·제어·신호처리 기능을 수행하는 반도체 사업입니다. 모바일AP, 이미지센서 등이 여기에 포함됩니다.",
+    "example": "삼성전자 DS부문에는 메모리뿐 아니라 System LSI 사업도 포함됩니다.",
+    "category": "semiconductor",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "Foundry",
+    "aliases": ["파운드리", "반도체 위탁생산"],
+    "definition": "고객사가 설계한 반도체를 대신 생산해 주는 사업입니다. 자체 설계 제품을 파는 메모리 사업과 성격이 다릅니다.",
+    "example": "파운드리 실적은 고객 수주, 공정 경쟁력, 가동률의 영향을 받습니다.",
+    "category": "semiconductor",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "OLED",
+    "aliases": ["유기발광다이오드", "Organic Light Emitting Diode"],
+    "definition": "스스로 빛을 내는 디스플레이 기술입니다. 스마트폰, TV, 모니터 등에 사용되며 LCD와 구조가 다릅니다.",
+    "example": "OLED 패널 수요는 프리미엄 스마트폰과 TV 시장 흐름과 관련이 있습니다.",
+    "category": "display",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "모바일AP",
+    "aliases": ["Mobile AP", "Application Processor"],
+    "definition": "스마트폰의 두뇌 역할을 하는 반도체입니다. 앱 실행, 통신, 그래픽 처리 등 모바일 기기의 핵심 연산을 담당합니다.",
+    "example": "모바일AP 경쟁력은 스마트폰 성능과 시스템 반도체 사업 평가에 영향을 줄 수 있습니다.",
+    "category": "semiconductor",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "연결재무제표",
+    "aliases": ["Consolidated Financial Statements"],
+    "definition": "지배회사와 종속기업을 하나의 기업집단처럼 묶어 작성한 재무제표입니다. 대기업은 여러 자회사를 포함하므로 연결 기준 실적을 함께 보는 것이 중요합니다.",
+    "example": "삼성전자 사업보고서의 연결재무제표는 해외법인과 종속기업 실적까지 포함합니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "별도재무제표",
+    "aliases": ["Separate Financial Statements"],
+    "definition": "종속기업을 합치지 않고 해당 회사 자체만 기준으로 작성한 재무제표입니다.",
+    "example": "연결재무제표는 그룹 전체 흐름을, 별도재무제표는 삼성전자 본사 자체 흐름을 보는 데 유용합니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "종속기업",
+    "aliases": ["Subsidiary"],
+    "definition": "다른 회사가 지배력을 가지고 있는 회사입니다. 보통 지분율, 의결권, 실질 지배력 등을 기준으로 판단합니다.",
+    "example": "삼성전자 사업보고서에는 연결대상 종속기업 수가 표시됩니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "K-IFRS",
+    "aliases": ["한국채택국제회계기준"],
+    "definition": "한국 기업이 재무제표를 작성할 때 따르는 국제회계기준 기반의 회계 기준입니다.",
+    "example": "사업보고서의 연결재무제표는 K-IFRS 기준에 따라 작성됩니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "매출채권",
+    "aliases": ["Accounts Receivable"],
+    "definition": "제품이나 서비스를 팔았지만 아직 현금으로 받지 못한 금액입니다.",
+    "example": "매출채권이 크게 늘면 매출은 발생했지만 현금 회수가 늦어지고 있는지 확인해야 합니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "재고자산",
+    "aliases": ["Inventory"],
+    "definition": "판매를 위해 보유 중인 제품, 상품, 원재료 등을 말합니다. 수요 둔화 때 재고가 늘면 가격 하락이나 손실 위험이 커질 수 있습니다.",
+    "example": "반도체 업황이 나쁠 때 재고자산 증가는 수익성 부담 신호로 해석될 수 있습니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "현금및현금성자산",
+    "aliases": ["Cash and Cash Equivalents"],
+    "definition": "현금과 거의 바로 현금처럼 쓸 수 있는 단기 금융자산입니다. 기업의 단기 지급 능력을 볼 때 중요합니다.",
+    "example": "현금및현금성자산이 많으면 불황에도 투자나 부채 상환 여력이 상대적으로 큽니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "단기금융상품",
+    "aliases": ["Short-term Financial Instruments"],
+    "definition": "만기가 짧은 예금이나 금융상품처럼 단기간에 운용하는 금융자산입니다.",
+    "example": "현금과 단기금융상품을 함께 보면 회사가 단기에 사용할 수 있는 자금 규모를 가늠할 수 있습니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "매입채무",
+    "aliases": ["Accounts Payable"],
+    "definition": "원재료나 상품을 사고 아직 지급하지 않은 금액입니다. 매출채권과 반대로 회사가 갚아야 할 영업 관련 채무입니다.",
+    "example": "매입채무 증가는 구매 규모 확대나 지급 시점 변화와 관련될 수 있습니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "차입금",
+    "aliases": ["Borrowings", "Loan"],
+    "definition": "기업이 은행 등 외부에서 빌린 돈입니다. 이자가 발생하므로 금리와 만기 구조를 함께 봐야 합니다.",
+    "example": "차입금이 늘면 투자 재원 확보일 수도 있지만 이자 부담 증가 요인이 될 수도 있습니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "사채",
+    "aliases": ["Corporate Bond"],
+    "definition": "기업이 자금을 조달하기 위해 투자자에게 발행하는 채권입니다. 만기와 이자율 조건이 중요합니다.",
+    "example": "대규모 사채 발행은 투자 자금 확보일 수도 있고 부채 부담 증가일 수도 있습니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "부채비율",
+    "aliases": ["Debt Ratio"],
+    "definition": "자기자본 대비 부채가 얼마나 많은지 보여주는 비율입니다. 업종과 사업 구조에 따라 적정 수준이 다르므로 단독 숫자보다 추이를 봐야 합니다.",
+    "example": "삼성전자 사업보고서에는 부채와 자본, 부채비율이 함께 제시됩니다.",
+    "category": "finance",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "시장위험",
+    "aliases": ["Market Risk"],
+    "definition": "환율, 금리, 주가 등 시장 가격이 변하면서 기업의 손익이나 자산 가치가 변할 위험입니다.",
+    "example": "삼성전자처럼 해외 매출이 큰 기업은 환율 변동에 따른 시장위험을 관리합니다.",
+    "category": "risk",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "신용위험",
+    "aliases": ["Credit Risk"],
+    "definition": "거래 상대방이 돈을 갚지 못하거나 계약상 의무를 이행하지 못해 손실이 생길 위험입니다.",
+    "example": "매출채권이 큰 기업은 고객이 대금을 제때 지급하지 못할 신용위험을 관리해야 합니다.",
+    "category": "risk",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "유동성위험",
+    "aliases": ["Liquidity Risk"],
+    "definition": "필요한 시점에 현금을 마련하지 못해 채무를 갚거나 영업을 유지하기 어려워지는 위험입니다.",
+    "example": "만기가 가까운 차입금이 많고 현금이 부족하면 유동성위험이 커질 수 있습니다.",
+    "category": "risk",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "환율변동위험",
+    "aliases": ["Foreign Exchange Risk", "환위험"],
+    "definition": "원화와 외화의 환율이 변하면서 매출, 비용, 자산, 부채 가치가 달라질 위험입니다.",
+    "example": "달러 매출이 많거나 해외 생산 비중이 큰 기업은 환율변동위험을 크게 받을 수 있습니다.",
+    "category": "risk",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "환헷지",
+    "aliases": ["FX Hedge", "Currency Hedge"],
+    "definition": "환율 변동으로 생길 수 있는 손실을 줄이기 위해 선물환, 통화선도 같은 금융상품을 이용하는 방법입니다.",
+    "example": "사업보고서의 위험관리 항목에서 회사가 환헷지를 어떻게 하는지 확인할 수 있습니다.",
+    "category": "risk",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "통화선도",
+    "aliases": ["Currency Forward"],
+    "definition": "미래의 특정 시점에 정해진 환율로 외화를 사고팔기로 약정하는 파생상품입니다. 환율변동위험을 줄이는 데 사용됩니다.",
+    "example": "삼성전자 사업보고서에는 환율변동 위험관리 목적으로 통화선도 상품을 활용한다고 설명됩니다.",
+    "category": "risk",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "파생상품",
+    "aliases": ["Derivative"],
+    "definition": "환율, 금리, 주가, 원자재 가격 같은 기초자산의 변동에 따라 가치가 달라지는 금융상품입니다.",
+    "example": "통화선도는 환율을 기초로 하는 파생상품입니다.",
+    "category": "risk",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "공정가치",
+    "aliases": ["Fair Value"],
+    "definition": "자산이나 부채를 현재 시장에서 거래한다고 가정했을 때 합리적으로 평가되는 가격입니다.",
+    "example": "상장주식 같은 금융자산은 공정가치 변동이 손익이나 기타포괄손익에 반영될 수 있습니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "당기손익",
+    "aliases": ["Profit or Loss"],
+    "definition": "해당 회계기간의 손익계산서에 반영되는 이익이나 손실입니다.",
+    "example": "당기손익-공정가치금융자산은 공정가치 변동이 당기손익에 반영됩니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "기타포괄손익",
+    "aliases": ["Other Comprehensive Income", "OCI"],
+    "definition": "당기손익에는 바로 포함되지 않지만 자본에 반영되는 평가손익 등을 말합니다.",
+    "example": "일부 금융자산의 공정가치 변동은 당기손익이 아니라 기타포괄손익으로 처리될 수 있습니다.",
+    "category": "accounting",
+    "difficulty": "advanced",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "충당부채",
+    "aliases": ["Provision"],
+    "definition": "현재 의무가 있고 미래에 돈이 나갈 가능성이 높지만 정확한 금액이나 시점이 불확실한 부채입니다.",
+    "example": "품질보증, 소송, 환경 관련 의무 등은 충당부채로 잡힐 수 있습니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "우발부채",
+    "aliases": ["Contingent Liability"],
+    "definition": "미래 사건의 결과에 따라 실제 부채가 될 수도 있는 잠재적 의무입니다. 소송 결과나 보증 의무 등이 대표적입니다.",
+    "example": "사업보고서의 우발부채와 약정사항은 소송이나 보증 위험을 볼 때 중요합니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "약정사항",
+    "aliases": ["Commitments"],
+    "definition": "회사가 계약이나 금융거래 등으로 부담하고 있는 중요한 약속이나 조건입니다.",
+    "example": "차입 약정, 보증 약정, 구매 약정 등은 향후 현금흐름에 영향을 줄 수 있습니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "계약부채",
+    "aliases": ["Contract Liability"],
+    "definition": "고객에게서 돈을 먼저 받았지만 아직 제품이나 서비스를 제공하지 않아 매출로 인식하지 않은 의무입니다.",
+    "example": "선수금 성격의 금액은 조건이 충족되기 전까지 계약부채로 표시될 수 있습니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "수익인식",
+    "aliases": ["Revenue Recognition"],
+    "definition": "기업이 언제 매출을 기록할 수 있는지 정하는 회계 기준입니다. 돈을 받았다고 항상 바로 매출이 되는 것은 아닙니다.",
+    "example": "제품 인도나 서비스 제공 의무가 충족되어야 수익을 인식할 수 있습니다.",
+    "category": "accounting",
+    "difficulty": "intermediate",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "배출부채",
+    "aliases": ["Emission Liability"],
+    "definition": "온실가스 배출권과 관련해 기업이 부담할 수 있는 부채입니다. 배출량과 배출권 보유량에 따라 인식될 수 있습니다.",
+    "example": "온실가스 배출 규제가 강화되면 배출부채나 관련 비용이 중요해질 수 있습니다.",
+    "category": "sustainability",
+    "difficulty": "advanced",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "온실가스",
+    "aliases": ["Greenhouse Gas", "GHG"],
+    "definition": "기후변화에 영향을 주는 이산화탄소 등 가스를 말합니다. 제조업 기업은 배출량, 감축 계획, 배출권 비용이 사업 리스크가 될 수 있습니다.",
+    "example": "반도체 제조 과정에서는 에너지 사용과 온실가스 관리가 중요한 ESG 이슈가 될 수 있습니다.",
+    "category": "sustainability",
+    "difficulty": "beginner",
+    "source_url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002820"
+  },
+  {
+    "term": "상장",
+    "aliases": ["Listing", "IPO 이후 거래소 등록"],
+    "definition": "기업의 주식이 한국거래소 같은 증권시장에 등록되어 일반 투자자가 사고팔 수 있게 되는 것을 말합니다. 상장되면 회사는 공시 의무와 시장 규칙을 지키면서 투자자로부터 자금을 조달할 수 있습니다.",
+    "example": "비상장 회사가 코스피나 코스닥에 상장하면 투자자는 증권사를 통해 그 회사 주식을 거래할 수 있습니다.",
+    "category": "market",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "매수",
+    "aliases": ["Buy", "매입"],
+    "definition": "주식이나 채권 같은 금융상품을 사는 행위를 말합니다. 투자 판단에서는 가격뿐 아니라 기업의 실적, 뉴스, 공시, 리스크를 함께 확인해야 합니다.",
+    "example": "투자자가 삼성전자 주식을 새로 사면 삼성전자 주식을 매수했다고 표현합니다.",
+    "category": "trading",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "매도",
+    "aliases": ["Sell", "처분"],
+    "definition": "보유하고 있는 주식이나 채권 같은 금융상품을 파는 행위를 말합니다. 매도 여부는 수익률, 투자 목적, 리스크, 세금 등을 함께 고려해야 합니다.",
+    "example": "보유 중인 주식을 팔아 현금화하면 그 주식을 매도했다고 표현합니다.",
+    "category": "trading",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "손절",
+    "aliases": ["손절매", "Stop Loss"],
+    "definition": "손실이 난 투자상품을 더 큰 손실을 막기 위해 파는 것을 말합니다. 보통 사전에 정한 손실 한도나 투자 원칙과 함께 사용됩니다.",
+    "example": "주가가 예상과 다르게 크게 하락해 정해둔 기준에 따라 파는 경우 손절이라고 부릅니다.",
+    "category": "trading",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "익절",
+    "aliases": ["이익실현", "Take Profit"],
+    "definition": "이익이 난 투자상품을 팔아 수익을 확정하는 것을 말합니다. 주가가 더 오를 가능성과 반대로 하락할 위험을 함께 고려할 때 쓰는 표현입니다.",
+    "example": "매수가보다 오른 주식을 팔아 수익을 확정하면 익절했다고 표현합니다.",
+    "category": "trading",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "호재",
+    "aliases": ["긍정 이슈", "Good News", "Positive Catalyst"],
+    "definition": "주가나 기업 가치에 긍정적으로 작용할 수 있는 뉴스, 공시, 실적, 정책, 산업 변화 등을 말합니다. 다만 호재가 있다고 해서 주가 상승이 보장되는 것은 아니며, 이미 가격에 반영됐을 수도 있습니다.",
+    "example": "대규모 수주, 실적 개선, 신제품 출시, 규제 완화 같은 소식은 종목에 따라 호재로 해석될 수 있습니다.",
+    "category": "market",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "악재",
+    "aliases": ["부정 이슈", "Bad News", "Negative Catalyst"],
+    "definition": "주가나 기업 가치에 부정적으로 작용할 수 있는 뉴스, 공시, 실적 부진, 규제, 소송, 산업 둔화 등을 말합니다. 악재 역시 영향 정도와 반영 여부를 함께 확인해야 합니다.",
+    "example": "실적 쇼크, 대규모 리콜, 규제 강화, 주요 계약 해지 같은 소식은 종목에 따라 악재로 해석될 수 있습니다.",
+    "category": "market",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "목표주가",
+    "aliases": ["목표가", "Target Price"],
+    "definition": "증권사나 애널리스트가 기업 분석을 바탕으로 제시하는 일정 기간 후의 예상 주가 수준입니다. 실제 주가를 보장하거나 매수·매도 신호를 뜻하는 것은 아니며, 가정과 분석 방법에 따라 달라질 수 있습니다.",
+    "example": "리포트의 목표주가는 참고 자료일 뿐이고, 투자자는 실적, 공시, 산업 상황, 리스크를 함께 확인해야 합니다.",
+    "category": "research",
+    "difficulty": "beginner",
+    "source_url": "https://kind.krx.co.kr"
+  },
+  {
+    "term": "적정주가",
+    "aliases": ["Fair Value", "적정 가치"],
+    "definition": "기업의 이익, 자산, 성장성, 업종 비교 등을 바탕으로 추정한 주가 수준입니다. 계산 방식과 가정에 따라 크게 달라질 수 있어 확정된 가격으로 볼 수 없습니다.",
+    "example": "PER, PBR, 현금흐름 할인법 같은 방법으로 적정주가를 추정할 수 있지만, 결과는 분석 가정에 따라 달라집니다.",
+    "category": "research",
+    "difficulty": "intermediate",
+    "source_url": "https://kind.krx.co.kr"
+  }
+]

@@ -1,0 +1,140 @@
+.line-sidebar {
+  --accent-color: #34d399;
+  --text-color: #c4c4c4;
+  --marker-color: #6c6c6c;
+  --marker-length: 28px;
+  --marker-gap: 0px;
+  --tick-scale: 0.5;
+  --max-shift: 20px;
+  --item-gap: 16px;
+  --font-size: 0.95rem;
+  --smoothing: 100ms;
+
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.line-sidebar--markers {
+  padding-left: calc(var(--marker-length) + var(--marker-gap));
+}
+
+.line-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--item-gap);
+  width: 100%;
+}
+
+.line-sidebar__item {
+  position: relative;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+}
+
+.line-sidebar__item::before {
+  content: '';
+  position: absolute;
+  inset: -6px -12px;
+}
+
+.line-sidebar__label {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  font-size: var(--font-size);
+  line-height: 1.2;
+  color: color-mix(in srgb, var(--accent-color) calc(var(--effect, 0) * 100%), var(--text-color));
+  transform: translateX(calc(var(--effect, 0) * var(--max-shift)));
+}
+
+.line-sidebar__index {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  margin-right: 0.5rem;
+  font-size: 0.85em;
+  opacity: calc(0.55 + var(--effect, 0) * 0.45);
+}
+
+.line-sidebar__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+
+.line-sidebar__marker {
+  position: absolute;
+  top: 50%;
+  left: calc(-1 * var(--marker-length) - var(--marker-gap));
+  height: 1px;
+  width: var(--marker-length);
+  background-color: color-mix(in srgb, var(--accent-color) calc(var(--effect, 0) * 100%), var(--marker-color));
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.5));
+}
+
+.line-sidebar--markers .line-sidebar__item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: calc(100% + var(--item-gap) / 2);
+  left: calc(-1 * var(--marker-length) - var(--marker-gap));
+  height: 1px;
+  width: calc(var(--marker-length) * var(--tick-scale));
+  background-color: var(--marker-color);
+  opacity: 0.5;
+  transform: translateY(-50%);
+}
+
+.line-sidebar--scale-tick .line-sidebar__item:not(:last-child)::after {
+  transform-origin: left center;
+  transform: translateY(-50%) scaleX(calc(0.7 + var(--effect, 0) * 0.6));
+}
+
+/* --- 마우스를 움직이지 않고 올려놓기만 해도 확실히 커지고 색이 들어가도록 --- */
+/* JS 근접 효과(--effect)와 별개로, CSS :hover 로 즉시 반응을 보장한다. */
+.line-sidebar__label {
+  transform-origin: left center;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+.line-sidebar__marker {
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+.line-sidebar__index {
+  transition: opacity 0.18s ease;
+}
+
+.line-sidebar__item:hover .line-sidebar__label {
+  color: var(--accent-color);
+  transform: translateX(var(--max-shift)) scale(1.1);
+}
+.line-sidebar__item:hover .line-sidebar__marker {
+  background-color: var(--accent-color);
+  transform: translateY(-50%) scaleX(1.4);
+}
+.line-sidebar__item:hover .line-sidebar__index {
+  opacity: 1;
+}
+
+/* 즐겨찾기 별표 (대화 이름 옆) */
+.line-sidebar__star {
+  margin-left: 0.4rem;
+  color: #facc15;              /* yellow-400 */
+  font-size: 0.85em;
+  line-height: 1;
+}
+
+/* 즐겨찾기 그룹과 일반 대화 그룹을 나누는 얇은 선 */
+.line-sidebar__separator {
+  list-style: none;
+  height: 1px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+}
