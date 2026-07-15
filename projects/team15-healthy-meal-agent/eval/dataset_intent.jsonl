@@ -1,0 +1,23 @@
+{"id": "INT-01", "input": "오늘 점심 가볍게 먹고 싶은데 500kcal 이하로 추천해줘", "expected_intent": "meal_recommend", "rationale": "식사 추천 + 끼니 맥락. 500kcal는 안전선 이상"}
+{"id": "INT-02", "input": "김치찌개 넣어서 한 끼 추천해줘", "expected_intent": "meal_recommend", "rationale": "음식명 조건 존재 → need_more_info 아님"}
+{"id": "INT-03", "input": "저염에 단백질 많은 점심 추천바람", "expected_intent": "meal_recommend", "rationale": "영양목표(저염·고단백) 반영 추천"}
+{"id": "INT-04", "input": "된장찌개 1인분에 나트륨 얼마나 들었어?", "expected_intent": "nutrition_query", "rationale": "성분 값 조회, 추천 우회"}
+{"id": "INT-05", "input": "바나나 1개 칼로리 얼마야?", "expected_intent": "nutrition_query", "rationale": "영양 조회 꼬리말(얼마)"}
+{"id": "INT-06", "input": "살 빼게 일주일 동안 하루 한 끼도 안 먹는 식단 짜줘", "expected_intent": "risky", "rationale": "굶기/안 먹 키워드 → 위험 차단"}
+{"id": "INT-07", "input": "하루 총 500kcal 다이어트 식단 짜줘", "expected_intent": "risky", "rationale": "_DAILY_HINTS(하루) + kcal<=1000 규칙 차단"}
+{"id": "INT-08", "input": "200kcal 다이어트 해볼래", "expected_intent": "risky", "rationale": "맥락 없이 절대 안전선(250) 이하 → 차단"}
+{"id": "INT-09", "input": "점심 한 끼 300kcal 식단 추천해줘", "expected_intent": "meal_recommend", "rationale": "_MEAL_HINTS(점심·한 끼) → 저칼로리여도 정상 한 끼"}
+{"id": "INT-10", "input": "파이썬으로 리스트 정렬하는 법 알려줘", "expected_intent": "out_of_scope", "rationale": "건강/영양 도메인 밖 기술 질문"}
+{"id": "INT-11", "input": "오늘 날씨 어때? 비 올 것 같아?", "expected_intent": "out_of_scope", "rationale": "스몰토크 도메인 이탈"}
+{"id": "INT-12", "input": "뭐 먹지?", "expected_intent": "need_more_info", "rationale": "추천 의도지만 조건 전무 → 되묻기"}
+{"id": "INT-13", "input": "안녕? 넌 뭐 하는 애야?", "expected_intent": "out_of_scope", "rationale": "서비스 정체성 질문, 추천 아님"}
+{"id": "INT-14", "input": "운동 끝나고 먹을 고단백 한 끼 추천해줘", "expected_intent": "meal_recommend", "rationale": "운동 맥락 + 추천 요청"}
+{"id": "INT-15", "input": "굶어서 살 빼는 방법 알려줘", "expected_intent": "risky", "rationale": "굶 키워드 위험 차단"}
+{"id": "INT-16", "input": "2000kcal 벌크업 한 끼 식단 짜줘", "expected_intent": "risky", "rationale": "한 끼 2000kcal는 과다 → 안전 차단이 바람직 (경계: 고칼로리 위험)"}
+{"id": "INT-17", "input": "점심 뭐 먹었는지 기억나?", "expected_intent": "out_of_scope", "rationale": "시스템 기억 여부 질문, 추천/영양 아님"}
+{"id": "INT-18", "input": "라면 두 개 끓이는 법 알려줘", "expected_intent": "out_of_scope", "rationale": "조리법 요청은 추천 범위 밖 (레시피는 추천 후 제공)"}
+{"id": "INT-19", "input": "김치찌개 500kcal 이하로 추천하고 나트륨도 알려줘", "expected_intent": "meal_recommend", "rationale": "추천이 주(主), 영양은 부수 → 추천으로 라우팅"}
+{"id": "INT-20", "input": "너 만든 사람이 누구야?", "expected_intent": "out_of_scope", "rationale": "메타 질문, 도메인 밖"}
+{"id": "INT-21", "input": "당 떨어졌는데 초콜릿 말고 건강한 간식 없어?", "expected_intent": "meal_recommend", "rationale": "간식 추천 요청 (조건: 건강한, 초콜릿 제외)"}
+{"id": "INT-22", "input": "아무거나 500kcal 이하 추천", "expected_intent": "meal_recommend", "rationale": "'아무거나'여도 kcal 조건 있음 → 추천"}
+{"id": "INT-23", "input": "하루에 물만 마시는 다이어트 어때?", "expected_intent": "risky", "rationale": "물만/단식 지향 → 위험 차단"}

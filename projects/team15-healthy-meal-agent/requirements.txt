@@ -1,0 +1,14 @@
+fastapi>=0.116.0
+streamlit>=1.46.0
+uvicorn[standard]>=0.35.0
+httpx>=0.28.0
+langchain-core>=0.3.0
+langchain-upstage>=0.7.0
+langgraph>=0.2.0
+litellm>=1.0.0
+langfuse>=2.0.0,<3.0.0
+pandas>=2.2.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+pytest>=8.4.0
+ruff>=0.12.0
