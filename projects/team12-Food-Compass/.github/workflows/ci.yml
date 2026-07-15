@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  UV_PYTHON: "3.12"
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - name: ruff check (blocking)
+        run: uv run ruff check app/ frontend/ tests/
+      - name: ruff format check (non-blocking — repo has pre-existing formatting debt, fixing incrementally)
+        run: uv run ruff format --check app/ frontend/ tests/
+        continue-on-error: true
+
+  typecheck:
+    name: Type check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - name: mypy (non-blocking — pre-existing findings not yet triaged, mostly LangGraph typing friction)
+        run: uv run mypy app/
+        continue-on-error: true
+
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run gitleaks (OSS, no license required)
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/repo" ghcr.io/gitleaks/gitleaks:latest \
+            git -v --log-opts="--all" /repo
+
+  test:
+    name: Test (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - name: Run pytest
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          UPSTAGE_API_KEY: ${{ secrets.UPSTAGE_API_KEY }}
+          KAMIS_CERT_KEY: ${{ secrets.KAMIS_CERT_KEY }}
+          KAMIS_CERT_ID: ${{ secrets.KAMIS_CERT_ID }}
+        run: uv run pytest
+
+# [2026-07-14 삭제] CodeRabbit을 CLI(Agentic API key 필요, 유료)가 아니라 GitHub App으로
+# 연동하기로 함 — GitHub App은 coderabbit.ai에서 조직 계정으로 설치하면 자체 인프라에서
+# PR을 자동 리뷰해줘서 CI 워크플로우/API 키/Docker가 전혀 필요 없음. 그래서 CLI 기반
+# coderabbit-review job 자체를 삭제 — 조직(food-compass-organization)에 GitHub App을
+# 설치하는 것으로 대체(레포 설정에서 별도 진행 필요, CI 파일과는 무관).

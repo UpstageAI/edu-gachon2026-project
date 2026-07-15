@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # app/tools/vector_store.py, data/insertion-chroma-db.py 둘 다 CHROMA_DB_PATH="./data/chroma_db"를
+      # 씀 — 예전엔 최상위 chroma_db/ 폴더를 마운트했는데, 실제 코드가 보는 경로랑 달라서
+      # 컨테이너 안에서 컬렉션을 못 찾고 있었음(2번 이슈 원인). 실제 데이터 경로로 수정.
+      - ./data/chroma_db:/app/data/chroma_db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      BACKEND_URL: http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped

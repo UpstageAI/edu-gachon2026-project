@@ -1,0 +1,28 @@
+name: price.go.kr Daily Fetch
+
+on:
+  schedule:
+    # 매일 09:00 KST = 00:00 UTC — KAMIS cron과 동일 시각
+    # 참고: 참가격 실제 조사 주기는 격주(2주 간격)로 확인됨(dev_notes 2026-07-14 (14)) —
+    # 매일 돌아도 대부분은 이미 최신인 조사일을 재확인만 하고 끝남(스크립트가 idempotent라 안전)
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+env:
+  UV_PYTHON: "3.12"
+
+jobs:
+  fetch:
+    name: Fetch price.go.kr snapshot → Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --no-dev
+      - name: Run fetch script
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PRICE_GOKR_SERVICE_KEY: ${{ secrets.PRICE_GOKR_SERVICE_KEY }}
+        run: .venv/bin/python scripts/fetch_price_gokr_snapshot.py
