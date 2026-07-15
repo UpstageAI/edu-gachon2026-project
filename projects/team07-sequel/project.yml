@@ -5,59 +5,66 @@ team:
   folder_name: team07-sequel
   name: sequel
   members:
-    - name: 홍길동
-      role: Backend, AI
-      github: github-id
-    - name: 김철수
-      role: Frontend
-      github: github-id
+    - name: 이후윤
+      role: Frontend, Backend, Infra, CI/CD, Design, DB
+      github: 2yoon420
+    - name: 권도윤
+      role: Frontend, Backend, AI Agent, PM
+      github: Doyunamic-Kwon
 
 project:
-  title: 프로젝트 이름
-  summary: 프로젝트를 한 문장으로 설명해주세요.
+  title: Sequel
+  summary: 자연어로 질문하면 SQL을 몰라도 데이터베이스에서 바로 답을 얻을 수 있는 Text-to-SQL 서비스입니다.
   category: AI 서비스
   keywords:
-    - AI
-    - RAG
-    - Agent
+    - Text-to-SQL
+    - LLM Agent
+    - NL2SQL
 
 problem:
-  summary: 해결하려는 문제를 한 문장으로 설명해주세요.
+  summary: SQL을 모르는 비개발 직군은 데이터가 DB에 있어도 직접 조회하지 못해 매번 개발자·데이터팀에 요청하고 기다려야 하며, 자동 생성된 쿼리나 결과가 맞는지 스스로 검증할 방법도 없습니다.
   target_users:
-    - 주요 사용자 1
-    - 주요 사용자 2
+    - SQL을 몰라 데이터팀에 매번 요청·대기하는 비개발 실무자 (마케팅/CS 등)
+    - 데이터팀·개발자가 없어 감으로 의사결정하는 소규모 운영자
+    - SQL은 능숙하지만 계속되는 애드혹 요청에 시간을 많이 써 심층 분석엔 시간 부족한 실무자 (개발/데이터 분석)
+
 
 solution:
-  summary: 문제를 어떻게 해결했는지 한 문장으로 설명해주세요.
+  summary: 자연어 질문을 AI agent가 SQL로 변환하고, 백엔드가 독립적으로 재검증·재실행한 뒤 표와 자연어 요약을 SSE로 실시간 스트리밍합니다.
   main_features:
-    - 핵심 기능 1
-    - 핵심 기능 2
-    - 핵심 기능 3
+    - 자연어 질의응답 — 질문 한 줄로 SQL 생성부터 실행, 표+요약까지 실시간 스트리밍
+    - Defense-in-depth 검증 — guardrail(실행 전) + read-only 계정 + result_validator(실행 후) 3중 안전장치로 agent가 만든 SQL·결과를 그대로 믿지 않음
+    - 멀티턴 대화 + 추천 후속 질문 — 세션 맥락을 유지하며 답변 후 다음 질문을 먼저 제안
 
 tech_stack:
   frontend:
-    - Streamlit
+    - React 18
+    - Vite 5
   backend:
     - FastAPI
+    - SQLAlchemy
   ai:
-    - Upstage Solar (solar-pro2)
+    - Upstage Solar API (solar-mini / solar-pro2)
     - LangGraph
-    - LangChain
   database:
-    - ChromaDB
+    - Supabase (managed Postgres)
   infra:
-    - Docker
-    - uv
+    - GCP Cloud Run
+    - GCE VM
+    - External HTTPS Load Balancer
+    - GitHub Actions
+    - Langfuse
 
 links:
-  demo_video_url:
-  deployed_url:
-  presentation_url:
-  repository_url:
+  demo_video_url: https://drive.google.com/file/d/1iIiIH2jIcs_ZBI33IpL84rxb3iuTFYPo/view?usp=sharing
+  deployed_url: https://text2sql-frontend-bfkt3wk5mq-du.a.run.app
+  presentation_url: https://docs.google.com/presentation/d/1AtqVNu1vaXqk1ga_bGW66v9H1DWxMG4ky4O_iHh02uo/edit?usp=sharing
+  repository_url: https://github.com/Doyunamic-Kwon/edu-gachon2026-project
 
 blog:
   slug: team07-sequel
   tags:
     - AI
-    - RAG
+    - Text-to-SQL
+    - LLM Agent
   cover_image: assets/cover.png
