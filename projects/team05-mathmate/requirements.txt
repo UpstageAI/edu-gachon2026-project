@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+langgraph
+langchain-core
+pydantic
+sse-starlette
+httpx
+streamlit
+supabase
+python-dotenv
+pytest
+deepeval
+litellm
+langfuse<3

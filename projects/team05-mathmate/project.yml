@@ -1,0 +1,68 @@
+schema_version: 1
+
+team:
+  number: 5                      
+  folder_name: team05-mathmate
+  name: mathmate
+  members:
+    - name: 권지운
+      role: Backend, Agent
+      github: jiwoon084
+    - name: 이나영
+      role: Frontend, Infra, LLMOps
+      github: leena-0
+
+project:
+  title: MathMate
+  summary: 정답을 알려주지 않고 힌트로만 유도하는 초등 수학 소크라테스식 튜터
+  category: AI 서비스
+  keywords:
+    - AI
+    - Education
+    - LLM
+    - Agent
+    - Math
+
+problem:
+  summary: 즉답형 AI 튜터가 '빠른 정답'만 제공해, 초등 고학년이 스스로 사고할 기회를 잃는다.
+  target_users:
+    - 초등학교 4~6학년 학생
+    - 자녀의 학습 진척도를 확인하는 학부모
+
+solution:
+  summary: 정답 대신 단계별 힌트와 되질문으로 스스로 답에 도달하게 하고, 답 유출을 이중·삼중 가드레일로 차단한다.
+  main_features:
+    - 소크라테스식 단계 힌트(1~3단계)와 정답 유출 방지 가드레일
+    - LangGraph 에이전트 기반 의도 분류·풀이 진단·힌트 생성
+    - 힌트 사용량 기반 진척도와 단원별 숙련도·난이도별 정답률 피드백
+
+tech_stack:
+  frontend:
+    - Streamlit
+  backend:
+    - FastAPI
+    - LangGraph
+  ai:
+    - Solar API (Upstage)
+    - Gemini (폴백)
+    - LiteLLM
+    - Langfuse
+  database:
+    - Supabase (PostgreSQL, REST)
+  infra:
+    - Docker
+    - GCP Compute Engine
+    - GitHub Actions
+
+links:
+  demo_video_url: https://github.com/user-attachments/assets/9682545e-31db-4bda-815e-d470be347189
+  deployed_url: http://34.158.211.122:8501/
+  presentation_url: https://docs.google.com/presentation/d/1x0U7ITbB2ES_dt2O26vNbChOKDnXoOHcxuWii-nsOBg/edit?usp=sharing
+  repository_url: https://github.com/leena-0/MathMate
+
+blog:
+  slug: mathmate
+  tags:
+    - AI
+    - Education
+  cover_image: assets/cover.png
