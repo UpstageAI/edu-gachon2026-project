@@ -1,0 +1,218 @@
+name: Deploy to GCP VM
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "gcp-vm은 VM까지 배포하고, local-only는 이미지 빌드만 검증합니다."
+        required: true
+        default: gcp-vm
+        type: choice
+        options:
+          - gcp-vm
+          - local-only
+
+concurrency:
+  group: gcp-vm-deploy
+  cancel-in-progress: true
+
+env:
+  GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  GCP_ZONE: ${{ vars.GCP_ZONE || 'asia-northeast3-c' }}
+  GCE_INSTANCE: ${{ vars.GCE_INSTANCE || 'ai-code-review-agent' }}
+  AI_REVIEWER_IMAGE_NAME: ${{ vars.AI_REVIEWER_IMAGE_NAME || 'ai-code-review-agent-api' }}
+  CD_DEPLOY_TARGET: ${{ vars.CD_DEPLOY_TARGET }}
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Select deployment target
+        id: target
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            target="${{ inputs.deploy_target }}"
+          else
+            target="${CD_DEPLOY_TARGET:-gcp-vm}"
+          fi
+          test -n "${target}" || target="gcp-vm"
+          case "${target}" in
+            gcp-vm|local-only) ;;
+            *)
+              echo "지원하지 않는 CD_DEPLOY_TARGET 값입니다: ${target}"
+              exit 1
+              ;;
+          esac
+          echo "deploy_target=${target}" >> "${GITHUB_OUTPUT}"
+          echo "선택된 배포 대상: ${target}"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Resolve image tag
+        id: image
+        run: |
+          deploy_sha="${{ github.event.workflow_run.head_sha || github.sha }}"
+          short_sha="$(printf '%s' "${deploy_sha}" | cut -c1-12)"
+          image_ref="${AI_REVIEWER_IMAGE_NAME}:${short_sha}"
+          echo "image_ref=${image_ref}" >> "${GITHUB_OUTPUT}"
+          echo "deploy_sha=${deploy_sha}" >> "${GITHUB_OUTPUT}"
+          echo "이미지 태그: ${image_ref}"
+
+      - name: Build deployment image
+        run: |
+          docker build \
+            --label "org.opencontainers.image.revision=${{ steps.image.outputs.deploy_sha }}" \
+            --tag "${{ steps.image.outputs.image_ref }}" \
+            .
+          docker save "${{ steps.image.outputs.image_ref }}" \
+            | gzip -1 > "${RUNNER_TEMP}/ai-code-review-agent-image.tar.gz"
+
+      - name: Package runtime deployment files
+        run: |
+          tar -czf "${RUNNER_TEMP}/ai-code-review-agent-runtime.tar.gz" \
+            Caddyfile \
+            docker-compose.yml \
+            policies \
+            review_harness
+
+          cat > "${RUNNER_TEMP}/deploy-ai-code-review-agent.sh" <<'SCRIPT'
+          set -euo pipefail
+
+          : "${AI_REVIEWER_IMAGE:?AI_REVIEWER_IMAGE is required}"
+
+          DEPLOY_DIR="${HOME}/ai-code-review-agent-deploy"
+          IMAGE_ARCHIVE="${HOME}/ai-code-review-agent-image.tar.gz"
+          RUNTIME_ARCHIVE="${HOME}/ai-code-review-agent-runtime.tar.gz"
+
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "VM에 Docker CLI가 필요합니다."
+            exit 1
+          fi
+          if ! docker compose version >/dev/null 2>&1; then
+            echo "VM에 Docker Compose plugin이 필요합니다."
+            exit 1
+          fi
+
+          mkdir -p "${DEPLOY_DIR}"
+          test -f "${DEPLOY_DIR}/.env" || (
+            echo "VM의 ${DEPLOY_DIR}/.env 파일이 필요합니다. .env.example을 기준으로 먼저 생성하세요."
+            exit 1
+          )
+
+          compose_profiles="$(
+            awk -F= '$1 == "COMPOSE_PROFILES" {print $2}' "${DEPLOY_DIR}/.env" \
+              | tail -n1 \
+              | tr -d "\"'" \
+              | tr -d " "
+          )"
+          case ",${compose_profiles}," in
+            *,edge,*)
+              domain="$(
+                awk -F= '$1 == "DOMAIN" {print $2}' "${DEPLOY_DIR}/.env" \
+                  | tail -n1 \
+                  | tr -d "\"'" \
+                  | tr -d " "
+              )"
+              test -n "${domain}" || (
+                echo "COMPOSE_PROFILES=edge 사용 시 VM .env에 DOMAIN 값이 필요합니다."
+                exit 1
+              )
+              ;;
+          esac
+
+          rm -rf "${DEPLOY_DIR}/policies"
+          rm -rf "${DEPLOY_DIR}/review_harness"
+          rm -f \
+            "${DEPLOY_DIR}/Caddyfile" \
+            "${DEPLOY_DIR}/docker-compose.yml" \
+            "${DEPLOY_DIR}/docker-compose.local.yml"
+          tar -xzf "${RUNTIME_ARCHIVE}" -C "${DEPLOY_DIR}"
+
+          gzip -dc "${IMAGE_ARCHIVE}" | docker load
+
+          cd "${DEPLOY_DIR}"
+          COMPOSE_FILE=docker-compose.yml \
+          AI_REVIEWER_IMAGE="${AI_REVIEWER_IMAGE}" \
+            docker compose -p ai-code-review-agent up -d --no-build --remove-orphans
+
+          COMPOSE_FILE=docker-compose.yml \
+          AI_REVIEWER_IMAGE="${AI_REVIEWER_IMAGE}" \
+            docker compose -p ai-code-review-agent exec -T api \
+              python -c 'import json; from backend.app.core.config import Settings; from backend.app.services.rag import create_policy_index; print(json.dumps(create_policy_index(Settings.from_env()).sync(), ensure_ascii=False))'
+
+          docker image prune -f
+          rm -f "${IMAGE_ARCHIVE}" "${RUNTIME_ARCHIVE}"
+          SCRIPT
+
+      - name: Validate GCP deployment configuration
+        if: ${{ steps.target.outputs.deploy_target == 'gcp-vm' }}
+        env:
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        run: |
+          test -n "${GCP_PROJECT_ID}" || (echo "GCP_PROJECT_ID variable이 필요합니다" && exit 1)
+          test -n "${GCP_ZONE}" || (echo "GCP_ZONE variable이 필요합니다" && exit 1)
+          test -n "${GCE_INSTANCE}" || (echo "GCE_INSTANCE variable이 필요합니다" && exit 1)
+          test -n "${GCP_WORKLOAD_IDENTITY_PROVIDER}" || (echo "GCP_WORKLOAD_IDENTITY_PROVIDER secret이 필요합니다" && exit 1)
+          test -n "${GCP_SERVICE_ACCOUNT}" || (echo "GCP_SERVICE_ACCOUNT secret이 필요합니다" && exit 1)
+
+      - id: auth
+        if: ${{ steps.target.outputs.deploy_target == 'gcp-vm' }}
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+        if: ${{ steps.target.outputs.deploy_target == 'gcp-vm' }}
+
+      - name: Upload image and runtime files
+        if: ${{ steps.target.outputs.deploy_target == 'gcp-vm' }}
+        run: |
+          gcloud compute scp --tunnel-through-iap \
+            --zone "${GCP_ZONE}" --project "${GCP_PROJECT_ID}" \
+            "${RUNNER_TEMP}/ai-code-review-agent-image.tar.gz" \
+            "${RUNNER_TEMP}/ai-code-review-agent-runtime.tar.gz" \
+            "${RUNNER_TEMP}/deploy-ai-code-review-agent.sh" \
+            "${GCE_INSTANCE}:~/"
+
+      - name: Restart stack on VM
+        if: ${{ steps.target.outputs.deploy_target == 'gcp-vm' }}
+        run: |
+          gcloud compute ssh "${GCE_INSTANCE}" --tunnel-through-iap \
+            --zone "${GCP_ZONE}" --project "${GCP_PROJECT_ID}" \
+            --command "AI_REVIEWER_IMAGE='${{ steps.image.outputs.image_ref }}' bash ~/deploy-ai-code-review-agent.sh"
+
+      - name: Verify health
+        if: ${{ steps.target.outputs.deploy_target == 'gcp-vm' }}
+        run: |
+          gcloud compute ssh "${GCE_INSTANCE}" --tunnel-through-iap \
+            --zone "${GCP_ZONE}" --project "${GCP_PROJECT_ID}" \
+            --command "DEPLOY_DIR=~/ai-code-review-agent-deploy; \
+              PORT=\$(awk -F= '\$1 == \"PORT\" {print \$2}' \"\${DEPLOY_DIR}/.env\" | tail -n1); \
+              PORT=\${PORT:-8080}; \
+              PORT=\${PORT%\\\"}; PORT=\${PORT#\\\"}; \
+              for attempt in \$(seq 1 40); do \
+                curl -fsS \"http://127.0.0.1:\${PORT}/healthz\" && exit 0; \
+                sleep 2; \
+              done; \
+              cd \"\${DEPLOY_DIR}\"; \
+              COMPOSE_FILE=docker-compose.yml AI_REVIEWER_IMAGE='${{ steps.image.outputs.image_ref }}' \
+                docker compose -p ai-code-review-agent logs --tail=160 api caddy postgres; \
+              exit 1"
+
+      - name: Local-only result
+        if: ${{ steps.target.outputs.deploy_target == 'local-only' }}
+        run: |
+          echo "이미지 빌드 검증만 완료했습니다: ${{ steps.image.outputs.image_ref }}"

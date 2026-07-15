@@ -1,0 +1,133 @@
+{
+  "version": "1.0",
+  "knowledge_cards_path": "references/knowledge-cards.json",
+  "sources_path": "references/sources.json",
+  "design_source_ids": ["openai-harness-engineering"],
+  "max_policies_per_batch": 2,
+  "max_knowledge_cards": {
+    "simple_failure_review": 1,
+    "policy_context_review": 5,
+    "deep_quality_review": 8
+  },
+  "max_skills": {
+    "simple_failure_review": 1,
+    "policy_context_review": 3,
+    "deep_quality_review": 4
+  },
+  "skills": [
+    {
+      "id": "failure-diagnosis",
+      "title": "CI 실패 진단",
+      "path": "skills/failure-diagnosis/SKILL.md",
+      "routes": ["simple_failure_review"],
+      "signals": ["ci_failure"],
+      "policy_types": ["test", "reliability"],
+      "source_ids": ["google-testing-flaky", "google-review-looking-for"],
+      "priority": 100,
+      "always": true
+    },
+    {
+      "id": "change-correctness",
+      "title": "변경 정확성",
+      "path": "skills/change-correctness/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["test_impact"],
+      "policy_types": ["test"],
+      "source_ids": ["google-review-looking-for", "google-review-comments", "google-testing-coverage", "google-testing-brittle"],
+      "priority": 10,
+      "always": true
+    },
+    {
+      "id": "api-contract",
+      "title": "API 계약",
+      "path": "skills/api-contract/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["api_contract"],
+      "policy_types": ["api"],
+      "source_ids": ["github-rest-breaking-changes", "google-aip-194-retries", "github-webhook-handling"],
+      "priority": 35
+    },
+    {
+      "id": "security-boundary",
+      "title": "보안 경계",
+      "path": "skills/security-boundary/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["security"],
+      "policy_types": ["security"],
+      "source_ids": ["owasp-secure-code-review", "owasp-logging", "github-webhook-validation"],
+      "priority": 50
+    },
+    {
+      "id": "input-boundary-safety",
+      "title": "입력 경계와 위험한 sink",
+      "path": "skills/input-boundary-safety/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["input_boundary"],
+      "policy_types": ["security", "api"],
+      "source_ids": ["owasp-input-validation", "owasp-sql-injection", "owasp-ssrf"],
+      "priority": 40
+    },
+    {
+      "id": "data-integrity-concurrency",
+      "title": "데이터 무결성과 동시성",
+      "path": "skills/data-integrity-concurrency/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["data_integrity"],
+      "policy_types": ["reliability", "architecture", "performance"],
+      "source_ids": ["owasp-secure-code-review", "postgres-explicit-locking"],
+      "priority": 45
+    },
+    {
+      "id": "reliability-observability",
+      "title": "신뢰성과 관측성",
+      "path": "skills/reliability-observability/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["reliability"],
+      "policy_types": ["observability", "reliability", "architecture"],
+      "source_ids": ["google-sre-cascading-failures", "google-sre-monitoring", "google-aip-194-retries"],
+      "priority": 30
+    },
+    {
+      "id": "performance-simplification",
+      "title": "성능과 간소화",
+      "path": "skills/performance-simplification/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["performance"],
+      "policy_types": ["performance", "maintainability"],
+      "source_ids": ["google-review-looking-for", "google-review-small-changes", "google-testing-premature-dry", "google-sre-monitoring"],
+      "priority": 25,
+      "always": false,
+      "always_routes": ["deep_quality_review"]
+    },
+    {
+      "id": "dependency-workflow-safety",
+      "title": "의존성과 CI/CD 공급망",
+      "path": "skills/dependency-workflow-safety/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["dependency_workflow"],
+      "policy_types": ["security", "reliability", "architecture"],
+      "source_ids": ["github-actions-secure-use", "owasp-secure-code-review"],
+      "priority": 30
+    },
+    {
+      "id": "frontend-accessibility",
+      "title": "프론트엔드 접근성과 상호작용",
+      "path": "skills/frontend-accessibility/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["frontend"],
+      "policy_types": ["api", "maintainability"],
+      "source_ids": ["w3c-accessibility-principles", "w3c-forms-tutorial"],
+      "priority": 30
+    },
+    {
+      "id": "documentation-contract",
+      "title": "문서와 운영 계약",
+      "path": "skills/documentation-contract/SKILL.md",
+      "routes": ["policy_context_review", "deep_quality_review"],
+      "signals": ["documentation_contract"],
+      "policy_types": ["api", "observability", "architecture"],
+      "source_ids": ["google-review-looking-for", "github-rest-breaking-changes"],
+      "priority": 20
+    }
+  ]
+}

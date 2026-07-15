@@ -1,0 +1,73 @@
+schema_version: 1
+
+team:
+  number: 10
+  folder_name: team10-ai-code-review-agent
+  name: ai-code-review-agent
+  members:
+    - name: 김호진
+      role: Backend, AI
+      github: hojin-v
+    - name: 김동연
+      role: Backend, Infra
+      github: dave04182
+
+project:
+  title: AI 코드 리뷰 에이전트
+  summary: GitHub PR의 CI 결과와 저장소 정책에 맞춰 리뷰 깊이를 자동으로 조절하는 AI 코드 리뷰 GitHub App
+  category: 개발자 도구 (AI 코드 리뷰)
+  keywords:
+    - AI
+    - Code Review
+    - GitHub App
+    - RAG
+    - LangGraph
+    - Harness
+
+problem:
+  summary: LLM 코드 리뷰는 근거 없는 지적과 비용이 늘기 쉽고, 단순 실패와 설계 문제를 같은 방식으로 처리한다.
+  target_users:
+    - PR 리뷰 부담을 줄이려는 개발팀
+    - 코드 리뷰어
+
+solution:
+  summary: 규칙으로 리뷰 전략과 근거를 먼저 좁히고, LLM 결과를 다시 검증해 근거 있는 리뷰만 게시한다.
+  main_features:
+    - CI 결과 기반 상황별 리뷰 라우팅(실패/표준/심층, low/medium/high reasoning)
+    - RAG와 규칙 기반 하네스로 검토 절차·지식 카드·정책 유형 선택
+    - Python Script 기반 LLM 응답 검증(파일·diff 줄·정책 출처·지식 근거·중복·route 별 리뷰 개수 상한)
+    - 리뷰 근거(적용 skill·정책 문서·외부 출처) 명시
+
+tech_stack:
+  frontend:
+    - GitHub Checks / PR UI (native)
+  backend:
+    - FastAPI
+    - LangGraph
+    - Python
+  ai:
+    - Upstage Solar (Solar Pro3)
+    - LiteLLM
+  database:
+    - PostgreSQL (pgvector)
+  infra:
+    - Docker
+    - Docker Compose
+    - Caddy
+    - GCP GCE
+    - GitHub Actions
+    - Langfuse
+
+links:
+  demo_video_url: https://www.youtube.com/watch?v=6KtEzDRdXHY
+  deployed_url: https://github.com/AIBoot-Upstage/PR-Review-Agent
+  presentation_url: https://canva.link/tmxl5y0dek5oy3r
+  repository_url: https://github.com/AIBoot-Upstage/PR-Review-Agent
+
+blog:
+  slug: ai-code-review-agent
+  tags:
+    - AI
+    - Code Review
+    - GitHub App
+  cover_image: assets/cover.png

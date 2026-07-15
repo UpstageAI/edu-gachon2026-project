@@ -1,0 +1,239 @@
+[
+  {
+    "id": "failed-test",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 1, "title": "Fix checkout test", "head_sha": "a1"},
+      "checks": [{"kind": "test", "status": "completed", "conclusion": "failure", "summary": "assertion failed"}],
+      "changed_files": [{"path": "backend/checkout.py", "patch": "+return checkout(order)", "additions": 1}]
+    },
+    "expected_skills": ["failure-diagnosis"],
+    "allowed_skills": ["failure-diagnosis"],
+    "expected_cards": ["ci-failure-causal-chain"],
+    "allowed_cards": ["ci-failure-causal-chain"],
+    "expected_policy_types": []
+  },
+  {
+    "id": "api-contract",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 2, "title": "Change API response status code", "head_sha": "a2"},
+      "changed_files": [{"path": "backend/app/main.py", "patch": "+return JSONResponse(status_code=202, content=response)", "additions": 1}]
+    },
+    "expected_skills": ["change-correctness", "api-contract"],
+    "allowed_skills": ["change-correctness", "api-contract", "documentation-contract"],
+    "expected_cards": ["api-breaking-shape-change"],
+    "allowed_cards": [
+      "api-breaking-shape-change",
+      "behavior-edge-and-failure-path",
+      "public-contract-documentation-sync"
+    ],
+    "expected_policy_types": ["api"]
+  },
+  {
+    "id": "security-boundary",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 3, "title": "Validate webhook authorization", "head_sha": "a3"},
+      "changed_files": [{"path": "backend/auth/webhook.py", "patch": "+verify_signature(secret, request_body)", "additions": 1}]
+    },
+    "expected_skills": ["change-correctness", "security-boundary"],
+    "allowed_skills": ["change-correctness", "security-boundary", "api-contract"],
+    "expected_cards": ["secret-and-authorization-flow", "webhook-auth-ack-idempotency"],
+    "allowed_cards": [
+      "behavior-edge-and-failure-path",
+      "secret-and-authorization-flow",
+      "secret-and-sensitive-log-flow",
+      "webhook-auth-ack-idempotency"
+    ],
+    "expected_policy_types": ["api", "security"]
+  },
+  {
+    "id": "reliability-observability",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 4, "title": "Add deployment health timeout", "head_sha": "a4"},
+      "changed_files": [{"path": ".github/workflows/deploy.yml", "patch": "+timeout-minutes: 10\n+run: curl /healthz", "additions": 2}]
+    },
+    "expected_skills": ["change-correctness", "reliability-observability"],
+    "allowed_skills": [
+      "change-correctness",
+      "reliability-observability",
+      "dependency-workflow-safety"
+    ],
+    "expected_cards": ["bounded-timeout-and-cancellation"],
+    "allowed_cards": [
+      "behavior-edge-and-failure-path",
+      "bounded-timeout-and-cancellation",
+      "observable-partial-failure"
+    ],
+    "expected_policy_types": ["architecture", "observability"]
+  },
+  {
+    "id": "performance",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 5, "title": "Avoid repeated policy query scan", "head_sha": "a5"},
+      "changed_files": [{"path": "backend/app/services/rag.py", "patch": "+for chunk in chunks:\n+    query_database(chunk)", "additions": 2}]
+    },
+    "expected_skills": ["change-correctness", "performance-simplification"],
+    "allowed_skills": [
+      "change-correctness",
+      "performance-simplification",
+      "reliability-observability"
+    ],
+    "expected_cards": ["loop-io-and-n-plus-one"],
+    "allowed_cards": ["behavior-edge-and-failure-path", "loop-io-and-n-plus-one"],
+    "expected_policy_types": ["observability", "performance"]
+  },
+  {
+    "id": "deep-review",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 6, "title": "Simplify collection processing", "head_sha": "a6"},
+      "changed_files": [{"path": "backend/processor.py", "patch": "+items = sorted(list(records))", "additions": 1}],
+      "review_mode": "deep_quality_review"
+    },
+    "expected_skills": ["change-correctness", "performance-simplification"],
+    "allowed_skills": ["change-correctness", "performance-simplification"],
+    "expected_cards": ["unbounded-memory-and-work"],
+    "allowed_cards": [
+      "behavior-edge-and-failure-path",
+      "unbounded-memory-and-work"
+    ],
+    "expected_policy_types": ["performance"]
+  },
+  {
+    "id": "input-query-boundary",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 7, "title": "Add search query", "head_sha": "a7"},
+      "changed_files": [{
+        "path": "backend/search/query.py",
+        "patch": "+cursor.execute(f\"SELECT * FROM items WHERE name = '{request.query}'\")",
+        "additions": 1
+      }]
+    },
+    "expected_skills": ["change-correctness", "input-boundary-safety"],
+    "allowed_skills": ["change-correctness", "input-boundary-safety", "api-contract"],
+    "expected_cards": ["parameterize-query-structure"],
+    "allowed_cards": [
+      "behavior-edge-and-failure-path",
+      "parameterize-query-structure",
+      "untrusted-input-before-sink"
+    ],
+    "expected_policy_types": []
+  },
+  {
+    "id": "migration-lock",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 8, "title": "Require account region", "head_sha": "a8"},
+      "changed_files": [{
+        "path": "migrations/20260713_region.sql",
+        "patch": "+ALTER TABLE accounts ADD COLUMN region text NOT NULL;",
+        "additions": 1
+      }]
+    },
+    "expected_skills": ["change-correctness", "data-integrity-concurrency"],
+    "allowed_skills": ["change-correctness", "data-integrity-concurrency"],
+    "expected_cards": ["migration-lock-and-mixed-version"],
+    "allowed_cards": [
+      "behavior-edge-and-failure-path",
+      "migration-lock-and-mixed-version"
+    ],
+    "expected_policy_types": []
+  },
+  {
+    "id": "github-action-supply-chain",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 9, "title": "Add release action", "head_sha": "a9"},
+      "changed_files": [{
+        "path": ".github/workflows/release.yml",
+        "patch": "+permissions: write-all\n+uses: third-party/release@v1",
+        "additions": 2
+      }]
+    },
+    "expected_skills": ["change-correctness", "dependency-workflow-safety"],
+    "allowed_skills": [
+      "change-correctness",
+      "dependency-workflow-safety",
+      "reliability-observability"
+    ],
+    "expected_cards": ["actions-immutable-reference-permissions"],
+    "allowed_cards": [
+      "actions-immutable-reference-permissions",
+      "behavior-edge-and-failure-path",
+      "observable-partial-failure"
+    ],
+    "expected_policy_types": ["architecture"]
+  },
+  {
+    "id": "frontend-form-accessibility",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 10, "title": "Add account form", "head_sha": "a10"},
+      "changed_files": [{
+        "path": "frontend/components/AccountForm.tsx",
+        "patch": "+<div onClick={submit}><input placeholder=\"Email\" /></div>",
+        "additions": 1
+      }]
+    },
+    "expected_skills": ["change-correctness", "frontend-accessibility"],
+    "allowed_skills": ["change-correctness", "frontend-accessibility"],
+    "expected_cards": ["keyboard-focus-and-semantics", "form-label-error-feedback"],
+    "allowed_cards": [
+      "behavior-edge-and-failure-path",
+      "form-label-error-feedback",
+      "keyboard-focus-and-semantics"
+    ],
+    "expected_policy_types": []
+  },
+  {
+    "id": "configuration-contract",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 11, "title": "Change request timeout default", "head_sha": "a11"},
+      "changed_files": [{
+        "path": "backend/app/core/config.py",
+        "patch": "+DEFAULT_TIMEOUT = 120",
+        "additions": 1
+      }]
+    },
+    "expected_skills": ["change-correctness", "documentation-contract", "reliability-observability"],
+    "allowed_skills": [
+      "change-correctness",
+      "documentation-contract",
+      "reliability-observability"
+    ],
+    "expected_cards": ["public-contract-documentation-sync"],
+    "allowed_cards": [
+      "behavior-edge-and-failure-path",
+      "bounded-timeout-and-cancellation",
+      "public-contract-documentation-sync"
+    ],
+    "expected_policy_types": ["architecture", "observability"]
+  },
+  {
+    "id": "deployment-smoke-external-auth",
+    "request": {
+      "repository": {"owner": "team", "name": "service"},
+      "pull_request": {"number": 12, "title": "Verify GitHub App credentials", "head_sha": "a12"},
+      "changed_files": [{
+        "path": "scripts/local-deploy-test.sh",
+        "patch": "+from backend.app.services.github_app import GitHubAppClient\n+client = GitHubAppClient(Settings.from_env())\n+client.request_json(\"GET\", \"/app\", token=client.create_jwt())",
+        "additions": 3
+      }]
+    },
+    "expected_skills": ["change-correctness", "api-contract", "security-boundary"],
+    "allowed_skills": [
+      "change-correctness",
+      "api-contract",
+      "security-boundary"
+    ],
+    "expected_cards": [],
+    "allowed_cards": [],
+    "expected_policy_types": ["security", "test"]
+  }
+]

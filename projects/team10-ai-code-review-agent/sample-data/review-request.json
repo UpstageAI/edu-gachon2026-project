@@ -1,0 +1,45 @@
+{
+  "repository": {
+    "provider": "github",
+    "owner": "team-a",
+    "name": "sample-api",
+    "default_branch": "main"
+  },
+  "pull_request": {
+    "number": 42,
+    "title": "Add user profile API",
+    "author": "dev-user",
+    "base_sha": "abc123",
+    "head_sha": "def456",
+    "base_branch": "main",
+    "head_branch": "feature/profile-api"
+  },
+  "checks": [
+    {
+      "kind": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "summary": "ruff passed"
+    },
+    {
+      "kind": "test",
+      "status": "completed",
+      "conclusion": "success",
+      "summary": "128 passed"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "app/api/profile.py",
+      "status": "modified",
+      "additions": 80,
+      "deletions": 12,
+      "patch": "@@ -10,6 +10,20 @@\n+def get_profile(user_id: str):\n+    profile = service.load_profile(user_id)\n+    return {\"data\": profile}\n"
+    }
+  ],
+  "github": {
+    "run_id": "123456789",
+    "event_name": "pull_request"
+  }
+}
+

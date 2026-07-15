@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint_smoke:
+    name: Lint and smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Local smoke review
+        run: python -m backend.app.cli sample-data/review-request.json --sync-policies
+
+      - name: Review harness fixture benchmark
+        run: python -m review_harness.scripts.evaluate_harness
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Test
+        run: pytest
+
+  ci:
+    if: ${{ always() }}
+    needs: [lint_smoke, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required jobs
+        env:
+          LINT_AND_SMOKE_RESULT: ${{ needs.lint_smoke.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          test "${LINT_AND_SMOKE_RESULT}" = "success"
+          test "${TEST_RESULT}" = "success"

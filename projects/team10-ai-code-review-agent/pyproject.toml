@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-code-review-agent"
+version = "0.1.0"
+description = "Routing-based AI code review agent for GitHub Pull Requests."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "langgraph>=0.2.60",
+    "litellm>=1.60.0",
+    "langfuse>=2.53.0,<3.0.0",
+    "psycopg[binary]>=3.2.0",
+    "PyJWT[crypto]>=2.10.0",
+    "radon>=6.0.0,<7.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["backend*", "review_harness*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

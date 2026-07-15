@@ -1,0 +1,199 @@
+{
+  "version": "1.0",
+  "retrieved_at": "2026-07-13",
+  "usage": "운영 prompt에는 URL이나 원문을 넣지 않는다. knowledge card의 근거와 유지보수 추적에만 사용한다.",
+  "sources": [
+    {
+      "id": "google-review-looking-for",
+      "authority": "Google Engineering Practices",
+      "title": "What to look for in a code review",
+      "url": "https://google.github.io/eng-practices/review/reviewer/looking-for.html",
+      "topics": ["correctness", "complexity", "tests", "style", "documentation"],
+      "distilled_use": "동작·복잡도·테스트·문서가 style보다 넓은 리뷰 범위이며, 취향성 style은 merge blocker로 만들지 않는다."
+    },
+    {
+      "id": "google-review-comments",
+      "authority": "Google Engineering Practices",
+      "title": "How to write code review comments",
+      "url": "https://google.github.io/eng-practices/review/reviewer/comments.html",
+      "topics": ["actionability", "severity", "communication"],
+      "distilled_use": "문제의 이유를 설명하고 필수 수정과 선택 제안을 구분한다."
+    },
+    {
+      "id": "google-review-small-changes",
+      "authority": "Google Engineering Practices",
+      "title": "Small CLs",
+      "url": "https://google.github.io/eng-practices/review/developer/small-cls.html",
+      "topics": ["change_scope", "tests", "reviewability"],
+      "distilled_use": "기능 변경과 대규모 refactor의 혼합, 검증되지 않은 대형 변경을 reviewability 신호로 사용한다."
+    },
+    {
+      "id": "google-testing-coverage",
+      "authority": "Google Testing Blog",
+      "title": "Code Coverage Best Practices",
+      "url": "https://testing.googleblog.com/2020/08/code-coverage-best-practices.html",
+      "topics": ["tests", "coverage", "risk"],
+      "distilled_use": "coverage 수치 자체보다 중요한 변경 동작과 누락된 경계 조건을 확인한다."
+    },
+    {
+      "id": "google-testing-brittle",
+      "authority": "Google Testing Blog",
+      "title": "How I Learned To Stop Writing Brittle Tests and Love Expressive APIs",
+      "url": "https://testing.googleblog.com/2024/04/how-i-learned-to-stop-writing-brittle.html",
+      "topics": ["tests", "brittleness", "assertions"],
+      "distilled_use": "테스트가 중요한 동작 대신 호출 순서·문구·불필요한 전체 구조에 결합되는지 확인한다."
+    },
+    {
+      "id": "google-testing-flaky",
+      "authority": "Google Testing Blog",
+      "title": "Where do our flaky tests come from?",
+      "url": "https://testing.googleblog.com/2017/04/where-do-our-flaky-tests-come-from.html",
+      "topics": ["tests", "flakiness", "nondeterminism"],
+      "distilled_use": "같은 코드에서 통과와 실패가 달라지는 비결정성을 CI 결함과 제품 동시성 결함 후보로 구분한다."
+    },
+    {
+      "id": "google-testing-premature-dry",
+      "authority": "Google Testing Blog",
+      "title": "Don't DRY Your Code Prematurely",
+      "url": "https://testing.googleblog.com/2024/05/dont-dry-your-code-prematurely.html",
+      "topics": ["maintainability", "abstraction", "duplication"],
+      "distilled_use": "표면적으로 비슷하지만 독립적으로 진화할 코드의 성급한 공통화를 경계한다."
+    },
+    {
+      "id": "owasp-secure-code-review",
+      "authority": "OWASP Cheat Sheet Series",
+      "title": "Secure Code Review",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Secure_Code_Review_Cheat_Sheet.html",
+      "topics": ["trust_boundary", "authorization", "data_flow", "business_logic"],
+      "distilled_use": "변경된 신뢰 경계에서 source-processing-sink 데이터 흐름과 업무 로직 우회를 검토한다."
+    },
+    {
+      "id": "owasp-input-validation",
+      "authority": "OWASP Cheat Sheet Series",
+      "title": "Input Validation",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+      "topics": ["input", "validation", "file_upload"],
+      "distilled_use": "외부 입력을 이른 경계에서 형식과 업무 의미로 검증하고 denylist만 신뢰하지 않는다."
+    },
+    {
+      "id": "owasp-sql-injection",
+      "authority": "OWASP Cheat Sheet Series",
+      "title": "SQL Injection Prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+      "topics": ["sql", "injection", "parameterization"],
+      "distilled_use": "사용자 입력이 문자열 결합으로 query 구조가 되지 않고 parameter binding되는지 확인한다."
+    },
+    {
+      "id": "owasp-ssrf",
+      "authority": "OWASP Cheat Sheet Series",
+      "title": "Server Side Request Forgery Prevention",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html",
+      "topics": ["ssrf", "url", "network"],
+      "distilled_use": "외부 입력이 서버의 outbound 목적지를 제어할 때 scheme·host·redirect·내부망 접근 제한을 확인한다."
+    },
+    {
+      "id": "owasp-logging",
+      "authority": "OWASP Cheat Sheet Series",
+      "title": "Logging",
+      "url": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+      "topics": ["logging", "secrets", "audit"],
+      "distilled_use": "secret·session·개인정보 노출을 막고 보안 이벤트는 추적 가능한 형태로 남기는지 확인한다."
+    },
+    {
+      "id": "github-webhook-validation",
+      "authority": "GitHub Docs",
+      "title": "Validating webhook deliveries",
+      "url": "https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries",
+      "topics": ["webhook", "signature", "constant_time"],
+      "distilled_use": "raw payload 기반 HMAC 검증과 timing-safe 비교가 처리 전에 수행되는지 확인한다."
+    },
+    {
+      "id": "github-webhook-handling",
+      "authority": "GitHub Docs",
+      "title": "Handling webhook deliveries",
+      "url": "https://docs.github.com/en/webhooks/using-webhooks/handling-webhook-deliveries",
+      "topics": ["webhook", "latency", "async"],
+      "distilled_use": "webhook은 제한 시간 안에 수신 응답을 주고 긴 작업을 분리하는지 확인한다."
+    },
+    {
+      "id": "github-rest-breaking-changes",
+      "authority": "GitHub Docs",
+      "title": "Breaking changes",
+      "url": "https://docs.github.com/en/rest/about-the-rest-api/breaking-changes",
+      "topics": ["api", "compatibility", "versioning"],
+      "distilled_use": "필드·형식·필수값·권한 요구 변경을 breaking contract 후보로 분류한다."
+    },
+    {
+      "id": "google-aip-194-retries",
+      "authority": "Google API Improvement Proposals",
+      "title": "AIP-194 Automatic retry configuration",
+      "url": "https://google.aip.dev/194",
+      "topics": ["retry", "idempotency", "errors"],
+      "distilled_use": "자동 retry는 반복 실행이 상태를 잘못 바꾸지 않는 transient 실패에만 적용한다."
+    },
+    {
+      "id": "google-sre-cascading-failures",
+      "authority": "Google SRE Book",
+      "title": "Addressing Cascading Failures",
+      "url": "https://sre.google/sre-book/addressing-cascading-failures/",
+      "topics": ["timeout", "retry", "backoff", "overload"],
+      "distilled_use": "deadline, 제한된 retry, exponential backoff와 jitter, retry amplification을 검토한다."
+    },
+    {
+      "id": "google-sre-monitoring",
+      "authority": "Google SRE Book",
+      "title": "Monitoring Distributed Systems",
+      "url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "topics": ["latency", "traffic", "errors", "saturation"],
+      "distilled_use": "사용자 관점의 성공·실패와 latency를 분리하고 부분 실패를 관측할 수 있는지 확인한다."
+    },
+    {
+      "id": "postgres-explicit-locking",
+      "authority": "PostgreSQL Documentation",
+      "title": "Explicit Locking",
+      "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
+      "topics": ["database", "locking", "deadlock", "concurrency"],
+      "distilled_use": "read-modify-write와 schema 변경의 lock, 대기, deadlock 영향을 구체적 DB 동작과 연결한다."
+    },
+    {
+      "id": "github-actions-secure-use",
+      "authority": "GitHub Docs",
+      "title": "Secure use reference",
+      "url": "https://docs.github.com/en/actions/reference/security/secure-use",
+      "topics": ["actions", "permissions", "supply_chain", "pinning"],
+      "distilled_use": "third-party action의 immutable SHA, 최소 권한, secret 노출 경계를 확인한다."
+    },
+    {
+      "id": "w3c-accessibility-principles",
+      "authority": "W3C Web Accessibility Initiative",
+      "title": "Accessibility Principles",
+      "url": "https://www.w3.org/WAI/fundamentals/accessibility-principles/",
+      "topics": ["accessibility", "keyboard", "focus"],
+      "distilled_use": "모든 상호작용을 keyboard로 수행할 수 있고 focus가 갇히지 않는지 확인한다."
+    },
+    {
+      "id": "w3c-forms-tutorial",
+      "authority": "W3C Web Accessibility Initiative",
+      "title": "Forms Tutorial",
+      "url": "https://www.w3.org/WAI/tutorials/forms/",
+      "topics": ["accessibility", "forms", "labels", "errors"],
+      "distilled_use": "form control의 label, grouping, instruction과 오류 feedback을 확인한다."
+    },
+    {
+      "id": "radon-complexity-api",
+      "authority": "Radon Documentation",
+      "title": "Using Radon programmatically - Cyclomatic Complexity",
+      "url": "https://radon.readthedocs.io/en/stable/api.html#cyclomatic-complexity",
+      "topics": ["python", "cyclomatic_complexity", "static_analysis"],
+      "distilled_use": "Python AST를 분석해 함수와 메서드의 cyclomatic complexity 및 A-F rank를 기계적으로 산출한다."
+    },
+    {
+      "id": "openai-harness-engineering",
+      "authority": "OpenAI",
+      "title": "Harness engineering: leveraging Codex in an agent-first world",
+      "url": "https://openai.com/index/harness-engineering/",
+      "topics": ["harness", "context", "mechanical_enforcement"],
+      "distilled_use": "큰 지침 원문 대신 짧은 지도, 선택형 세부 지식, 기계적으로 검증 가능한 경계를 사용한다."
+    }
+  ]
+}

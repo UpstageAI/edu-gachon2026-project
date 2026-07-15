@@ -1,0 +1,15 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pip-cache/
+.local-data/
+dist/
+build/
+*.egg-info/
+*:Zone.Identifier
+*.pem

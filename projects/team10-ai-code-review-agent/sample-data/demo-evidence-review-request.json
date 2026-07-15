@@ -1,0 +1,44 @@
+{
+  "repository": {
+    "provider": "github",
+    "owner": "team-a",
+    "name": "sample-api",
+    "default_branch": "main"
+  },
+  "pull_request": {
+    "number": 77,
+    "title": "Add debug logging for auth failures",
+    "author": "dev-user",
+    "base_sha": "abc123",
+    "head_sha": "def789",
+    "base_branch": "main",
+    "head_branch": "feature/auth-debug-logging"
+  },
+  "checks": [
+    {
+      "kind": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "summary": "ruff passed"
+    },
+    {
+      "kind": "test",
+      "status": "completed",
+      "conclusion": "success",
+      "summary": "128 passed"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "backend/auth/logging.py",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 1,
+      "patch": "@@ -1,3 +1,7 @@\n def handler(token):\n-    pass\n+    logger.info('Authorization=%s', token)\n+    return True\n"
+    }
+  ],
+  "github": {
+    "run_id": "987654321",
+    "event_name": "pull_request"
+  }
+}

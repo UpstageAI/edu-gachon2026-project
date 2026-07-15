@@ -1,0 +1,67 @@
+services:
+  api:
+    image: ${AI_REVIEWER_IMAGE:-ai-code-review-agent:local}
+    environment:
+      APP_ENV: ${APP_ENV:-local-deploy}
+      PORT: ${PORT:-8080}
+      LLM_MODE: ${LLM_MODE:-mock}
+      PUBLISH_MODE: ${PUBLISH_MODE:-local}
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-postgres}
+      RAG_BACKEND: ${RAG_BACKEND:-postgres}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://reviewer:reviewer@postgres:5432/reviewer}
+      AI_REVIEWER_TOKEN: ${AI_REVIEWER_TOKEN:-local-reviewer-token}
+      UPSTAGE_API_KEY: ${UPSTAGE_API_KEY:-}
+      UPSTAGE_API_BASE_URL: ${UPSTAGE_API_BASE_URL:-https://api.upstage.ai/v1}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:-local-webhook-secret}
+      GITHUB_WEBHOOK_REVIEW_MODE: ${GITHUB_WEBHOOK_REVIEW_MODE:-after_checks}
+      GITHUB_CHECK_RUN_NAME: ${GITHUB_CHECK_RUN_NAME:-AI Code Review}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+      GITHUB_APP_PRIVATE_KEY_PATH: ${GITHUB_APP_PRIVATE_KEY_PATH:-}
+      GITHUB_API_BASE_URL: ${GITHUB_API_BASE_URL:-https://api.github.com}
+      SOLAR3_MODEL: ${SOLAR3_MODEL:-solar-pro3}
+      SOLAR3_LOW_REASONING_EFFORT: ${SOLAR3_LOW_REASONING_EFFORT:-low}
+      SOLAR3_MEDIUM_REASONING_EFFORT: ${SOLAR3_MEDIUM_REASONING_EFFORT:-medium}
+      SOLAR3_HIGH_REASONING_EFFORT: ${SOLAR3_HIGH_REASONING_EFFORT:-high}
+      SOLAR3_LOW_MAX_TOKENS: ${SOLAR3_LOW_MAX_TOKENS:-4096}
+      SOLAR3_MEDIUM_MAX_TOKENS: ${SOLAR3_MEDIUM_MAX_TOKENS:-8192}
+      SOLAR3_HIGH_MAX_TOKENS: ${SOLAR3_HIGH_MAX_TOKENS:-16384}
+      REVIEW_HARNESS_ROOT: /app/review_harness
+      LANGFUSE_PUBLIC_KEY: ${LANGFUSE_PUBLIC_KEY:-}
+      LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY:-}
+      LANGFUSE_HOST: ${LANGFUSE_HOST:-https://cloud.langfuse.com}
+      POLICY_ROOT: /app/policies
+      LOCAL_DATA_DIR: /app/.local-data
+      REVIEW_STORE_PATH: /app/.local-data/reviews.json
+      COMMENT_OUTPUT_DIR: /app/.local-data/comments
+    ports:
+      - "127.0.0.1:${PORT:-8080}:${PORT:-8080}"
+    volumes:
+      - ../../.local-data/local-deploy:/app/.local-data
+      - ../../policies:/app/policies:ro
+      - ../../review_harness:/app/review_harness:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reviewer}
+      POSTGRES_USER: ${POSTGRES_USER:-reviewer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-reviewer}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-reviewer} -d $${POSTGRES_DB:-reviewer}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

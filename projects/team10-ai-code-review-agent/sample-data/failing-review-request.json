@@ -1,0 +1,39 @@
+{
+  "repository": {
+    "provider": "github",
+    "owner": "team-a",
+    "name": "sample-api",
+    "default_branch": "main"
+  },
+  "pull_request": {
+    "number": 43,
+    "title": "Fix profile tests",
+    "author": "dev-user",
+    "base_sha": "abc123",
+    "head_sha": "ghi789",
+    "base_branch": "main",
+    "head_branch": "fix/profile-tests"
+  },
+  "checks": [
+    {
+      "kind": "test",
+      "status": "completed",
+      "conclusion": "failure",
+      "summary": "tests/test_profile.py::test_profile_not_found failed with AssertionError"
+    }
+  ],
+  "changed_files": [
+    {
+      "path": "app/api/profile.py",
+      "status": "modified",
+      "additions": 12,
+      "deletions": 4,
+      "patch": "@@ -18,7 +18,7 @@\n-    raise NotFoundError()\n+    return None\n"
+    }
+  ],
+  "github": {
+    "run_id": "987654321",
+    "event_name": "pull_request"
+  }
+}
+
