@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>가천대학교 인공지능학과 길잡이</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+    <header class="top-nav">
+        <div class="brand-area">
+            <div class="brand-logo-wrap">
+                <img src="/static/img/gachon_logo.png" alt="가천대학교 로고" class="brand-logo" />
+            </div>
+            <div>
+                <h1>가천대학교 <span>인공지능학과 길잡이</span></h1>
+                <p>AI 챗봇이 학사·수업·졸업 궁금증을 도와드려요!</p>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="/" class="nav-item active">홈</a>
+            <a href="/reminders" class="nav-item">리마인드 로그</a>
+        </nav>
+    </header>
+
+    <main class="page-shell">
+        <section class="hero-side">
+            <div class="campus-bg"></div>
+
+            <div class="mascot-wrap">
+                <img src="/static/img/mascot.png" alt="가천이 마스코트" class="mascot-img" />
+            </div>
+
+            <div class="mascot-card glass-card">
+                <h2>안녕하세요! 저는 <span>가천이</span>에요 💙</h2>
+                <p>가천대학교 인공지능학과에 대해 무엇이든 물어보세요!</p>
+            </div>
+
+            <div class="shortcut-card glass-card">
+                <button class="quick-question side-shortcut" data-question="수강신청 기간 알려줘">
+                    <span class="shortcut-icon">🎓</span>
+                    <span>
+                        <strong>수강신청 안내</strong>
+                        <small>신청 일정, 방법, 유의사항</small>
+                    </span>
+                </button>
+
+                <button class="quick-question side-shortcut" data-question="졸업하려면 뭐가 필요해?">
+                    <span class="shortcut-icon">📘</span>
+                    <span>
+                        <strong>졸업요건 확인</strong>
+                        <small>필수 이수 과목, 학점 요건</small>
+                    </span>
+                </button>
+
+                <button class="quick-question side-shortcut" data-question="사회봉사는 몇 시간 해야 해?">
+                    <span class="shortcut-icon">🤝</span>
+                    <span>
+                        <strong>사회봉사 안내</strong>
+                        <small>봉사시간, 수강신청, P/F</small>
+                    </span>
+                </button>
+
+                <button class="quick-question side-shortcut" data-question="복학 기간 알려줘">
+                    <span class="shortcut-icon">💬</span>
+                    <span>
+                        <strong>자주 묻는 질문</strong>
+                        <small>학생들이 많이 물어보는 질문</small>
+                    </span>
+                </button>
+            </div>
+        </section>
+
+        <section class="chat-panel">
+            <div class="chat-top">
+                <div>
+                    <strong>가천이와 대화하기</strong>
+                    <p>업로드된 공식 자료를 기반으로 답변해요.</p>
+                </div>
+                <span class="status-pill"><span class="status-dot" aria-hidden="true"></span>RAG 연결됨</span>
+            </div>
+
+            <div class="quick-row">
+                <button class="quick-question" data-question="2학기 수강신청 기간 알려줘">2학기 수강신청</button>
+                <button class="quick-question" data-question="외국어 졸업인증은 언제까지 해야 해?">외국어 졸업인증</button>
+                <button class="quick-question" data-question="인공지능학과 전공필수 알려줘">전공필수</button>
+                <button class="quick-question" data-question="수강신청 일정을 myid@gachon.ac.kr 로 리마인드 메일 보내줘" data-prefill="true">리마인드 예약</button>
+            </div>
+
+            <div id="chat-box" class="chat-box" role="log" aria-live="polite" aria-atomic="false">
+                <div class="message bot-message">
+                    <img src="/static/img/mascot.png" alt="가천이" class="avatar" />
+                    <div class="bubble-wrap">
+                        <div class="bubble">
+                            안녕하세요! 🤗<br />
+                            저는 가천대학교 인공지능학과 길잡이 <strong>가천이</strong>에요.<br />
+                            학사, 수업, 졸업요건, 사회봉사 등에 대해 편하게 물어보세요!
+                        </div>
+                        <span class="timestamp">방금 전</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="chat-form" class="chat-input-area">
+                <textarea
+                    id="message-input"
+                    rows="1"
+                    placeholder="궁금한 내용을 입력해 주세요..."
+                    autocomplete="off"
+                    aria-label="가천이에게 보낼 메시지"
+                ></textarea>
+                <button id="send-button" type="submit" aria-label="전송">➤</button>
+            </form>
+
+            <p class="notice-text">
+                AI 답변은 참고용으로 제공되며, 최종 내용은 학교 공식 시스템 또는 담당 부서에서 확인해주세요.
+            </p>
+        </section>
+    </main>
+
+    <script src="/static/chat.js"></script>
+</body>
+</html>

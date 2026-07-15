@@ -1,0 +1,72 @@
+[
+  {
+    "source": "가천대 휴학 안내",
+    "url": "https://www.gachon.ac.kr/kor/4021/subview.do",
+    "category_l1": "leave_return",
+    "category_l2": "leave",
+    "chars": 4012
+  },
+  {
+    "source": "가천대 복학 안내",
+    "url": "https://www.gachon.ac.kr/kor/4022/subview.do",
+    "category_l1": "leave_return",
+    "category_l2": "return",
+    "chars": 1330
+  },
+  {
+    "source": "가천대 졸업 안내",
+    "url": "https://www.gachon.ac.kr/kor/3219/subview.do",
+    "category_l1": "graduation",
+    "category_l2": "credit_requirement",
+    "chars": 7508
+  },
+  {
+    "source": "가천대 사회봉사교과목 안내",
+    "url": "https://www.gachon.ac.kr/ESG/9032/subview.do",
+    "category_l1": "social_service",
+    "category_l2": "requirement",
+    "chars": 393
+  },
+  {
+    "source": "가천대 수강정정·수강대기제 안내",
+    "url": "팀원제공:수강 정정 및 수강대기제.txt",
+    "category_l1": "course",
+    "category_l2": "correction",
+    "chars": 903
+  },
+  {
+    "source": "가천대 수강포기 안내",
+    "url": "팀원제공:수강 포기.txt",
+    "category_l1": "course",
+    "category_l2": "withdrawal",
+    "chars": 606
+  },
+  {
+    "source": "가천대 외국어졸업인증제 안내",
+    "url": "팀원제공:외국어졸업인증제.pdf",
+    "category_l1": "graduation",
+    "category_l2": "foreign_language",
+    "chars": 1094
+  },
+  {
+    "source": "가천대 수강신청 매뉴얼(웹)",
+    "url": "팀원제공:sugang_W_manual.pdf",
+    "category_l1": "course",
+    "category_l2": "registration",
+    "chars": 4098
+  },
+  {
+    "source": "가천대 외국어졸업인증 기준점수",
+    "url": "https://www.gachon.ac.kr/bbs/languagecenter/342/76109/artclView.do",
+    "category_l1": "graduation",
+    "category_l2": "foreign_language",
+    "chars": 1855
+  },
+  {
+    "source": "가천대 사회봉사 이수기준",
+    "url": "https://www.gachon.ac.kr/ESG/9017/subview.do?enc=Zm5jdDF8QEB8JTJGYmJzJTJGRVNHJTJGMTM5MCUyRjEwMjExMCUyRmFydGNsVmlldy5kbyUzRg%3D%3D",
+    "category_l1": "social_service",
+    "category_l2": "requirement",
+    "chars": 947
+  }
+]

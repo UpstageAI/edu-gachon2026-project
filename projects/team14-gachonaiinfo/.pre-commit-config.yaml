@@ -1,0 +1,52 @@
+# Pre-commit 설정
+#
+# Git 커밋 전에 자동으로 코드 품질 검사를 실행합니다.
+# CI에서 실패하기 전에 로컬에서 먼저 문제를 잡을 수 있습니다.
+#
+# 설치 방법:
+#   uv sync --extra dev          # pre-commit 설치
+#   uv run pre-commit install    # Git 훅 등록
+#
+# 수동 실행:
+#   uv run pre-commit run --all-files
+#
+# 훅 건너뛰기 (긴급 시에만):
+#   git commit --no-verify -m "hotfix: ..."
+
+repos:
+  # Ruff: Python 린터 & 포매터
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      # 린트 검사 + 자동 수정
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [python, pyi]
+
+      # 코드 포매팅
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # 기본 파일 검사
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # 파일 끝에 빈 줄 추가
+      - id: end-of-file-fixer
+
+      # 줄 끝 공백 제거
+      - id: trailing-whitespace
+
+      # YAML 문법 검사
+      - id: check-yaml
+        args: [--unsafe]  # GitHub Actions 문법 허용
+
+      # 대용량 파일 방지
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+
+      # Python 문법 검사
+      - id: check-ast
+
+      # 디버그 문 검사 (breakpoint, pdb 등)
+      - id: debug-statements

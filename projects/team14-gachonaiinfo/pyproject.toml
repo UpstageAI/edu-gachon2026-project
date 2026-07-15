@@ -1,0 +1,164 @@
+# Gachon AI Agent
+# uv 패키지 관리자를 사용하는 프로젝트 설정 파일
+#
+# 사용법:
+#   uv sync
+#   uv sync --extra dev
+#   uv run uvicorn app.main:app --reload
+#   uv run pytest tests/ -v
+#   uv run ruff check app tests
+#   uv run ruff format app tests
+#   uv run pre-commit install
+#   uv run pre-commit run --all-files
+#
+# Docker:
+#   docker compose up --build
+#
+# Production:
+#   - Docker / GCE VM 배포에서 사용
+#   - API Key와 DB URL은 .env 또는 GitHub Secrets로 관리
+
+[project]
+name = "gachon-ai-agent"
+version = "0.1.0"
+description = "Gachon University AI Department academic guide agent"
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    # ===== Agent Workflow =====
+    "langgraph>=1.0.0",
+    "langchain-core>=1.0.0",
+    # langfuse의 langchain CallbackHandler가 버전 확인용으로 langchain 메타패키지를
+    # import 하므로(실제 심볼은 langchain_core에서 가져옴) 함께 선언한다.
+    "langchain>=1.0.0,<2",
+    "langchain-upstage>=0.5.0",
+    "langgraph-checkpoint-postgres>=2.0.0",
+
+    # ===== Observability =====
+    "langfuse>=4.0.0,<5",
+
+    # ===== Web Framework =====
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "jinja2>=3.1.0",
+    "python-multipart>=0.0.12",
+
+    # ===== LLM / Embedding =====
+    # Upstage Solar / Embedding API를 OpenAI-compatible 방식으로 호출할 때 사용
+    "openai>=1.50.0",
+    "httpx>=0.27.0",
+
+    # ===== Database =====
+    # Docker PostgreSQL + pgvector 사용
+    "psycopg[binary]>=3.2.0",
+    "pgvector>=0.3.0",
+
+    # ===== Configuration =====
+    "pydantic>=2.8.0",
+    "pydantic-settings>=2.4.0",
+    "python-dotenv>=1.0.0",
+    "email-validator>=2.2.0",
+
+    # ===== External Action Tool =====
+    # Resend API 기반 이메일 리마인드 PoC / 확장용
+    "resend>=2.0.0",
+    # 예약 리마인드 발송용 인프로세스 스케줄러
+    "apscheduler>=3.10.0",
+
+    # ===== Utilities =====
+    "orjson>=3.10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    # ===== Test =====
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
+
+    # ===== Lint / Format =====
+    "ruff>=0.8.0",
+
+    # ===== Git Hooks =====
+    "pre-commit>=4.0.0",
+]
+
+notebook = [
+    "jupyter>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+# =============================================================
+# Pytest 설정
+# =============================================================
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+markers = [
+    "slow: 느린 테스트",
+    "integration: 통합 테스트",
+    "llm: 실제 LLM API를 호출하는 테스트",
+]
+
+addopts = [
+    "-v",
+    "--tb=short",
+]
+
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::langchain_core._api.deprecation.LangChainPendingDeprecationWarning",
+]
+
+# =============================================================
+# Ruff 설정
+# =============================================================
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # import sorting
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+]
+
+ignore = [
+    "E501",   # line too long: 긴 프롬프트/문서 문자열 허용
+    "B008",   # FastAPI Depends 등에서 발생 가능
+    "B904",   # raise ... from 생략 허용
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B", "C4"]
+"app/core/prompts.py" = ["E501"]
+"app/ingest.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# =============================================================
+# Ruff Format 설정
+# =============================================================
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+]

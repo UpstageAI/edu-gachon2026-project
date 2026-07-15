@@ -1,0 +1,75 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== Virtual Environment =====
+.venv/
+venv/
+ENV/
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== Environment Variables =====
+# 절대 Git에 커밋하지 마세요!
+.env
+.env.local
+.env.*.local
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Testing =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ===== mypy =====
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ===== Distribution =====
+*.manifest
+*.spec
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Project Specific =====
+# 데이터 파일 (민감 정보 포함 가능)
+data/*.json
+data/*.csv
+!data/.gitkeep
+
+# uv lock 파일은 포함 (재현 가능한 빌드를 위해)
+# uv.lock
+
+# 평가 생성 산출물(재생성 가능)
+eval/results/
