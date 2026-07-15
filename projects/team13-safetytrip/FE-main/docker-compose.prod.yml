@@ -1,0 +1,8 @@
+services:
+  frontend:
+    image: ${FRONTEND_IMAGE:-safetytrip-fe:latest}
+    container_name: safetytrip-fe
+    restart: unless-stopped
+    ports:
+      - "80:80"
+
