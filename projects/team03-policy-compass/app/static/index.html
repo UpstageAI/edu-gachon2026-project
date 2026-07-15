@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>정책나침반</title>
+<link rel="icon" href="/static/favicon.svg" />
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --accent: #3b5bfd;
+    --text: #1f2430;
+    --muted: #6b7280;
+    --bubble-user: #3b5bfd;
+    --bubble-bot: #eef1ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .app {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--panel);
+  }
+  header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .msg { display: flex; }
+  .msg.user { justify-content: flex-end; }
+  .bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  .msg.user .bubble { background: var(--bubble-user); color: #fff; }
+  .msg.bot .bubble { background: var(--bubble-bot); color: var(--text); }
+  form {
+    display: flex;
+    gap: 8px;
+    padding: 14px 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+  }
+  button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>🧭 정책나침반</h1>
+      <p>나이·지역과 관심 분야를 알려주시면 맞는 청년 지원정책을 찾아드려요.</p>
+    </header>
+    <div id="log"></div>
+    <form id="form">
+      <input id="input" type="text" autocomplete="off"
+        placeholder="예: 서울에 사는 만 24세인데 주거비 지원정책이 있을까?" />
+      <button id="send" type="submit">전송</button>
+    </form>
+  </div>
+
+  <script>
+    const sessionId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+    const log = document.getElementById("log");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
+
+    function cleanDisplayText(text) {
+      return text
+        .replace(/^\s{0,3}#{1,6}\s*/gm, "")
+        .replace(/^\s*>\s?/gm, "")
+        .replace(/\[([^\]]+)]\((https?:\/\/[^)]+)\)/g, "$1 ($2)")
+        .replace(/\*\*/g, "")
+        .replace(/__/g, "")
+        .replace(/`/g, "");
+    }
+
+    function addBubble(role, text) {
+      const wrap = document.createElement("div");
+      wrap.className = `msg ${role}`;
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = text;
+      wrap.appendChild(bubble);
+      log.appendChild(wrap);
+      log.scrollTop = log.scrollHeight;
+      return bubble;
+    }
+
+    async function send(message) {
+      addBubble("user", message);
+      const botBubble = addBubble("bot", "답변을 준비하고 있어요.");
+      let hasToken = false;
+      let rawBotText = "";
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, message }),
+        });
+        if (!res.ok || !res.body) {
+          throw new Error("stream unavailable");
+        }
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const events = buffer.split("\n\n");
+          buffer = events.pop();
+          for (const raw of events) {
+            const dataLine = raw.split("\n").find((l) => l.startsWith("data:"));
+            if (!dataLine) continue;
+            const payload = JSON.parse(dataLine.slice(5).trim());
+            if (payload.type === "token") {
+              if (!hasToken) {
+                botBubble.textContent = "";
+                hasToken = true;
+              }
+              rawBotText += payload.content;
+              botBubble.textContent = cleanDisplayText(rawBotText);
+              log.scrollTop = log.scrollHeight;
+            } else if (payload.type === "status") {
+              if (!hasToken) botBubble.textContent = payload.message;
+            } else if (payload.type === "error") {
+              botBubble.textContent = payload.message;
+            }
+          }
+        }
+      } catch (err) {
+        botBubble.textContent = "네트워크 오류가 발생했어요. 서버가 실행 중인지 확인해주세요.";
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const message = input.value.trim();
+      if (!message) return;
+      input.value = "";
+      send(message);
+    });
+  </script>
+</body>
+</html>

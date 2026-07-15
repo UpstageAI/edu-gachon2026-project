@@ -1,0 +1,86 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: #f7f8fb;
+  --color-sidebar: #ffffff;
+  --color-card: #ffffff;
+  --color-card-hover: #eef1f7;
+  --color-border: #e2e5ec;
+  --color-primary: #4f7ef8;
+  --color-primary-light: #6b93fa;
+  --color-accent: #1f9d54;
+  --color-muted: #6b7280;
+  --color-foreground: #1f2430;
+  --color-foreground-dim: #4b5164;
+  --color-policy-badge: #eaf2ff;
+  --color-policy-badge-text: #2a5fd1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #f7f8fb;
+  color: #1f2430;
+  font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d7dbe3;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c3c8d3;
+}
+
+.prose-chat p { margin: 0 0 0.5em; line-height: 1.7; }
+.prose-chat p:last-child { margin-bottom: 0; }
+.prose-chat ul, .prose-chat ol { margin: 0.5em 0; padding-left: 1.4em; }
+.prose-chat li { margin-bottom: 0.25em; line-height: 1.6; }
+.prose-chat code {
+  background: #eef1f7;
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85em;
+}
+.prose-chat pre {
+  background: #eef1f7;
+  border-radius: 8px;
+  padding: 1em;
+  overflow-x: auto;
+  margin: 0.75em 0;
+}
+.prose-chat pre code { background: none; padding: 0; }
+.prose-chat strong { color: #111827; }
+.prose-chat h1, .prose-chat h2, .prose-chat h3 { margin: 0.75em 0 0.35em; color: #111827; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.msg-appear {
+  animation: fadeIn 0.22s ease-out;
+}
+
+@keyframes pulse-dot {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1); }
+}
+.typing-dot:nth-child(1) { animation: pulse-dot 1.2s ease-in-out infinite 0s; }
+.typing-dot:nth-child(2) { animation: pulse-dot 1.2s ease-in-out infinite 0.2s; }
+.typing-dot:nth-child(3) { animation: pulse-dot 1.2s ease-in-out infinite 0.4s; }
