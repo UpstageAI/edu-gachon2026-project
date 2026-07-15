@@ -1,0 +1,75 @@
+name: finbrief
+
+services:
+  finbrief-api:
+    image: ${APP_IMAGE:-finbrief:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finbrief-api
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_NAME: ${APP_NAME:-FinBrief}
+      APP_ENV: ${APP_ENV:-prod}
+      ENABLE_MOCK_DATA: ${ENABLE_MOCK_DATA:-true}
+      DELIVERY_DRY_RUN: ${DELIVERY_DRY_RUN:-true}
+      FINBRIEF_LLM_STUB: ${FINBRIEF_LLM_STUB:-1}
+      FINBRIEF_IMAGE_STUB: ${FINBRIEF_IMAGE_STUB:-1}
+      FINBRIEF_REPORT_OUT: ${FINBRIEF_REPORT_OUT:-/app/reports}
+    ports:
+      - "${SERVICE_PORT:-8000}:8000"
+    volumes:
+      - finbrief_reports:/app/reports
+      - finbrief_agent_outputs:/app/app/agents/out_reports
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3).read()",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  finbrief-bot:
+    image: ${APP_IMAGE:-finbrief:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finbrief-bot
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+    command: ["python", "-m", "app.services.discord_bot"]
+    healthcheck:
+      disable: true
+
+  finbrief-scheduler:
+    image: ${APP_IMAGE:-finbrief:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finbrief-scheduler
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_ENV: ${APP_ENV:-prod}
+      FINBRIEF_BATCH_HOUR: ${FINBRIEF_BATCH_HOUR:-7}
+    command: ["python", "-m", "app.services.scheduler"]
+    healthcheck:
+      disable: true
+
+volumes:
+  finbrief_reports:
+  finbrief_agent_outputs:

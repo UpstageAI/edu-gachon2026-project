@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finbrief.local/schemas/finbrief_eval_set.schema.json",
+  "title": "FinBriefEvalSetEntry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "input",
+    "expected"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topic", "indicators", "news"],
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "indicators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/indicator_fixture"
+          }
+        },
+        "news": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/news_fixture"
+          }
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "topic_type",
+        "min_evidence_count",
+        "must_include_disclaimer",
+        "forbidden_terms"
+      ],
+      "properties": {
+        "topic_type": {
+          "type": "string",
+          "enum": ["indicator", "keyword", "sector", "asset"]
+        },
+        "numeric_direction": {
+          "type": ["string", "null"],
+          "enum": ["up", "down", "flat", null]
+        },
+        "min_evidence_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "must_include_disclaimer": {
+          "type": "boolean"
+        },
+        "forbidden_terms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    }
+  },
+  "$defs": {
+    "indicator_fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["indicator_id", "current_value", "previous_value"],
+      "properties": {
+        "indicator_id": {
+          "type": "string"
+        },
+        "current_value": {
+          "type": "number"
+        },
+        "previous_value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "news_fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "source", "summary"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

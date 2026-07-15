@@ -1,0 +1,80 @@
+name: FinBrief Batch Trigger
+
+# 수동 테스트 트리거: 인스턴스에서 아침 배치를 1회 즉시 실행한다.
+# (스케줄러 컨테이너와 별개로, 배포된 이미지+.env 로 one-off 배치 실행)
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "발송 없이 상태만(테스트). false 면 실제 발송."
+        type: boolean
+        default: true
+      mock_data:
+        description: "목업/fixture 데이터로 실행(실 지표/RAG 대신)."
+        type: boolean
+        default: false
+      send_report:
+        description: "지표 리포트 발송."
+        type: boolean
+        default: true
+      send_cards:
+        description: "카드뉴스 발송(끄면 리포트만)."
+        type: boolean
+        default: true
+      real_images:
+        description: "카드 이미지 실제 생성(Gemini, 카드당 ~$0.034). 끄면 텍스트."
+        type: boolean
+        default: false
+      target:
+        description: "발송 대상 계정."
+        type: choice
+        options:
+          - me
+          - all
+        default: me
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare SSH
+        env:
+          GCE_SSH_KEY: ${{ secrets.GCE_SSH_KEY }}
+          GCE_HOST: ${{ secrets.GCE_HOST }}
+        run: |
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$GCE_SSH_KEY" > "$HOME/.ssh/finbrief"
+          chmod 600 "$HOME/.ssh/finbrief"
+          ssh-keyscan -H "$GCE_HOST" >> "$HOME/.ssh/known_hosts"
+
+      - name: Run one-off batch on instance
+        env:
+          GCE_HOST: ${{ secrets.GCE_HOST }}
+          GCE_USERNAME: ${{ secrets.GCE_USERNAME }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          MOCK_DATA: ${{ inputs.mock_data }}
+          SEND_REPORT: ${{ inputs.send_report }}
+          SEND_CARDS: ${{ inputs.send_cards }}
+          REAL_IMAGES: ${{ inputs.real_images }}
+          TARGET: ${{ inputs.target }}
+          ME_ID: ${{ secrets.FINBRIEF_TEST_USER_ID }}
+        run: |
+          set -euo pipefail
+          deploy_dir="/home/${GCE_USERNAME}/finbrief"
+
+          flags=""
+          [ "$DRY_RUN" = "true" ] && flags="$flags --dry-run"
+          [ "$MOCK_DATA" = "true" ] && flags="$flags --mock"
+          [ "$SEND_REPORT" = "true" ] || flags="$flags --no-report"
+          [ "$SEND_CARDS" = "true" ] || flags="$flags --no-cards"
+          [ "$REAL_IMAGES" = "true" ] && flags="$flags --images"
+          if [ "$TARGET" = "me" ]; then
+            if [ -z "${ME_ID:-}" ]; then
+              echo "target=me 인데 FINBRIEF_TEST_USER_ID 시크릿이 없습니다."; exit 1
+            fi
+            flags="$flags --only-user $ME_ID"
+          fi
+
+          echo "batch flags: $flags"
+          ssh -i "$HOME/.ssh/finbrief" "${GCE_USERNAME}@${GCE_HOST}" \
+            "cd '$deploy_dir' && docker compose run --rm --no-deps finbrief-scheduler python -m app.services.batch $flags"

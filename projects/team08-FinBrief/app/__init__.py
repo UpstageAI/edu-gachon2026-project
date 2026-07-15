@@ -1,0 +1,1 @@
+"""FinBrief application package."""

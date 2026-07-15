@@ -1,0 +1,82 @@
+schema_version: 1
+
+team:
+  number: 8
+  folder_name: team8
+  name: FinBrief
+  members:
+    - name: 류건우
+      role: FastAPI, Supabase DB, RAG, CI/CD, Langfuse, GCE Infra, Docker, LLMOps
+      github: RyuGernwoo
+    - name: 이호민
+      role: LangGraph, RAG, LiteLLM, Discord ChatBot, Webpage, LLMOps
+      github: LeeHome2
+
+project:
+  title: FinBrief
+  summary: 사용자가 관심 금융 토픽을 구독하면 실제 시장 지표와 최신 뉴스를 종합해 매일 아침 Discord로 브리핑하는 AI 금융 리포트 서비스입니다.
+  category: AI 금융 브리핑 서비스
+  keywords:
+    - AI
+    - Finance
+    - RAG
+    - LLMOps
+    - Discord Bot
+
+problem:
+  summary: 개인 투자자가 여러 사이트와 앱을 오가며 지표, 환율, 금리, 원자재, 가상자산, 관련 뉴스를 반복 확인해야 하는 문제를 해결합니다.
+  target_users:
+    - 매일 시장 지표와 뉴스를 빠르게 확인하고 싶은 개인 투자자
+    - 금융 지표와 뉴스 근거를 함께 보고 싶은 경제 뉴스 구독자
+    - 어떤 지표를 봐야 하는지 어려운 금융 초보자
+
+solution:
+  summary: 관심 토픽만 등록하면 외부 금융 데이터와 뉴스 RSS를 수집하고 RAG와 LLM 분석을 거쳐 이미지 리포트와 카드뉴스를 Discord로 제공합니다.
+  main_features:
+    - Discord 챗봇 기반 관심 토픽 구독, 조회, 삭제
+    - 자연어 키워드 기반 토픽 매칭 및 후보 추천
+    - FRED, yfinance, 한국은행 ECOS, 뉴스 RSS 기반 실데이터 수집
+    - Supabase PostgreSQL 및 pgvector 기반 뉴스 임베딩과 RAG 검색
+    - LangGraph 기반 주요 지표 리포트와 토픽별 카드뉴스 생성
+    - 당일 리포트 설명과 카드뉴스 출처 설명
+    - LiteLLM Guardrail/Fallback 및 Langfuse 관측성
+
+tech_stack:
+  frontend:
+    - FastAPI static frontend
+  backend:
+    - Python 3.11
+    - FastAPI
+    - Discord.py
+  ai:
+    - LangGraph
+    - LiteLLM
+    - Langfuse
+    - Upstage Solar
+    - Gemini Nano Banana
+  database:
+    - Supabase PostgreSQL
+    - pgvector
+  infra:
+    - Docker
+    - Docker Compose
+    - GitHub Actions (CI/CD)
+    - GCP Compute Engine (GCE)
+
+links:
+  demo_video_url: "https://drive.google.com/file/d/1bvIoGhafX-Vj6hZNtHcHMVZAOvjXPyVT/view?usp=sharing"
+  deployed_url: "http://34.50.41.2:8000/"
+  presentation_url: "https://docs.google.com/presentation/d/1gAJZMaWaiphCOfIBMWRUbWzpxpaekBtgRpbDIWftlV8/edit?slide=id.g3f169a78542_2_266#slide=id.g3f169a78542_2_266"
+  repository_url: "https://github.com/RyuGernwoo/FInBrief"
+
+blog:
+  slug: finbrief
+  tags:
+    - AI
+    - Finance
+    - RAG
+    - Docker
+    - CI/CD
+    - LLMOps
+    - Discord
+  cover_image: files/ex.png

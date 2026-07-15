@@ -1,0 +1,55 @@
+# Git and local metadata
+.git/
+.github/
+.agents/
+.codex/
+.claude/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python caches and build outputs
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Planning/reference artifacts not needed at runtime
+docs/
+project_docs/
+ref/
+scripts/
+
+# Generated data, logs, and reports
+data/raw/
+data/processed/
+data/cache/
+reports/*
+!reports/.gitkeep
+outputs/
+app/agents/out/
+app/agents/out_llm/
+app/agents/out_reports/
+*.log
+*.sqlite
+*.sqlite3
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
