@@ -1,0 +1,186 @@
+name: TripRoute CD
+
+on:
+  workflow_run:
+    workflows:
+      - TripRoute CI
+    types:
+      - completed
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: triproute-production
+  cancel-in-progress: false
+
+env:
+  IMAGE_NAME: ghcr.io/bbbj00/team06-triproute
+  DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  # ==================================================
+  # 1. Docker 이미지 빌드
+  # ==================================================
+  build:
+    name: Build
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout deployment commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.2.0
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v7.3.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ env.DEPLOY_SHA }}
+          outputs: type=docker,dest=/tmp/triproute-image.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: /tmp/triproute-image.tar
+          archive: false
+          retention-days: 1
+
+  # ==================================================
+  # 2. GHCR에 Docker 이미지 Push
+  # ==================================================
+  push:
+    name: Push
+    needs: build
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: triproute-image.tar
+          path: /tmp
+
+      - name: Load Docker image
+        run: |
+          docker load --input /tmp/triproute-image.tar
+          docker image inspect "${IMAGE_NAME}:${DEPLOY_SHA}"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push commit image
+        run: |
+          docker push "${IMAGE_NAME}:${DEPLOY_SHA}"
+
+      - name: Push latest image
+        run: |
+          docker tag \
+            "${IMAGE_NAME}:${DEPLOY_SHA}" \
+            "${IMAGE_NAME}:latest"
+
+          docker push "${IMAGE_NAME}:latest"
+
+  # ==================================================
+  # 3. GCE VM에 배포
+  # ==================================================
+  deploy:
+    name: Deploy
+    needs: push
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout deployment commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+
+      - name: Copy production Compose file to GCE
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.GCE_HOST }}
+          username: ${{ secrets.GCE_USERNAME }}
+          key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
+          source: docker-compose.prod.yml
+          target: /opt/triproute
+          overwrite: true
+
+      - name: Deploy Docker container to GCE
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIPROUTE_IMAGE: ${{ env.IMAGE_NAME }}:${{ env.DEPLOY_SHA }}
+        with:
+          host: ${{ secrets.GCE_HOST }}
+          username: ${{ secrets.GCE_USERNAME }}
+          key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
+          envs: GHCR_USERNAME,GHCR_TOKEN,TRIPROUTE_IMAGE
+          command_timeout: 15m
+          script: |
+            set -eu
+
+            cd /opt/triproute
+
+            if [ ! -f .env ]; then
+              echo "ERROR: /opt/triproute/.env does not exist"
+              exit 1
+            fi
+
+            echo "$GHCR_TOKEN" |
+              docker login ghcr.io \
+                --username "$GHCR_USERNAME" \
+                --password-stdin
+
+            export TRIPROUTE_IMAGE
+
+            docker compose -f docker-compose.prod.yml pull
+            docker logout ghcr.io
+
+            docker compose -f docker-compose.prod.yml up \
+              -d \
+              --remove-orphans
+
+            attempt=1
+
+            while [ "$attempt" -le 30 ]; do
+              if curl -fsS http://localhost:8000/ > /dev/null; then
+                echo "TripRoute deployment health check passed."
+                docker compose -f docker-compose.prod.yml ps
+                exit 0
+              fi
+
+              echo "Waiting for TripRoute... attempt $attempt/30"
+              sleep 5
+              attempt=$((attempt + 1))
+            done
+
+            echo "ERROR: TripRoute health check failed."
+            docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs --tail=100
+            exit 1

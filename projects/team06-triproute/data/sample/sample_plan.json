@@ -1,0 +1,70 @@
+{
+  "_comment": "전체 API 파이프라인 장애 시 시연용 최후 폴백 예시. TripPlanResponse 스키마(app/schemas/response.py)와 동일한 형식입니다.",
+  "condition_summary": {
+    "city": "강릉",
+    "season": "여름",
+    "duration": "1박 2일",
+    "travel_style": ["바다", "감성 카페", "먹거리"],
+    "transport_mode": "대중교통",
+    "people_count": 2
+  },
+  "daily_schedule": [
+    {
+      "day": "Day 1",
+      "time": "오전",
+      "place": "안목해변",
+      "reason": "강릉 바다 분위기를 느낄 수 있는 대표 장소입니다.",
+      "route_note": "여행 시작점으로 적합합니다."
+    },
+    {
+      "day": "Day 1",
+      "time": "점심",
+      "place": "강릉 중앙시장",
+      "reason": "먹거리 여행 취향을 반영한 전통시장입니다.",
+      "route_note": "시내권 식사 코스로 배치했습니다."
+    },
+    {
+      "day": "Day 1",
+      "time": "오후",
+      "place": "안목 커피거리",
+      "reason": "바다를 보며 감성 카페를 즐길 수 있는 거리입니다.",
+      "route_note": "식사 후 자연스럽게 이어지는 카페 코스입니다."
+    },
+    {
+      "day": "Day 2",
+      "time": "오전",
+      "place": "오죽헌",
+      "reason": "강릉의 대표 역사문화 관광지입니다.",
+      "route_note": "둘째 날 일정 강도를 낮추기 위해 가벼운 코스로 배치했습니다."
+    }
+  ],
+  "route_summary": [
+    {
+      "from": "안목해변",
+      "to": "강릉 중앙시장",
+      "distance_km": 6.5,
+      "estimated_time": "약 19분",
+      "taxi_fare": 12500,
+      "memo": "바다 일정 후 먹거리 코스로 이동합니다."
+    },
+    {
+      "from": "강릉 중앙시장",
+      "to": "안목 커피거리",
+      "distance_km": 5.8,
+      "estimated_time": "약 17분",
+      "taxi_fare": 10000,
+      "memo": "식사 후 감성 카페 코스로 이동합니다."
+    }
+  ],
+  "cost_summary": {
+    "transport": 12000,
+    "food": 60000,
+    "cafe": 30000,
+    "lodging": 100000,
+    "total": 202000
+  },
+  "warnings": [
+    "대중교통 시간과 요금은 실시간 환승 경로가 아닌 거리 기반 추정치입니다.",
+    "이 응답은 API 장애 시 사용되는 샘플 데이터이며 실시간 조회 결과가 아닙니다."
+  ]
+}

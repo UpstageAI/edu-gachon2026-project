@@ -1,0 +1,32 @@
+{
+  "_comment": "카카오모빌리티 길찾기 API 장애 시 폴백용 샘플 데이터. distance_km/duration_min/taxi_fare/toll_fare는 kakao_mobility.summarize_route()와 동일한 형식입니다.",
+  "routes": [
+    {
+      "from": "안목해변",
+      "to": "강릉 중앙시장",
+      "distance_km": 6.5,
+      "duration_min": 19,
+      "taxi_fare": 12500,
+      "toll_fare": 0,
+      "memo": "바다 일정 후 먹거리 코스로 이동합니다."
+    },
+    {
+      "from": "강릉 중앙시장",
+      "to": "안목 커피거리",
+      "distance_km": 5.8,
+      "duration_min": 17,
+      "taxi_fare": 10000,
+      "toll_fare": 0,
+      "memo": "식사 후 감성 카페 코스로 이동합니다."
+    },
+    {
+      "from": "오죽헌",
+      "to": "안목해변",
+      "distance_km": 4.2,
+      "duration_min": 13,
+      "taxi_fare": 8000,
+      "toll_fare": 0,
+      "memo": "역사문화 코스에서 바다 코스로 이동합니다."
+    }
+  ]
+}

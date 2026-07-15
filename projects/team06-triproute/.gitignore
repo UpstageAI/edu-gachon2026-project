@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env.local
+
+data/cache/
+data/raw/
+
+.DS_Store
+.vscode/
+
+*.log

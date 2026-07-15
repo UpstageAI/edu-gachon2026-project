@@ -1,0 +1,81 @@
+schema_version: 1
+
+team:
+  number: 6
+  folder_name: team06-triproute
+  name: TripRoute
+  members:
+    - name: 박범진
+      role: UI, Infra
+      github: bbbj00
+    - name: 권현석
+      role: Backend, AI Agent
+      github: elroy0612
+
+project:
+  title: TripRoute
+  summary: 여행 도시와 취향을 자연어로 입력하면 AI Agent가 시간대별 일정표·동선 메모·예상 비용을 자동 생성해주는 Agentic Workflow 여행 계획 서비스입니다.
+  category: AI 여행 플래너
+  keywords:
+    - AI
+    - Agent
+    - RAG
+    - Travel
+    - LangGraph
+
+problem:
+  summary: 여행 계획을 세울 때 관광지 검색, 동선 파악, 비용 계산을 사용자가 일일이 직접 해야 하는 번거로움을 해결하고자 합니다.
+  target_users:
+    - 효율적인 여행을 원하는 20대 대학생 및 사회초년생
+    - 여행 계획이 익숙하지 않은 초보 여행자
+    - 낯선 지역을 처음 방문하는 초행 여행자
+    - 계획 수립을 귀찮아하는 직장인 유저
+
+solution:
+  summary: Coordinator/Route Planner/Financial 멀티 에이전트가 RAG 기반 취향 매칭과 이동정보 API를 결합해 일정표·동선 메모·예상 비용을 하나의 흐름으로 생성하고, 로그인 기반 대화 세션으로 후속 요청도 이어서 처리합니다.
+  main_features:
+    - 회원가입/로그인 및 사용자별 대화 세션 저장·사이드바 제공
+    - 자연어 여행 조건 입력 및 이동수단·인원수 선택
+    - TourAPI 기반 관광지 후보 조회 및 여행코스 데이터 기반 연관 관광지 탐색
+    - 취향 기반 RAG 검색 및 Google Places 평점·리뷰 수 기반 로컬/유명 장소 필터링
+    - 카카오모빌리티 기반 동선 설계
+    - 시간대별 여행 일정표 자동 생성
+    - 이동수단별 예상 비용(교통비·식비·입장료·숙박비) 계산
+    - 멀티턴 후속 요청 처리(직전 일정을 유지한 채 조건 일부만 재구성)
+
+tech_stack:
+  frontend:
+    - Gradio
+  backend:
+    - FastAPI
+    - LangGraph
+  ai:
+    - Upstage Solar API
+    - Upstage Solar Embedding
+  observability:
+    - Langfuse
+  database:
+    - Supabase (pgvector, Auth, Postgres)
+  infra:
+    - Docker
+    - GitHub Actions (CI/CD)
+    - GitHub Container Registry (GHCR)
+    - GCP Compute Engine (GCE VM)
+  apis:
+    - 한국관광공사 TourAPI
+    - 카카오모빌리티 API
+    - Google Places API
+
+links:
+  demo_video_url:
+  deployed_url: http://34.50.22.20:8000/ui
+  presentation_url:
+  repository_url: https://github.com/bbbj00/team06-TripRoute
+
+blog:
+  slug: triproute
+  tags:
+    - AI
+    - LangGraph
+    - Travel
+  cover_image:
